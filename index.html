@@ -786,14 +786,17 @@ function phenoLine(ph){
 }
 
 /* ══ ART VOCABULARY ════════════════════════════════════════ */
-const GEMINI_KEY="AQ.Ab8RN6LqGa8ItKvNVMH015g3KU92y__O8r2TVvqY4y-ze9ZkVQ";
+const GEMINI_KEY="";
+function apiKey(){ return String((S&&S.apiKey)||GEMINI_KEY||"").trim(); }
+const HOST_NAME=["AI Studio","Vertex"];
+function modelList(){ return Array.from(new Set((S.imgModels||[]).concat(GEN_MODELS))); }
 const GEN_MODELS=["gemini-3.1-flash-image-preview","gemini-3-pro-image-preview","gemini-2.5-flash-image","gemini-2.0-flash-preview-image-generation"];
 /* Optional paid fallback (OpenAI). Leave "" to disable. Key is used only if every Gemini route fails. */
 const OPENAI_KEY="";
 const OPENAI_MODEL="gpt-image-1";
 const GEN_HOSTS=[
-  m=>`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(GEMINI_KEY)}`,
-  m=>`https://aiplatform.googleapis.com/v1/publishers/google/models/${m}:generateContent?key=${encodeURIComponent(GEMINI_KEY)}`
+  m=>`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(apiKey())}`,
+  m=>`https://aiplatform.googleapis.com/v1/publishers/google/models/${m}:generateContent?key=${encodeURIComponent(apiKey())}`
 ];
 const MEDIUM="Antique ink-and-watercolor plate on stained, foxed paper: loose wet washes, pigment blooms, faint pencil underdrawing, soft bleeding edges, faded desaturated pigments. Dark fairy-tale art in the manner of Arthur Rackham, John Bauer and Odilon Redon, with Guillermo del Toro's creature sensibility.";
 const MOOD="Slightly tilted, off-kilter compositions with subtly warped perspective. Disquieting and faintly dizzying like a fever dream, yet heartbreakingly lovable: you want to protect it, and you fear it a little. Not a cartoon, not glossy digital art, not 3D.";
@@ -981,16 +984,20 @@ const ArtDB={db:null,
 const nap=ms=>new Promise(r=>setTimeout(r,ms));
 function genRoutes(){
   const all=[];
-  GEN_HOSTS.forEach((h,hi)=>GEN_MODELS.forEach(m=>all.push({hi:hi,m:m})));
+  GEN_HOSTS.forEach((h,hi)=>modelList().forEach(m=>all.push({hi:hi,m:m})));
   const s=S.genRoute;
   if(s) all.sort((a,b)=>((b.hi===s.hi&&b.m===s.m)?1:0)-((a.hi===s.hi&&a.m===s.m)?1:0));
   return all;
 }
 async function genImage(prompt,aspect){
   S.genStats=S.genStats||{calls:0,ok:0,err:""};
+  if(!apiKey()){ S.genStats.err="No key saved. Keeper panel > Picture key."; save(); throw new Error("no key"); }
+  S.genStats.hostErr=S.genStats.hostErr||{};
   let lastErr="";
-  for(let round=0;round<3;round++){
+  const bad=new Set();
+  for(let round=0;round<2;round++){
     for(const rt of genRoutes()){
+      if(bad.has(rt.hi)) continue;
       let netFail=false;
       for(const useAspect of [true,false]){
         const body={contents:[{role:"user",parts:[{text:prompt}]}],
@@ -1008,21 +1015,25 @@ async function genImage(prompt,aspect){
           const im=parts.find(x=>x.inlineData||x.inline_data);
           if(im){
             const d=im.inlineData||im.inline_data;
-            S.genRoute=rt; S.genStats.ok++; S.genStats.err=""; save();
+            S.genRoute=rt; S.genStats.ok++; S.genStats.err=""; S.genStats.hostErr={}; save();
             return "data:"+(d.mimeType||d.mime_type||"image/png")+";base64,"+d.data;
           }
-          lastErr="no image ("+((j.candidates&&j.candidates[0]&&j.candidates[0].finishReason)||"?")+")";
+          lastErr=HOST_NAME[rt.hi]+": no image ("+((j.candidates&&j.candidates[0]&&j.candidates[0].finishReason)||"?")+")";
+          S.genStats.hostErr[rt.hi]=lastErr;
           break;
         }
         const msg=String((j.error&&j.error.message)||"");
-        lastErr=res.status+" "+rt.m+" "+msg.slice(0,140);
+        lastErr=HOST_NAME[rt.hi]+" "+res.status+" "+rt.m+": "+msg.slice(0,140);
+        S.genStats.hostErr[rt.hi]=lastErr;
+        if(res.status===401||res.status===403||/api key (not valid|expired)|leaked/i.test(msg)){ bad.add(rt.hi); break; }
         if(res.status===400&&useAspect&&/aspect|image_?config/i.test(msg)) continue;
         break;
       }
       if(netFail) break;
     }
     S.genStats.err=lastErr; save();
-    await nap(5000*(round+1));
+    if(bad.size>=GEN_HOSTS.length) break;
+    await nap(4000*(round+1));
   }
   if(OPENAI_KEY){
     try{
@@ -1084,13 +1095,15 @@ async function paintPlantimal(p){
   await ArtDB.put("p:"+p.id,art);
   return art;
 }
-function ensureAmbientArt(){
-  if(!ART.bull) enqueue("bull",async()=>{ await ArtDB.put("bull",await shrink(await genImage(bullPrompt("bull"),"4:3"),720)); render(); });
-  if(S.pastyUnlocked&&!ART.bull_pasty) enqueue("bull_pasty",async()=>{ await ArtDB.put("bull_pasty",await shrink(await genImage(bullPrompt("bull_pasty"),"4:3"),720)); render(); });
+function auto(key,fn){ const j=enqueue(key,fn); if(j) j.catch(()=>{ S.genCool=Date.now()+10*60000; save(); }); return j; }
+function ensureAmbientArt(force){
+  if(!force&&Date.now()<int(S.genCool)) return;
+  if(!ART.bull) auto("bull",async()=>{ await ArtDB.put("bull",await shrink(await genImage(bullPrompt("bull"),"4:3"),720)); render(); });
+  if(S.pastyUnlocked&&!ART.bull_pasty) auto("bull_pasty",async()=>{ await ArtDB.put("bull_pasty",await shrink(await genImage(bullPrompt("bull_pasty"),"4:3"),720)); render(); });
   const e=activeEvent();
-  if(e&&!ART["ev:"+e.name]) enqueue("ev:"+e.name,async()=>{ await ArtDB.put("ev:"+e.name,await shrink(await genImage(eventPrompt(e.name),"21:9"),900)); render(); });
+  if(e&&!ART["ev:"+e.name]) auto("ev:"+e.name,async()=>{ await ArtDB.put("ev:"+e.name,await shrink(await genImage(eventPrompt(e.name),"21:9"),900)); render(); });
   for(const p of S.plantimals) if(!ART["p:"+p.id])
-    enqueue("p:"+p.id,async()=>{ await paintPlantimal(p); render(); });
+    auto("p:"+p.id,async()=>{ await paintPlantimal(p); render(); });
 }
 
 /* ══ WAITING, EGGS, HATCHING ═══════════════════════════════ */
@@ -1320,9 +1333,17 @@ async function keeperOpen(){
     <div class="lbl">Art calls</div><div class="mono">${int(g.calls)} sent · ${int(g.ok)} painted</div>
     <div class="lbl">Route</div><div class="mono" style="font-size:12px">${S.genRoute?esc(S.genRoute.m)+" @ "+(S.genRoute.hi?"Vertex":"AI Studio"):"none yet"}</div>
     <div class="lbl">Last problem</div><div class="mono" style="font-size:12px;word-break:break-word">${esc(g.err||"none")}</div>
+    ${Object.keys(g.hostErr||{}).map(k=>`<div class="mono" style="font-size:11px;word-break:break-word;margin-top:4px">${esc(g.hostErr[k])}</div>`).join("")}
+    <div class="lbl">Picture key ${apiKey()?"· saved …"+esc(apiKey().slice(-4)):"· none"}</div>
+    <input id="kkey" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="paste key here">
+    <div style="height:7px"></div>
+    <button class="btn" data-seed="ks" onclick="saveKey()">Save key</button>
+    <div style="height:7px"></div>
+    <button class="btn" data-seed="kt" onclick="testKey()">Test key</button>
+    <div id="ktest" class="mono" style="font-size:12px;word-break:break-word;margin-top:8px"></div>
     <div class="lbl">Missing portraits</div><div class="mono">${missing}</div>
     <div style="height:10px"></div>
-    <button class="btn" data-seed="k1" onclick="ensureAmbientArt();closeSheet()">Paint anything missing now</button>
+    <button class="btn" data-seed="k1" onclick="ensureAmbientArt(true);closeSheet()">Paint anything missing now</button>
     <div style="height:7px"></div>
     <button class="btn" data-seed="k2" onclick="S.genRoute=null;save();closeSheet()">Forget saved route</button>
     <div class="lbl">Begin an event</div>
@@ -1511,6 +1532,35 @@ function uiSound(){
     <div style="height:14px"></div><button class="btn" data-seed="sb" onclick="closeSheet()">Back</button>`);
 }
 
+function saveKey(){
+  const v=($("#kkey").value||"").trim();
+  if(!v){ $("#ktest").textContent="Nothing pasted."; return; }
+  S.apiKey=v; S.genRoute=null; S.imgModels=null; S.genCool=0; save();
+  $("#ktest").textContent="Saved …"+v.slice(-4)+". Now tap Test key.";
+}
+async function testKey(){
+  const out=$("#ktest"), k=apiKey();
+  if(!k){ out.textContent="No key saved."; return; }
+  out.textContent="Testing…";
+  const lines=[];
+  try{
+    const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key="+encodeURIComponent(k));
+    const j=await r.json().catch(()=>({}));
+    if(r.ok){
+      const names=(j.models||[]).filter(m=>/image/i.test(m.name)&&(m.supportedGenerationMethods||[]).indexOf("generateContent")>=0).map(m=>m.name.replace("models/",""));
+      S.imgModels=names; save();
+      lines.push("AI Studio: key accepted. Picture models: "+(names.join(", ")||"none listed"));
+    }else lines.push("AI Studio: "+r.status+" "+String((j.error&&j.error.message)||"").slice(0,160));
+  }catch(e){ lines.push("AI Studio: network"); }
+  try{
+    const r=await fetch("https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash:generateContent?key="+encodeURIComponent(k),
+      {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{role:"user",parts:[{text:"Say ok"}]}]})});
+    const j=await r.json().catch(()=>({}));
+    lines.push("Vertex: "+(r.ok?"key accepted":r.status+" "+String((j.error&&j.error.message)||"").slice(0,160)));
+  }catch(e){ lines.push("Vertex: network"); }
+  if($("#ktest")) out.innerHTML=lines.map(esc).join("<br><br>");
+}
+
 /* ══ MIGRATION ═════════════════════════════════════════════ */
 async function migrateArt(){
   for(const p of S.plantimals){
@@ -1590,7 +1640,7 @@ function uiPlant(id){
   if(!grown&&int(S.stuff)>=C.STUFF.growth) acts+=`<button class="btn" data-seed="cx${p.id}" style="margin:7px 0"
     onclick="coax('${p.id}')">Coax · <span class="ac">1 STUFF</span></button>`;
   const has=!!ART["p:"+p.id];
-  if(!has) ensureAmbientArt();
+  if(!has) ensureAmbientArt(true);
   openSheet(`<h2>${esc(p.name)}</h2>
     ${eggMarkup("card"+p.id,["card"])}
     ${has?artBig(p):`<div class="row" style="align-items:center">${artThumb(p)}
@@ -1972,7 +2022,7 @@ function uiBull(){
       <button class="btn" data-seed="xs" onclick="extraSomething()">Something extra · <span class="ac">1 STUFF</span></button>`:""}
     ${canFeed?`<div style="height:10px"></div>
       <button class="btn" data-seed="feed" onclick="feedBull()">Feed it</button>`:""}`);
-  if(!art) ensureAmbientArt();
+  if(!art) ensureAmbientArt(true);
 }
 let parentA=null,parentB=null;
 function pickParent(el,which){
@@ -2549,8 +2599,8 @@ function boot(){
   const _find=findEgg; findEgg=function(n){ if((S.foundEggs||[]).indexOf(n)<0) sfx("found"); return _find(n); };
   const _gm=gmorph; gmorph=function(p){ sfx("gmorph"); return _gm(p); };
   const _fc=finishCare; finishCare=function(id,a,sc){ sfx(a); return _fc(id,a,sc); };
-  const _se=startEvent; startEvent=function(n,q){ const r=_se(n,q); ensureAmbientArt(); return r; };
-  const _fb=feedBull; feedBull=function(){ const r=_fb(); ensureAmbientArt(); return r; };
+  const _se=startEvent; startEvent=function(n,q){ const r=_se(n,q); ensureAmbientArt(true); return r; };
+  const _fb=feedBull; feedBull=function(){ const r=_fb(); ensureAmbientArt(true); return r; };
 })();
 (function(){
   const _ub=uiBull; uiBull=function(){ sfx("buzz"); return _ub(); };
