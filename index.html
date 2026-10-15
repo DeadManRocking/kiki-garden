@@ -789,7 +789,14 @@ function phenoLine(ph){
 const GEMINI_KEY="";
 function apiKey(){ return String((S&&S.apiKey)||GEMINI_KEY||"").trim(); }
 const HOST_NAME=["AI Studio","Vertex"];
-function modelList(){ return Array.from(new Set((S.imgModels||[]).concat(GEN_MODELS))); }
+const MODEL_PREF=["gemini-3.1-flash-image","gemini-3.1-flash-image-preview","gemini-3-pro-image",
+  "gemini-3-pro-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-lite-image"];
+function modelList(){
+  const d=(S.imgModels||[]).slice();
+  if(!d.length) return GEN_MODELS;
+  const rank=m=>{ const i=MODEL_PREF.indexOf(m); return i<0?99:i; };
+  return d.sort((a,b)=>rank(a)-rank(b));
+}
 const GEN_MODELS=["gemini-3.1-flash-image-preview","gemini-3-pro-image-preview","gemini-2.5-flash-image","gemini-2.0-flash-preview-image-generation"];
 /* Optional paid fallback (OpenAI). Leave "" to disable. Key is used only if every Gemini route fails. */
 const OPENAI_KEY="";
@@ -984,16 +991,36 @@ const ArtDB={db:null,
 const nap=ms=>new Promise(r=>setTimeout(r,ms));
 function genRoutes(){
   const all=[];
-  GEN_HOSTS.forEach((h,hi)=>modelList().forEach(m=>all.push({hi:hi,m:m})));
+  GEN_HOSTS.forEach((h,hi)=>{ if(!(S.hostOff||{})[hi]) modelList().forEach(m=>all.push({hi:hi,m:m})); });
   const s=S.genRoute;
   if(s) all.sort((a,b)=>((b.hi===s.hi&&b.m===s.m)?1:0)-((a.hi===s.hi&&a.m===s.m)?1:0));
   return all;
+}
+async function genFetch(rt,body){
+  const base=GEN_HOSTS[rt.hi](rt.m).split("?")[0];
+  const forms=((S.keyHdr||{})[rt.hi])?["h","q"]:["q","h"];
+  let out=null;
+  for(const f of forms){
+    let res,j={};
+    try{
+      S.genStats.calls++;
+      res=await fetch(f==="q"?GEN_HOSTS[rt.hi](rt.m):base,{method:"POST",
+        headers:f==="h"?{"Content-Type":"application/json","x-goog-api-key":apiKey()}:{"Content-Type":"application/json"},
+        body:JSON.stringify(body)});
+      j=await res.json().catch(()=>({}));
+    }catch(e){ if(!out) out={err:e}; continue; }
+    out={res:res,j:j,form:f};
+    if(res.ok||!(res.status===401||res.status===403)) break;
+  }
+  if(out&&out.err) throw out.err;
+  if(out&&out.res&&out.res.ok){ S.keyHdr=S.keyHdr||{}; S.keyHdr[rt.hi]=(out.form==="h"); }
+  return out;
 }
 async function genImage(prompt,aspect){
   S.genStats=S.genStats||{calls:0,ok:0,err:""};
   if(!apiKey()){ S.genStats.err="No key saved. Keeper panel > Picture key."; save(); throw new Error("no key"); }
   S.genStats.hostErr=S.genStats.hostErr||{};
-  let lastErr="";
+  let lastErr="", best="";
   const bad=new Set();
   for(let round=0;round<2;round++){
     for(const rt of genRoutes()){
@@ -1004,12 +1031,8 @@ async function genImage(prompt,aspect){
           generationConfig:{responseModalities:["TEXT","IMAGE"]}};
         if(useAspect) body.generationConfig.imageConfig={aspectRatio:aspect};
         let res,j={};
-        try{
-          S.genStats.calls++;
-          res=await fetch(GEN_HOSTS[rt.hi](rt.m),{method:"POST",
-            headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
-          j=await res.json().catch(()=>({}));
-        }catch(e){ lastErr="network"; netFail=true; break; }
+        try{ const r=await genFetch(rt,body); res=r.res; j=r.j; }
+        catch(e){ lastErr="network"; netFail=true; break; }
         if(res.ok){
           const parts=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts)||[];
           const im=parts.find(x=>x.inlineData||x.inline_data);
@@ -1018,21 +1041,25 @@ async function genImage(prompt,aspect){
             S.genRoute=rt; S.genStats.ok++; S.genStats.err=""; S.genStats.hostErr={}; save();
             return "data:"+(d.mimeType||d.mime_type||"image/png")+";base64,"+d.data;
           }
-          lastErr=HOST_NAME[rt.hi]+": no image ("+((j.candidates&&j.candidates[0]&&j.candidates[0].finishReason)||"?")+")";
+          lastErr=HOST_NAME[rt.hi]+" "+rt.m+": no image ("+((j.candidates&&j.candidates[0]&&j.candidates[0].finishReason)||(j.promptFeedback&&j.promptFeedback.blockReason)||"?")+")";
+          if(!best) best=lastErr;
           S.genStats.hostErr[rt.hi]=lastErr;
           break;
         }
         const msg=String((j.error&&j.error.message)||"");
-        lastErr=HOST_NAME[rt.hi]+" "+res.status+" "+rt.m+": "+msg.slice(0,140);
-        S.genStats.hostErr[rt.hi]=lastErr;
+        lastErr=HOST_NAME[rt.hi]+" "+res.status+" "+rt.m+": "+msg.slice(0,220);
+        const real=res.status!==404&&!/not found/i.test(msg);
+        if(real&&!best) best=lastErr;
+        if(real||!S.genStats.hostErr[rt.hi]) S.genStats.hostErr[rt.hi]=lastErr;
+        if(/has not been used in project|is disabled|SERVICE_DISABLED/i.test(msg)){ S.hostOff=S.hostOff||{}; S.hostOff[rt.hi]=true; bad.add(rt.hi); break; }
         if(res.status===401||res.status===403||/api key (not valid|expired)|leaked/i.test(msg)){ bad.add(rt.hi); break; }
         if(res.status===400&&useAspect&&/aspect|image_?config/i.test(msg)) continue;
         break;
       }
       if(netFail) break;
     }
-    S.genStats.err=lastErr; save();
-    if(bad.size>=GEN_HOSTS.length) break;
+    S.genStats.err=best||lastErr; save();
+    if(bad.size>=GEN_HOSTS.length||genRoutes().every(r=>bad.has(r.hi))) break;
     await nap(4000*(round+1));
   }
   if(OPENAI_KEY){
@@ -1048,7 +1075,7 @@ async function genImage(prompt,aspect){
     }catch(e){ lastErr="OpenAI network"; }
     S.genStats.err=lastErr; save();
   }
-  throw new Error(lastErr||"failed");
+  throw new Error(best||lastErr||"failed");
 }
 function loadImg(src){ return new Promise((ok,bad)=>{ const im=new Image(); im.onload=()=>ok(im); im.onerror=()=>bad(new Error("decode")); im.src=src; }); }
 async function shrink(src,w){
@@ -1098,12 +1125,12 @@ async function paintPlantimal(p){
 function auto(key,fn){ const j=enqueue(key,fn); if(j) j.catch(()=>{ S.genCool=Date.now()+10*60000; save(); }); return j; }
 function ensureAmbientArt(force){
   if(!force&&Date.now()<int(S.genCool)) return;
+  for(const p of S.plantimals) if(!ART["p:"+p.id])
+    auto("p:"+p.id,async()=>{ await paintPlantimal(p); render(); });
   if(!ART.bull) auto("bull",async()=>{ await ArtDB.put("bull",await shrink(await genImage(bullPrompt("bull"),"4:3"),720)); render(); });
   if(S.pastyUnlocked&&!ART.bull_pasty) auto("bull_pasty",async()=>{ await ArtDB.put("bull_pasty",await shrink(await genImage(bullPrompt("bull_pasty"),"4:3"),720)); render(); });
   const e=activeEvent();
   if(e&&!ART["ev:"+e.name]) auto("ev:"+e.name,async()=>{ await ArtDB.put("ev:"+e.name,await shrink(await genImage(eventPrompt(e.name),"21:9"),900)); render(); });
-  for(const p of S.plantimals) if(!ART["p:"+p.id])
-    auto("p:"+p.id,async()=>{ await paintPlantimal(p); render(); });
 }
 
 /* ══ WAITING, EGGS, HATCHING ═══════════════════════════════ */
@@ -1535,29 +1562,54 @@ function uiSound(){
 function saveKey(){
   const v=($("#kkey").value||"").trim();
   if(!v){ $("#ktest").textContent="Nothing pasted."; return; }
-  S.apiKey=v; S.genRoute=null; S.imgModels=null; S.genCool=0; save();
+  S.apiKey=v; S.genRoute=null; S.imgModels=null; S.genCool=0; S.hostOff={}; S.keyHdr={};
+  S.genStats=S.genStats||{calls:0,ok:0,err:""}; S.genStats.err=""; S.genStats.hostErr={}; save();
   $("#ktest").textContent="Saved …"+v.slice(-4)+". Now tap Test key.";
 }
 async function testKey(){
   const out=$("#ktest"), k=apiKey();
   if(!k){ out.textContent="No key saved."; return; }
   out.textContent="Testing…";
+  async function tryForms(url,opts){
+    let first=null;
+    for(const f of ["q","h"]){
+      try{
+        const o=Object.assign({},opts||{});
+        const u=f==="q"?url+(url.indexOf("?")>=0?"&":"?")+"key="+encodeURIComponent(k):url;
+        if(f==="h") o.headers=Object.assign({},o.headers,{"x-goog-api-key":k});
+        const r=await fetch(u,o), j=await r.json().catch(()=>({}));
+        if(r.ok) return {r:r,j:j,form:f};
+        if(!first) first={r:r,j:j,form:f};
+        if(!(r.status===401||r.status===403)) return first;
+      }catch(e){ if(!first) first={net:true}; }
+    }
+    return first;
+  }
+  const how=x=>x.form==="h"?" (works as a header)":"";
   const lines=[];
-  try{
-    const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key="+encodeURIComponent(k));
-    const j=await r.json().catch(()=>({}));
-    if(r.ok){
-      const names=(j.models||[]).filter(m=>/image/i.test(m.name)&&(m.supportedGenerationMethods||[]).indexOf("generateContent")>=0).map(m=>m.name.replace("models/",""));
-      S.imgModels=names; save();
-      lines.push("AI Studio: key accepted. Picture models: "+(names.join(", ")||"none listed"));
-    }else lines.push("AI Studio: "+r.status+" "+String((j.error&&j.error.message)||"").slice(0,160));
-  }catch(e){ lines.push("AI Studio: network"); }
-  try{
-    const r=await fetch("https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash:generateContent?key="+encodeURIComponent(k),
-      {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{role:"user",parts:[{text:"Say ok"}]}]})});
-    const j=await r.json().catch(()=>({}));
-    lines.push("Vertex: "+(r.ok?"key accepted":r.status+" "+String((j.error&&j.error.message)||"").slice(0,160)));
-  }catch(e){ lines.push("Vertex: network"); }
+  const a=await tryForms("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200");
+  if(!a||a.net) lines.push("AI Studio: network");
+  else if(a.r.ok){
+    const names=(a.j.models||[]).filter(m=>/image/i.test(m.name)&&(m.supportedGenerationMethods||[]).indexOf("generateContent")>=0).map(m=>m.name.replace("models/",""));
+    S.imgModels=names; S.keyHdr=S.keyHdr||{}; S.keyHdr[0]=(a.form==="h"); save();
+    lines.push("AI Studio: key accepted"+how(a)+". Picture models: "+(names.join(", ")||"none listed"));
+  }else lines.push("AI Studio: "+a.r.status+" "+String((a.j.error&&a.j.error.message)||"").slice(0,160));
+  const v=await tryForms("https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash:generateContent",
+    {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{role:"user",parts:[{text:"Say ok"}]}]})});
+  if(!v||v.net) lines.push("Vertex: network");
+  else if(v.r.ok){ S.keyHdr=S.keyHdr||{}; S.keyHdr[1]=(v.form==="h"); save(); lines.push("Vertex: key accepted"+how(v)); }
+  else lines.push("Vertex: "+v.r.status+" "+String((v.j.error&&v.j.error.message)||"").slice(0,160));
+  const pm=modelList()[0];
+  if(a&&a.r&&a.r.ok&&pm){
+    try{
+      const r=await genFetch({hi:0,m:pm},{contents:[{role:"user",parts:[{text:"A small watercolor painting of a red apple on a table."}]}],
+        generationConfig:{responseModalities:["TEXT","IMAGE"]}});
+      const parts=(r.j&&r.j.candidates&&r.j.candidates[0]&&r.j.candidates[0].content&&r.j.candidates[0].content.parts)||[];
+      if(r.res.ok&&parts.some(x=>x.inlineData||x.inline_data)) lines.push("Picture test ("+pm+"): WORKS. Pictures can be made.");
+      else if(r.res.ok) lines.push("Picture test ("+pm+"): answered without a picture ("+((r.j.candidates&&r.j.candidates[0]&&r.j.candidates[0].finishReason)||"?")+")");
+      else lines.push("Picture test ("+pm+"): "+r.res.status+" "+String((r.j.error&&r.j.error.message)||"").slice(0,300));
+    }catch(e){ lines.push("Picture test: network"); }
+  }
   if($("#ktest")) out.innerHTML=lines.map(esc).join("<br><br>");
 }
 
