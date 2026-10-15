@@ -1068,10 +1068,19 @@ function enqueue(key,fn){
   genChain=run.catch(()=>{});
   return run;
 }
+function reportErr(stage,e){
+  S.genStats=S.genStats||{calls:0,ok:0,err:""};
+  S.genStats.err=stage+": "+String((e&&e.message)||e);
+  save();
+}
 async function paintPlantimal(p){
-  if(!p.artEgg){ p.artEgg=chooseArtEgg(p); save(); }
-  const raw=await genImage(artPrompt(p),"21:9");
-  const art=await cropTriptych(raw);
+  let prompt;
+  try{ if(!p.artEgg){ p.artEgg=chooseArtEgg(p); save(); } prompt=artPrompt(p); }
+  catch(e){ reportErr("prompt",e); throw e; }
+  const raw=await genImage(prompt,"21:9");
+  let art;
+  try{ art=await cropTriptych(raw); }
+  catch(e){ reportErr("crop",e); throw e; }
   await ArtDB.put("p:"+p.id,art);
   return art;
 }
@@ -1163,7 +1172,7 @@ function waitSheet(title,visual){
     setTimeout(()=>{ w.textContent=nextWait(); w.style.opacity=1; },600); },6500);
 }
 function notYet(extra){
-  const why=extra||(S.genStats&&S.genStats.err?`<div class="note" style="text-align:center;font-size:12px;word-break:break-word;margin-top:10px">${esc(S.genStats.err)}</div>`:"");
+  const why=extra||`<div class="note" style="text-align:center;font-size:12px;word-break:break-word;margin-top:10px">${esc((S.genStats&&S.genStats.err)||"(no error recorded)")}</div>`;
   openSheet(`<h2>Not yet</h2><div style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:16px;line-height:1.5;text-align:center">${nextWait()}</div>
     ${why}
     <div style="height:14px"></div><button class="btn" data-seed="ny" onclick="closeSheet();render()">Back</button>`);
@@ -1197,7 +1206,7 @@ function birthArt(p){
   const job=enqueue("p:"+p.id,()=>paintPlantimal(p));
   if(!job){ clearInterval(tick); closeSheet(); render(); return; }
   job.then(()=>{ clearInterval(tick); sfx("hatch"); closeSheet(); render(); uiPlant(p.id); })
-     .catch(()=>{ clearInterval(tick); render(); notYet("Its portrait will come to it later."); });
+     .catch(err=>{ clearInterval(tick); reportErr("birth",err); render(); notYet("Its portrait will come to it later."); });
 }
 
 /* ══ SOUND (all generated live, no files) ══════════════════ */
