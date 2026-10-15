@@ -1016,7 +1016,9 @@ async function genFetch(rt,body){
   if(out&&out.res&&out.res.ok){ S.keyHdr=S.keyHdr||{}; S.keyHdr[rt.hi]=(out.form==="h"); }
   return out;
 }
-async function genImage(prompt,aspect){
+async function genImage(prompt,aspect,seed){
+  if(cfUrl()) return cfImage(prompt,seed||Math.floor(Math.random()*2147483646)+1);
+  if(S.openaiKey) return openaiImage(prompt);
   S.genStats=S.genStats||{calls:0,ok:0,err:""};
   if(!apiKey()){ S.genStats.err="No key saved. Keeper panel > Picture key."; save(); throw new Error("no key"); }
   S.genStats.hostErr=S.genStats.hostErr||{};
@@ -1115,6 +1117,15 @@ async function paintPlantimal(p){
   let prompt;
   try{ if(!p.artEgg){ p.artEgg=chooseArtEgg(p); save(); } prompt=artPrompt(p); }
   catch(e){ reportErr("prompt",e); throw e; }
+  if(cfUrl()){
+    const seed=Math.floor(seeded("seed"+p.id)()*2147483646)+1, art={};
+    for(const k of ["baby","teen","adult"]){
+      const raw=await cfImage(stagePrompt(p,k),seed);
+      try{ art[k]=await shrink(raw,512); }catch(e){ reportErr("shrink",e); throw e; }
+    }
+    await ArtDB.put("p:"+p.id,art);
+    return art;
+  }
   const raw=await genImage(prompt,"21:9");
   let art;
   try{ art=await cropTriptych(raw); }
@@ -1127,8 +1138,8 @@ function ensureAmbientArt(force){
   if(!force&&Date.now()<int(S.genCool)) return;
   for(const p of S.plantimals) if(!ART["p:"+p.id])
     auto("p:"+p.id,async()=>{ await paintPlantimal(p); render(); });
-  if(!ART.bull) auto("bull",async()=>{ await ArtDB.put("bull",await shrink(await genImage(bullPrompt("bull"),"4:3"),720)); render(); });
-  if(S.pastyUnlocked&&!ART.bull_pasty) auto("bull_pasty",async()=>{ await ArtDB.put("bull_pasty",await shrink(await genImage(bullPrompt("bull_pasty"),"4:3"),720)); render(); });
+  if(!ART.bull) auto("bull",async()=>{ await ArtDB.put("bull",await shrink(await genImage(bullPrompt("bull"),"4:3",777),720)); render(); });
+  if(S.pastyUnlocked&&!ART.bull_pasty) auto("bull_pasty",async()=>{ await ArtDB.put("bull_pasty",await shrink(await genImage(bullPrompt("bull_pasty"),"4:3",777),720)); render(); });
   const e=activeEvent();
   if(e&&!ART["ev:"+e.name]) auto("ev:"+e.name,async()=>{ await ArtDB.put("ev:"+e.name,await shrink(await genImage(eventPrompt(e.name),"21:9"),900)); render(); });
 }
@@ -1361,6 +1372,18 @@ async function keeperOpen(){
     <div class="lbl">Route</div><div class="mono" style="font-size:12px">${S.genRoute?esc(S.genRoute.m)+" @ "+(S.genRoute.hi?"Vertex":"AI Studio"):"none yet"}</div>
     <div class="lbl">Last problem</div><div class="mono" style="font-size:12px;word-break:break-word">${esc(g.err||"none")}</div>
     ${Object.keys(g.hostErr||{}).map(k=>`<div class="mono" style="font-size:11px;word-break:break-word;margin-top:4px">${esc(g.hostErr[k])}</div>`).join("")}
+    <div class="lbl">OpenAI key ${S.openaiKey?"· saved …"+esc(S.openaiKey.slice(-4)):"· none"}</div>
+    <input id="koai" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-…">
+    <div style="height:7px"></div>
+    <button class="btn" data-seed="kos" onclick="saveOai()">Save OpenAI key</button>
+    <div style="height:7px"></div>
+    <button class="btn" data-seed="kot" onclick="testOai()">Test OpenAI</button>
+    <div class="lbl">Cloudflare address ${cfUrl()?"· saved":"· none"}</div>
+    <input id="kcf" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://….workers.dev" value="${esc(cfUrl())}">
+    <div style="height:7px"></div>
+    <button class="btn" data-seed="kcs" onclick="saveCf()">Save address</button>
+    <div style="height:7px"></div>
+    <button class="btn" data-seed="kct" onclick="testCf()">Test pictures</button>
     <div class="lbl">Picture key ${apiKey()?"· saved …"+esc(apiKey().slice(-4)):"· none"}</div>
     <input id="kkey" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="paste key here">
     <div style="height:7px"></div>
@@ -1611,6 +1634,106 @@ async function testKey(){
     }catch(e){ lines.push("Picture test: network"); }
   }
   if($("#ktest")) out.innerHTML=lines.map(esc).join("<br><br>");
+}
+
+
+/* ══ OPENAI PAINTER ════════════════════════════════════════ */
+const OAI_MODEL="gpt-image-2.5-sunburst";
+async function openaiImage(prompt){
+  S.genStats=S.genStats||{calls:0,ok:0,err:""};
+  S.genStats.calls++;
+  let r, j={};
+  try{
+    r=await fetch("https://api.openai.com/v1/images/generations",{method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+S.openaiKey},
+      body:JSON.stringify({model:OAI_MODEL,prompt:String(prompt).slice(0,32000),size:"1536x1024",quality:"medium",n:1})});
+    j=await r.json().catch(()=>({}));
+  }catch(e){
+    const m="OpenAI: the browser could not reach it ("+(e&&e.message||e)+")";
+    S.genStats.err=m; save(); throw new Error(m);
+  }
+  const b=j.data&&j.data[0]&&j.data[0].b64_json;
+  if(r.ok&&b){ S.genStats.ok++; S.genStats.err=""; save(); return "data:image/png;base64,"+b; }
+  const m="OpenAI "+r.status+" "+OAI_MODEL+": "+String((j.error&&j.error.message)||"no image").slice(0,240);
+  S.genStats.err=m; save(); throw new Error(m);
+}
+function saveOai(){
+  const v=($("#koai").value||"").trim();
+  if(!/^sk-/.test(v)){ $("#ktest").textContent="An OpenAI key starts with sk-. Paste the whole key."; return; }
+  S.openaiKey=v; S.genCool=0; save();
+  $("#ktest").textContent="OpenAI key saved. Now tap Test OpenAI.";
+}
+async function testOai(){
+  const out=$("#ktest");
+  if(!S.openaiKey){ out.textContent="No OpenAI key saved."; return; }
+  out.textContent="Painting a test picture… (about 30 to 60 seconds)";
+  try{
+    await openaiImage("A small watercolor painting of a red apple on a table.");
+    out.textContent="OpenAI: WORKS. Pictures can be made. Now tap Paint anything missing now.";
+  }catch(e){ out.textContent=String(e.message||e); }
+}
+
+/* ══ CLOUDFLARE PAINTER (free, no card) ════════════════════ */
+function cfUrl(){ return String(S.cfUrl||"").trim(); }
+async function cfImage(prompt,seed){
+  S.genStats=S.genStats||{calls:0,ok:0,err:""};
+  let last="";
+  for(let i=0;i<2;i++){
+    try{
+      S.genStats.calls++;
+      const r=await fetch(cfUrl(),{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({prompt:String(prompt).slice(0,2000),seed:seed,steps:8})});
+      const j=await r.json().catch(()=>({}));
+      if(r.ok&&j.image){ S.genStats.ok++; S.genStats.err=""; S.cfSeeded=!!j.seeded; save();
+        return "data:image/jpeg;base64,"+j.image; }
+      last="Cloudflare "+r.status+": "+String(j.error||"no image").slice(0,220);
+      if(/neuron|quota|daily|limit|binding/i.test(last)){ S.genStats.err=last; save(); break; }
+    }catch(e){ last="Cloudflare: network (check the address)"; }
+    S.genStats.err=last; save();
+    if(i===0) await nap(3000);
+  }
+  throw new Error(last||"Cloudflare failed");
+}
+const MEDIUM_F="Antique ink-and-watercolor illustration on stained, foxed paper, loose wet washes, pigment blooms, faint pencil underdrawing, soft bleeding edges, faded desaturated pigments, dark fairy-tale art in the manner of Arthur Rackham, John Bauer and Odilon Redon.";
+const MOOD_F="Off-kilter, tilted composition. Disquieting and dizzying like a fever dream, yet heartbreakingly lovable. Not a cartoon, not 3D, no text.";
+const STAGE_F={
+  baby:"A tiny newborn plant-animal creature, soft and pitiful, oversized swollen head, enormous wet eyes, its face almost a human infant's but not quite. Still rooted: its lower body a knot of pale roots sunk in moss. The last jaundiced light of dusk.",
+  teen:"A gangly adolescent plant-animal creature mid-metamorphosis, limbs sprouting at uneven lengths, its soft baby shape splitting open to reveal something stranger. Half-uprooted, root-feet tearing loose with clods of earth. Cold murky blue twilight, fog rising.",
+  adult:"A fully grown plant-animal creature, tall and unsettlingly graceful, beautiful yet faintly predatory, ancient and still, its expression almost but not quite kind. Its feet dissolve into roots, moss and fog. A sickly pale moon, deep black shadows."
+};
+function stagePrompt(p,k){
+  const ph=p.pheno, L=artLook(p), n=int(ph.count);
+  const cols=colorsOf(p), marks=String(ph.marking).split("-");
+  const colorTxt=cols.length>1?`two colors mottled together, ${COLOR_DESC[cols[0]]}, and ${COLOR_DESC[cols[1]]}`
+    :`${COLOR_DESC[cols[0]]}, mottled, never flat`;
+  const appTxt=n===0?"no limbs or appendages, a bare trunk-like body"
+    :`exactly ${NUMW[n]} ${APP_NOUN[ph.appendage][n===1?0:1]}`;
+  const egg=p.artEgg||{n:1,z:0};
+  let t=[MEDIUM_F,STAGE_F[k],
+    `Half plant, half animal: ${L.p1}, ${L.p2}, ${appTxt}. Coloring: ${colorTxt}. Markings: ${marks.map(m=>MARK_DESC[m]).join(" with ")}. Covered in ${SURF_DESC[ph.surface]}. A vivid spot of ${L.accent} on ${L.spot}. It has ${L.eyes}; subtly wrong: ${L.wrong}.`,
+    BEH_DESC[ph.behavior], p.mutation?MUT_DESC[p.mutation]:"",
+    `Setting: ${L.setting}, ${L.scale}.`,
+    `In the ${EGG_ZONES[egg.z][0]}, small but recognizable: ${PAINT[egg.n]}.`,
+    MOOD_F].filter(Boolean).join(" ");
+  if(t.length>2000) t=t.replace(`, ${L.scale}.`,".");
+  if(t.length>2000) t=t.replace(" "+MOOD_F,"");
+  return t.slice(0,2000);
+}
+function saveCf(){
+  const v=($("#kcf").value||"").trim();
+  if(!/^https:\/\//.test(v)){ $("#ktest").textContent="Paste the full address, starting with https://"; return; }
+  S.cfUrl=v; S.genCool=0; S.genStats=S.genStats||{calls:0,ok:0,err:""}; S.genStats.err=""; save();
+  $("#ktest").textContent="Saved. Now tap Test pictures.";
+}
+async function testCf(){
+  const out=$("#ktest");
+  if(!cfUrl()){ out.textContent="No Cloudflare address saved."; return; }
+  out.textContent="Painting a test picture… (up to 30 seconds)";
+  try{
+    await cfImage("A small watercolor painting of a red apple on a table.",42);
+    out.textContent="Cloudflare: WORKS. Pictures can be made. Same-face growing: "+(S.cfSeeded?"yes":"approximate")+
+      ". Now tap Paint anything missing now.";
+  }catch(e){ out.textContent=String(e.message||e); }
 }
 
 /* ══ MIGRATION ═════════════════════════════════════════════ */
