@@ -1395,6 +1395,12 @@ async function keeperOpen(){
     <div style="height:10px"></div>
     <button class="btn" data-seed="k1" onclick="ensureAmbientArt(true);closeSheet()">Paint anything missing now</button>
     <div style="height:7px"></div>
+    <button class="btn" data-seed="kt3" onclick="makeTestCreatures(3)">Make 3 test creatures (free)</button>
+    <div style="height:7px"></div>
+    <button class="btn" data-seed="kadv" onclick="advanceTests()">Move test creatures on one stage</button>
+    <div style="height:7px"></div>
+    <button class="btn" data-seed="kq" onclick="toggleQuality()">${qualityLabel()}</button>
+    <div style="height:7px"></div>
     <button class="btn" data-seed="k2" onclick="S.genRoute=null;save();closeSheet()">Forget saved route</button>
     <div class="lbl">Begin an event</div>
     ${Object.keys(EVENTS).map((n,i)=>`<button class="btn" data-seed="ke${i}" style="margin:5px 0"
@@ -1646,7 +1652,7 @@ async function openaiImage(prompt){
   try{
     r=await fetch("https://api.openai.com/v1/images/generations",{method:"POST",
       headers:{"Content-Type":"application/json","Authorization":"Bearer "+S.openaiKey},
-      body:JSON.stringify({model:OAI_MODEL,prompt:String(prompt).slice(0,32000),size:"1536x1024",quality:"medium",n:1})});
+      body:JSON.stringify({model:OAI_MODEL,prompt:String(prompt).slice(0,32000),size:"1536x1024",quality:(S.imgQuality==="high"?"high":"medium"),n:1})});
     j=await r.json().catch(()=>({}));
   }catch(e){
     const m="OpenAI: the browser could not reach it ("+(e&&e.message||e)+")";
@@ -1656,6 +1662,42 @@ async function openaiImage(prompt){
   if(r.ok&&b){ S.genStats.ok++; S.genStats.err=""; save(); return "data:image/png;base64,"+b; }
   const m="OpenAI "+r.status+" "+OAI_MODEL+": "+String((j.error&&j.error.message)||"no image").slice(0,240);
   S.genStats.err=m; save(); throw new Error(m);
+}
+function qualityLabel(){ return "Picture quality: "+(S.imgQuality==="high"?"high (about 4 times the cost)":"medium"); }
+function toggleQuality(){
+  S.imgQuality=(S.imgQuality==="high")?"medium":"high"; save();
+  const b=$('[data-seed="kq"]'); if(b) b.textContent=qualityLabel();
+}
+function makeTestCreatures(n){
+  const left=capacity()-occupied();
+  if(left<=0){
+    openSheet(`<h2>Full</h2><div class="note">No room. Make room first.</div><div style="height:12px"></div>
+      <button class="btn" data-seed="ftc" onclick="closeSheet()">Back</button>`);
+    return;
+  }
+  const made=[];
+  for(let i=0;i<Math.min(n,left);i++){
+    const g=randomGeno();
+    const p={id:uid(),name:"Test "+(S.plantimals.length+1),geno:g,pheno:resolveDominance(g),
+      mutation:null,generation:0,stage:0,used:[],mood:C.MOOD.start,quirks:[],
+      hatched:Date.now(),lastCare:null,decayApplied:0,stage2At:null};
+    S.plantimals.push(p); made.push(p);
+  }
+  S.firstPlantimalMade=true; save(); closeSheet(); render();
+  made.forEach(p=>auto("p:"+p.id,async()=>{ await paintPlantimal(p); render(); }));
+}
+function advanceTests(){
+  let n=0;
+  S.plantimals.forEach(p=>{
+    if(/^Test /.test(p.name)&&int(p.stage)<2){
+      p.stage=int(p.stage)+1; p.used=[];
+      if(p.stage===2) p.stage2At=Date.now();
+      n++;
+    }
+  });
+  save(); closeSheet(); render();
+  openSheet(`<h2>Stages moved</h2><div class="note">${n} test creature${n===1?"":"s"} moved on. Open one to see it.</div>
+    <div style="height:12px"></div><button class="btn" data-seed="adv" onclick="closeSheet();render()">Back</button>`);
 }
 function saveOai(){
   const v=($("#koai").value||"").trim();
