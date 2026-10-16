@@ -179,10 +179,20 @@ input{background:rgba(255,248,228,.55) !important;border:none !important;border-
 .card,.btn{position:relative;}
 .card::after,.btn::after,#sheet::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:var(--burn) no-repeat 0 0/100% 100%;mix-blend-mode:multiply;}
-html.painted .card,html.painted #sheet{background:none !important;box-shadow:none !important;clip-path:none !important;
-  border:24px solid transparent !important;border-image:var(--paperimg) 8% fill / 24px / 0 stretch !important;}
-html.painted .btn{background:none !important;box-shadow:none !important;clip-path:none !important;
-  border:11px solid transparent !important;border-image:var(--paperimg) 8% fill / 11px / 0 stretch !important;}
+html.painted{background:#14100c !important;}
+html.painted body{background:linear-gradient(rgba(12,9,6,.30),rgba(12,9,6,.62)),var(--bgimg,none) center top/cover fixed,#14100c !important;}
+html.painted .card,html.painted #sheet{background:linear-gradient(rgba(255,250,236,.10),rgba(120,80,40,.10)),var(--paperimg) center/cover !important;
+  clip-path:none !important;border:1px solid rgba(58,36,16,.55) !important;border-radius:3px !important;
+  box-shadow:0 1px 0 rgba(255,246,222,.35) inset,0 0 38px rgba(120,78,36,.22) inset,0 12px 28px rgba(0,0,0,.55) !important;}
+html.painted .btn{background:rgba(18,13,9,.42) !important;color:#efe2c4 !important;border:1px solid rgba(239,226,196,.55) !important;
+  border-radius:2px !important;box-shadow:0 4px 14px rgba(0,0,0,.35) !important;clip-path:none !important;
+  letter-spacing:.06em !important;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);}
+html.painted .btn .ac{color:#e8a597 !important;}
+html.painted .card .btn,html.painted #sheet .btn{background:rgba(255,249,232,.35) !important;color:#2a1c10 !important;
+  border:1px solid rgba(58,36,16,.55) !important;box-shadow:0 2px 6px rgba(60,36,14,.18) !important;-webkit-backdrop-filter:none;backdrop-filter:none;}
+html.painted .card .btn .ac,html.painted #sheet .btn .ac{color:#8e2b2b !important;}
+html.painted h1{color:#f3e7c9 !important;text-shadow:0 2px 10px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9) !important;}
+html.painted #subtitle{color:#e2d1a7 !important;text-shadow:0 1px 6px rgba(0,0,0,.9) !important;opacity:1 !important;}
 html.painted .card::after,html.painted .btn::after,html.painted #sheet::after{display:none;}
 </style>
 </head>
@@ -315,8 +325,7 @@ function shapeCard(el){
   if(!w||!h) return;
   if(document.documentElement.classList.contains("painted")){
     el.style.clipPath="none"; el.style.removeProperty("--burn");
-    if(!el.dataset.rot){ const r=seeded(id+"rot"); el.dataset.rot=(r()*3.5-1.5).toFixed(2)+"deg"; }
-    el.style.transform=`rotate(${el.dataset.rot})`;
+    el.style.transform="none";
     return;
   }
   const d=deckle(id,w,h);
@@ -1205,9 +1214,10 @@ function ensureAmbientArt(force){
     auto("p:"+p.id,async()=>{ await paintPlantimal(p); render(); });
   if(!ART.bull) auto("bull",async()=>{ await ArtDB.put("bull",await shrink(await genImage(bullPrompt("bull"),"4:3",777),720)); render(); });
   if(S.pastyUnlocked&&!ART.bull_pasty) auto("bull_pasty",async()=>{ await ArtDB.put("bull_pasty",await shrink(await genImage(bullPrompt("bull_pasty"),"4:3",777),720)); render(); });
-  if(!ART["ui:paper"]) auto("ui:paper",async()=>{
-    const raw=await genImage(PAPER_PROMPT,"2:3",null,{background:"transparent",output_format:"png"});
-    await ArtDB.put("ui:paper",await shrinkPng(raw,640)); applyPaper(); render(); });
+  if(!ART["ui:bg"]) auto("ui:bg",async()=>{
+    await ArtDB.put("ui:bg",await shrink(await genImage(BG_PROMPT,"2:3"),1024)); applyPaper(); render(); });
+  if(!ART["ui:paper2"]) auto("ui:paper2",async()=>{
+    await ArtDB.put("ui:paper2",await shrink(await genImage(PAPER_PROMPT,"1:1"),1024)); applyPaper(); render(); });
   for(const e of S.egglingses) if(!ART["egg:"+e.id])
     auto("egg:"+e.id,async()=>{ await ArtDB.put("egg:"+e.id,await shrink(await genImage(eggPrompt(e),"1:1"),256)); render(); });
   for(const [k] of CURRENCIES) if(!ART["cur:"+k])
@@ -1294,7 +1304,8 @@ function eggPic(e,size){
   const a=ART["egg:"+e.id], z=size||120;
   return a?`<img class="breathe" alt="" src="${a}" style="width:${z}px;height:${z}px;object-fit:cover;border-radius:50%;box-shadow:0 0 0 1px rgba(70,40,15,.5),0 4px 10px rgba(40,22,8,.4)">`:eggVisual(e,size);
 }
-const PAPER_PROMPT="A single sheet of antique handmade rag paper, photographed flat from directly above and filling almost the whole frame. Warm cream and parchment tones, visible paper fibers, tea-colored foxing spots, faint water stains, gentle mottling and age. Its edges are deckled and torn irregularly all the way around, and lightly singed: thin dark charred rims with brown scorching fading inward, a few small burned notches and curled flakes. Nothing drawn or written on it. The area around the sheet is completely transparent. Realistic, finely detailed, museum-archive quality.";
+const PAPER_PROMPT="Seamless full-frame texture of fine antique handmade rag paper, filling the entire image edge to edge with no edges, borders or shadows. Warm cream and pale parchment, delicate visible fibers, a few faint tea-colored foxing spots, very soft even mottling. Evenly lit, flat, photographed from directly above, high detail, nothing drawn or written.";
+const BG_PROMPT=MEDIUM+" A tall vertical scene of a dark, overgrown secret garden at dusk seen from within: tangled briars, hanging moss, pale mushrooms, a crumbling stone arch far away, drifting fog, a few faint glowing seed-pods. The center is soft, dim and quiet with little detail, the richest detail at the edges, a deep vignette. No creatures, no people, no text.";
 async function shrinkPng(src,w){
   const im=await loadImg(src);
   const c=document.createElement("canvas");
@@ -1304,10 +1315,11 @@ async function shrinkPng(src,w){
 }
 function applyPaper(){
   const root=document.documentElement;
-  if(ART["ui:paper"]){ root.style.setProperty("--paperimg",`url("${ART["ui:paper"]}")`); root.classList.add("painted"); }
+  if(ART["ui:paper2"]){ root.style.setProperty("--paperimg",`url("${ART["ui:paper2"]}")`); root.classList.add("painted"); }
   else root.classList.remove("painted");
+  if(ART["ui:bg"]) root.style.setProperty("--bgimg",`url("${ART["ui:bg"]}")`);
 }
-function repaintPaper(){ delete ART["ui:paper"]; applyPaper(); closeSheet(); render(); ensureAmbientArt(true); }
+function repaintPaper(){ delete ART["ui:paper2"]; delete ART["ui:bg"]; applyPaper(); closeSheet(); render(); ensureAmbientArt(true); }
 function stageKey(p){ return ["baby","teen","adult"][int(p.stage)]||"baby"; }
 function artThumb(p){
   const a=ART["p:"+p.id];
