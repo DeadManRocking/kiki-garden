@@ -143,6 +143,47 @@ input.mono{font-family:'IBM Plex Mono',monospace;letter-spacing:.34em;font-size:
 .breathe{animation:breathe 6.5s ease-in-out infinite}
 @keyframes shim{0%,100%{box-shadow:0 0 0 0 rgba(255,240,180,0)}50%{box-shadow:0 0 24px 8px rgba(255,240,180,.6)}}
 .shimmer{animation:shim 1.6s ease-in-out infinite}
+
+:root{
+ --noise:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .30 0 0 0 0 .22 0 0 0 0 .12 0 0 0 .5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+ --fiber:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='f'><feTurbulence type='turbulence' baseFrequency='.01 .3' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 .28 0 0 0 0 .2 0 0 0 0 .1 0 0 0 .16 0'/></filter><rect width='100%25' height='100%25' filter='url(%23f)'/></svg>");
+ --mottle:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420'><filter id='m'><feTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='4' seed='3'/><feColorMatrix values='0 0 0 0 .45 0 0 0 0 .3 0 0 0 0 .14 0 0 0 1.4 -.55'/></filter><rect width='100%25' height='100%25' filter='url(%23m)'/></svg>");
+}
+body{background:
+  radial-gradient(ellipse at 25% 0%,rgba(255,236,190,.18),transparent 55%),
+  radial-gradient(ellipse at 90% 100%,rgba(30,18,8,.55),transparent 60%),
+  var(--mottle),var(--noise),var(--fiber),#4f473c !important;}
+.card,#sheet{background:
+  radial-gradient(circle at 14% 18%,rgba(125,72,28,.22) 0 2px,transparent 4px),
+  radial-gradient(circle at 81% 31%,rgba(125,72,28,.18) 0 3px,transparent 6px),
+  radial-gradient(circle at 63% 86%,rgba(125,72,28,.20) 0 2px,transparent 5px),
+  radial-gradient(ellipse at 72% 12%,rgba(150,95,40,.16),transparent 32%),
+  radial-gradient(ellipse at 20% 78%,rgba(150,95,40,.14),transparent 38%),
+  radial-gradient(ellipse at center,rgba(0,0,0,0) 52%,rgba(105,62,24,.42) 100%),
+  var(--mottle),var(--noise),var(--fiber),
+  linear-gradient(168deg,#f0e4c3 0%,#e6d4a9 55%,#d6bf8e 100%) !important;
+  box-shadow:inset 0 0 34px rgba(92,54,18,.45),inset 0 0 4px rgba(60,32,8,.55) !important;}
+.btn{background:
+  radial-gradient(ellipse at center,rgba(0,0,0,0) 45%,rgba(95,55,20,.38) 100%),
+  var(--noise),linear-gradient(175deg,#e9d9b2,#d3bb88) !important;
+  box-shadow:inset 0 0 14px rgba(85,48,15,.45),inset 0 -2px 0 rgba(60,32,8,.25) !important;
+  color:#2b1f14 !important;letter-spacing:.02em;}
+.btn:active{filter:brightness(.93);}
+h1,h2,.nm{color:#2a1c10 !important;text-shadow:0 1px 0 rgba(255,246,220,.5),0 0 1px rgba(40,22,8,.35);}
+.lbl{color:#6b5236 !important;letter-spacing:.14em;}
+.note,.tr{color:#5a4630 !important;}
+.mono{color:#2e2216 !important;}
+input{background:rgba(255,248,228,.55) !important;border:none !important;border-bottom:1px solid rgba(70,40,15,.45) !important;}
+.art{box-shadow:0 0 0 1px rgba(70,40,15,.5),0 3px 8px rgba(40,22,8,.35);}
+.artbig{box-shadow:0 0 0 1px rgba(70,40,15,.55),0 6px 16px rgba(40,22,8,.4);}
+.card,.btn{position:relative;}
+.card::after,.btn::after,#sheet::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:var(--burn) no-repeat 0 0/100% 100%;mix-blend-mode:multiply;}
+html.painted .card,html.painted #sheet{background:none !important;box-shadow:none !important;clip-path:none !important;
+  border:24px solid transparent !important;border-image:var(--paperimg) 8% fill / 24px / 0 stretch !important;}
+html.painted .btn{background:none !important;box-shadow:none !important;clip-path:none !important;
+  border:11px solid transparent !important;border-image:var(--paperimg) 8% fill / 11px / 0 stretch !important;}
+html.painted .card::after,html.painted .btn::after,html.painted #sheet::after{display:none;}
 </style>
 </head>
 <body>
@@ -272,7 +313,17 @@ function shapeCard(el){
   const id=el.dataset.seed||"c";
   const w=el.offsetWidth, h=el.offsetHeight;
   if(!w||!h) return;
-  el.style.clipPath=`path("${deckle(id,w,h)}")`;
+  if(document.documentElement.classList.contains("painted")){
+    el.style.clipPath="none"; el.style.removeProperty("--burn");
+    if(!el.dataset.rot){ const r=seeded(id+"rot"); el.dataset.rot=(r()*3.5-1.5).toFixed(2)+"deg"; }
+    el.style.transform=`rotate(${el.dataset.rot})`;
+    return;
+  }
+  const d=deckle(id,w,h);
+  el.style.clipPath=`path("${d}")`;
+  const big=!el.classList.contains("btn");
+  const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' viewBox='0 0 ${w} ${h}'><defs><filter id='b' x='-5%' y='-5%' width='110%' height='110%'><feTurbulence type='fractalNoise' baseFrequency='.035' numOctaves='3' seed='${Math.floor(seeded(id+"burn")()*99)}'/><feDisplacementMap in='SourceGraphic' scale='${big?11:6}'/><feGaussianBlur stdDeviation='${big?1.8:1}'/></filter></defs><path d='${d}' fill='none' stroke='%235a3210' stroke-opacity='.5' stroke-width='${big?34:14}' filter='url(%23b)'/><path d='${d}' fill='none' stroke='%231e0f06' stroke-opacity='.92' stroke-width='${big?9:5}' filter='url(%23b)'/></svg>`;
+  el.style.setProperty("--burn",`url("data:image/svg+xml;utf8,${svg.replace(/"/g,"'").replace(/\n/g,"")}")`);
   if(!el.dataset.rot){
     const r=seeded(id+"rot");
     el.dataset.rot=(r()*3.5-1.5).toFixed(2)+"deg";
@@ -451,7 +502,8 @@ function render(){
   for(const [k,label,tint] of CURRENCIES){
     const v=int(S[k]);
     h+=`<div class="cur ${v===0?"dim":""}">
-      <div class="ink ${tint}"><svg viewBox="0 0 24 24">${ICONS[k]}</svg></div>
+      ${ART["cur:"+k]?`<img alt="" src="${ART["cur:"+k]}" style="width:46px;height:46px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 1px rgba(70,40,15,.5),0 2px 5px rgba(40,22,8,.35)">`
+        :`<div class="ink ${tint}"><svg viewBox="0 0 24 24">${ICONS[k]}</svg></div>`}
       <div class="nm">${label}</div><div class="v mono">${v}</div></div>`;
   }
   h+=`</div></div>
@@ -464,7 +516,7 @@ function render(){
     ${bullArt?`<img class="art breathe" alt="" src="${bullArt}" style="width:96px;height:96px;object-fit:cover;border-radius:50%;flex:none"/>`
       :`<div style="width:96px;height:96px;border-radius:50%;border:1px dashed var(--slate);flex:none"></div>`}
     <div><div class="nm">${S.pastyUnlocked?"Bull the Pasty Bee":"Bull the Bee"}</div>
-    <div class="tr">${bullReady()?"Hovering near the Fylth.":"Resting. About "+bullWaitMins()+" minutes."}</div></div></div>`;
+    <div class="tr">${!bullReady()?"Resting. About "+bullWaitMins()+" minutes.":S.plantimals.filter(x=>x.stage>=2).length>=2?"<b>Ready to breed.</b> Tap to pair two grown ones.":"Hovering near the Fylth."}</div></div></div>`;
   for(const p of S.plantimals){
     h+=`<div class="card tap quiver plant" data-seed="p${p.id}" onclick="uiPlant('${p.id}')">
       ${artThumb(p)}
@@ -477,7 +529,7 @@ function render(){
   }
   for(const e of S.egglingses){
     h+=`<div class="card tap quiver" data-seed="e${e.id}" style="padding:14px;text-align:center" onclick="hatch('${e.id}')">
-      ${eggVisual(e)}<div class="nm" style="font-size:14px">${e.status==="pending"?"It stirs.":"Something is inside."}</div></div>`;
+      ${eggPic(e)}<div class="nm" style="font-size:14px">${e.status==="pending"?"It stirs.":"Something is inside."}</div></div>`;
   }
   h+=`<button class="btn" data-seed="new" onclick="uiCreate()">
     ${S.firstPlantimalMade?"New":"Create Your First"} <span class="ac">Plantimal</span></button>
@@ -856,6 +908,14 @@ const SETTINGS=["a moss-choked Victorian conservatory with cracked, fogged glass
   "a mossy stone well in a clearing ringed by leaning birches",
   "a crumbling garden wall swallowed by ivy and night-blooming flowers",
   "the edge of a dark pond carpeted in lily pads, mist on the water"];
+const FACES=["a long, narrow face with a pointed chin","a round moon face with fat cheeks",
+  "a heart-shaped face with a tiny pursed mouth","a flat, frog-like face with a wide lipless mouth",
+  "a beak-like snout of curled bark","a face half-hidden behind drooping petal-hair",
+  "a pinched, wrinkled old-man face","a cat-like face with a split upper lip",
+  "a soft face like peeled fruit","a thin, sunken-cheeked face","a pug-nosed face with a heavy brow",
+  "a lopsided face, one side drooping slightly"];
+const BODIES=["a squat gourd-shaped body","a stick-thin body","a plump bulb-shaped body","a long serpentine body",
+  "a hunched barrel-shaped body","a lanky, stretched body","a pear-shaped body","a knobbly root-like body"];
 const SCALES=["dewdrops as large as its head beading on the leaves",
   "a snail as big as it is gliding past behind it","blades of grass towering over it like a forest",
   "mushrooms towering over it like trees","a moth with wings wider than it is resting nearby",
@@ -910,7 +970,7 @@ function artLook(p){
   const cols=colorsOf(p);
   const acc=ACCENTS.filter(a=>cols.indexOf(a[1])<0);
   let p1=one(PLANT), p2=one(PLANT); if(p2===p1) p2=PLANT[(PLANT.indexOf(p1)+1)%PLANT.length];
-  return {eyes:one(EYES),wrong:one(WRONG),p1:p1,p2:p2,setting:one(SETTINGS),scale:one(SCALES),
+  return {face:one(FACES),body:one(BODIES),eyes:one(EYES),wrong:one(WRONG),p1:p1,p2:p2,setting:one(SETTINGS),scale:one(SCALES),
     accent:one(acc)[0],spot:one(SPOTS)};
 }
 function chooseArtEgg(p){
@@ -930,8 +990,11 @@ function artPrompt(p){
     ? `codominant two-color coloring, patches of ${COLOR_DESC[cols[0]]} and of ${COLOR_DESC[cols[1]]} mottled together, both clearly visible`
     : `${COLOR_DESC[cols[0]]}, mottled and uneven, never one flat color`;
   const markTxt=marks.map(m=>MARK_DESC[m]).join(" together with ");
-  const appTxt=n===0?"no limbs or appendages at all, a bare trunk-like body"
-    :`exactly ${NUMW[n]} ${APP_NOUN[ph.appendage][n===1?0:1]}, the same number in every panel`;
+  const plural=n===1?"":"s";
+  const appTxt=n===0?"no limbs or appendages at all besides its root-feet: no wings, no tendrils, no arms"
+    :ph.appendage==="Wing"?`exactly ${NUMW[n]} leaf-veined wing${plural} like pressed petals (count: ${n}, no more, no fewer)`
+    :ph.appendage==="Tendril"?`exactly ${NUMW[n]} curling vine tendril${plural} (count: ${n}, no more, no fewer)`
+    :`exactly ${NUMW[n]} knotted root-arm${plural} (count: ${n}, no more, no fewer), besides its root-feet`;
   const egg=p.artEgg||{n:1,z:0};
   return [
     "One wide image divided into three equal vertical panels side by side, separated by thin dark gutters, on one sheet of antique stained, foxed paper.",
@@ -940,8 +1003,10 @@ function artPrompt(p){
     "MIDDLE panel: the same creature as a gangly adolescent mid-metamorphosis, limbs sprouting at uneven lengths, its soft baby shape splitting open to reveal something stranger; half-uprooted, root-feet tearing loose with clods of earth; cold murky blue twilight, fog rising.",
     "RIGHT panel: the same creature fully grown, tall and unsettlingly graceful, beautiful yet faintly predatory, ancient and still, its expression almost but not quite kind; its feet dissolve into roots, moss and fog; a sickly pale moon and deep black shadows.",
     `The creature, identical in every panel: truly half plant and half animal, with ${L.p1} and ${L.p2}, and ${appTxt}. Coloring: ${colorTxt}. Markings: ${markTxt}. Its body is covered in ${SURF_DESC[ph.surface]}. One small vivid spot of ${L.accent} on ${L.spot}. It has ${L.eyes}. Something about it is subtly wrong: ${L.wrong}.`,
+    `Its face: ${L.face}. Its body: ${L.body}.`,
     BEH_DESC[ph.behavior],
     p.mutation?MUT_DESC[p.mutation]:"",
+    `MUST BE CLEARLY VISIBLE IN ALL THREE PANELS, obvious at a glance: (1) ${appTxt}; (2) its colors, ${cols.join(" and ")}; (3) its markings, ${markTxt}, showing all over its body; (4) its whole body covered in ${SURF_DESC[ph.surface]}. Show the full body from head to root-feet inside each panel, with space above the head, never cropped.`,
     `Hidden in the ${EGG_ZONES[egg.z][0]} of every panel, small but clearly recognizable: ${PAINT[egg.n]}. Also in the scene: ${L.scale}.`,
     MEDIUM, MOOD,
     "No text, labels, numbers, captions or signatures anywhere."
@@ -1016,11 +1081,11 @@ async function genFetch(rt,body){
   if(out&&out.res&&out.res.ok){ S.keyHdr=S.keyHdr||{}; S.keyHdr[rt.hi]=(out.form==="h"); }
   return out;
 }
-async function genImage(prompt,aspect,seed){
+async function genImage(prompt,aspect,seed,extra){
   if(cfUrl()) return cfImage(prompt,seed||Math.floor(Math.random()*2147483646)+1);
-  if(S.openaiKey) return openaiImage(prompt);
+  if(S.openaiKey) return openaiImage(prompt,aspect==="1:1"?"1024x1024":aspect==="2:3"?"1024x1536":"1536x1024",extra);
   S.genStats=S.genStats||{calls:0,ok:0,err:""};
-  if(!apiKey()){ S.genStats.err="No key saved. Keeper panel > Picture key."; save(); throw new Error("no key"); }
+  if(!apiKey()){ S.genStats.err="No OpenAI key saved. Keeper panel > OpenAI key."; save(); throw new Error("no key"); }
   S.genStats.hostErr=S.genStats.hostErr||{};
   let lastErr="", best="";
   const bad=new Set();
@@ -1140,25 +1205,40 @@ function ensureAmbientArt(force){
     auto("p:"+p.id,async()=>{ await paintPlantimal(p); render(); });
   if(!ART.bull) auto("bull",async()=>{ await ArtDB.put("bull",await shrink(await genImage(bullPrompt("bull"),"4:3",777),720)); render(); });
   if(S.pastyUnlocked&&!ART.bull_pasty) auto("bull_pasty",async()=>{ await ArtDB.put("bull_pasty",await shrink(await genImage(bullPrompt("bull_pasty"),"4:3",777),720)); render(); });
+  if(!ART["ui:paper"]) auto("ui:paper",async()=>{
+    const raw=await genImage(PAPER_PROMPT,"2:3",null,{background:"transparent",output_format:"png"});
+    await ArtDB.put("ui:paper",await shrinkPng(raw,640)); applyPaper(); render(); });
+  for(const e of S.egglingses) if(!ART["egg:"+e.id])
+    auto("egg:"+e.id,async()=>{ await ArtDB.put("egg:"+e.id,await shrink(await genImage(eggPrompt(e),"1:1"),256)); render(); });
+  for(const [k] of CURRENCIES) if(!ART["cur:"+k])
+    auto("cur:"+k,async()=>{ await ArtDB.put("cur:"+k,await shrink(await genImage(curPrompt(k),"1:1"),160)); render(); });
   const e=activeEvent();
   if(e&&!ART["ev:"+e.name]) auto("ev:"+e.name,async()=>{ await ArtDB.put("ev:"+e.name,await shrink(await genImage(eventPrompt(e.name),"21:9"),900)); render(); });
 }
 
 /* ══ WAITING, EGGS, HATCHING ═══════════════════════════════ */
 const WAIT_LINES=[
-  "This little one needs a little more time with itself before busting out…",
-  "Still curled up, humming to itself. Give it a moment.",
-  "It is taking its time. Some things should not be rushed.",
-  "Almost. It keeps turning its face away from the light for now.",
-  "Patience. Something inside is still deciding what it wants to be.",
-  "It knocked once, then went quiet. Try again soon.",
-  "The shell is warm, but it isn't ready to leave yet.",
-  "Shy today. It will come out when it trusts the garden.",
-  "Something is tugging at its roots. Hold on.",
-  "It peeked out, saw you, and curled back in. Gently, again.",
+  "Still curled up, humming to itself.",
+  "Something is stirring in there.",
+  "A tiny crack. Then another.",
   "It is listening to you through the shell.",
-  "Not yet. It is still dreaming the last part of itself."
+  "Not long now. It is dreaming the last part of itself.",
+  "Something inside is deciding what it wants to be.",
+  "The shell is warm, and getting warmer.",
+  "Something is tugging at its roots."
 ];
+const NOT_YET_LINES=[
+  "This little one needs a little more time with itself before busting out…",
+  "It knocked once, then went quiet. Try again soon.",
+  "It peeked out, saw you, and curled back in. Gently, again.",
+  "Shy today. It will come out when it trusts the garden.",
+  "Not yet. Some things should not be rushed."
+];
+let notYetBag=[];
+function nextNotYet(){
+  if(!notYetBag.length) notYetBag=NOT_YET_LINES.slice().sort(()=>Math.random()-0.5);
+  return notYetBag.pop();
+}
 let waitBag=[];
 function nextWait(){
   if(!waitBag.length) waitBag=WAIT_LINES.slice().sort(()=>Math.random()-0.5);
@@ -1203,10 +1283,35 @@ function sweepEggs(){
     save();
   }
 }
+function eggPrompt(e){
+  const ph=e.pheno||{}, cols=String(ph.color||"Twilight").split("-"), marks=String(ph.marking||"Freckle").split("-");
+  return [MEDIUM,"A single strange egg, half cocoon, half seed pod, nestled in dark moss in a gloomy overgrown garden at dusk.",
+    "Its shell is "+cols.map(c=>COLOR_DESC[c]).join(" mottled with ")+", patterned with "+marks.map(m=>MARK_DESC[m]).join(" and ")+".",
+    "The faint shadow of something small and curled shows through the shell, one eye just visible. Tender and unsettling.",
+    "The whole egg is visible and centered. No text."].join(" ");
+}
+function eggPic(e,size){
+  const a=ART["egg:"+e.id], z=size||120;
+  return a?`<img class="breathe" alt="" src="${a}" style="width:${z}px;height:${z}px;object-fit:cover;border-radius:50%;box-shadow:0 0 0 1px rgba(70,40,15,.5),0 4px 10px rgba(40,22,8,.4)">`:eggVisual(e,size);
+}
+const PAPER_PROMPT="A single sheet of antique handmade rag paper, photographed flat from directly above and filling almost the whole frame. Warm cream and parchment tones, visible paper fibers, tea-colored foxing spots, faint water stains, gentle mottling and age. Its edges are deckled and torn irregularly all the way around, and lightly singed: thin dark charred rims with brown scorching fading inward, a few small burned notches and curled flakes. Nothing drawn or written on it. The area around the sheet is completely transparent. Realistic, finely detailed, museum-archive quality.";
+async function shrinkPng(src,w){
+  const im=await loadImg(src);
+  const c=document.createElement("canvas");
+  c.width=Math.min(w,im.width); c.height=Math.round(c.width*im.height/im.width);
+  c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+  return c.toDataURL("image/png");
+}
+function applyPaper(){
+  const root=document.documentElement;
+  if(ART["ui:paper"]){ root.style.setProperty("--paperimg",`url("${ART["ui:paper"]}")`); root.classList.add("painted"); }
+  else root.classList.remove("painted");
+}
+function repaintPaper(){ delete ART["ui:paper"]; applyPaper(); closeSheet(); render(); ensureAmbientArt(true); }
 function stageKey(p){ return ["baby","teen","adult"][int(p.stage)]||"baby"; }
 function artThumb(p){
   const a=ART["p:"+p.id];
-  if(a&&a[stageKey(p)]) return `<img class="art breathe" alt="" src="${a[stageKey(p)]}" style="width:96px;height:96px;object-fit:cover;border-radius:50%;flex:none"/>`;
+  if(a&&a[stageKey(p)]) return `<img class="art breathe" alt="" src="${a[stageKey(p)]}" style="width:72px;height:152px;object-fit:cover;object-position:center top;border-radius:10px;flex:none"/>`;
   return vine(p.stage,false);
 }
 function artBig(p){
@@ -1224,7 +1329,7 @@ function waitSheet(title,visual){
 }
 function notYet(extra){
   const why=extra||`<div class="note" style="text-align:center;font-size:12px;word-break:break-word;margin-top:10px">${esc((S.genStats&&S.genStats.err)||"(no error recorded)")}</div>`;
-  openSheet(`<h2>Not yet</h2><div style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:16px;line-height:1.5;text-align:center">${nextWait()}</div>
+  openSheet(`<h2>Not yet</h2><div style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:16px;line-height:1.5;text-align:center">${nextNotYet()}</div>
     ${why}
     <div style="height:14px"></div><button class="btn" data-seed="ny" onclick="closeSheet();render()">Back</button>`);
 }
@@ -1235,7 +1340,7 @@ function hatch(eid){
   const p={id:uid(),name:"Unnamed",geno:fillGeno(e.geno,e.id),pheno:resolveDominance(fillGeno(e.geno,e.id)),
     mutation:e.mutation,generation:int(e.generation),stage:0,used:[],mood:C.MOOD.start,quirks:[],
     hatched:Date.now(),lastCare:null,decayApplied:0,stage2At:null};
-  const tick=waitSheet("Hatching…",eggVisual(e,120));
+  const tick=waitSheet("Hatching…",eggPic(e,140));
   const job=enqueue("p:"+p.id,()=>paintPlantimal(p));
   job.then(()=>{
     clearInterval(tick);
@@ -1378,22 +1483,12 @@ async function keeperOpen(){
     <button class="btn" data-seed="kos" onclick="saveOai()">Save OpenAI key</button>
     <div style="height:7px"></div>
     <button class="btn" data-seed="kot" onclick="testOai()">Test OpenAI</button>
-    <div class="lbl">Cloudflare address ${cfUrl()?"· saved":"· none"}</div>
-    <input id="kcf" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://….workers.dev" value="${esc(cfUrl())}">
-    <div style="height:7px"></div>
-    <button class="btn" data-seed="kcs" onclick="saveCf()">Save address</button>
-    <div style="height:7px"></div>
-    <button class="btn" data-seed="kct" onclick="testCf()">Test pictures</button>
-    <div class="lbl">Picture key ${apiKey()?"· saved …"+esc(apiKey().slice(-4)):"· none"}</div>
-    <input id="kkey" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="paste key here">
-    <div style="height:7px"></div>
-    <button class="btn" data-seed="ks" onclick="saveKey()">Save key</button>
-    <div style="height:7px"></div>
-    <button class="btn" data-seed="kt" onclick="testKey()">Test key</button>
     <div id="ktest" class="mono" style="font-size:12px;word-break:break-word;margin-top:8px"></div>
     <div class="lbl">Missing portraits</div><div class="mono">${missing}</div>
     <div style="height:10px"></div>
     <button class="btn" data-seed="k1" onclick="ensureAmbientArt(true);closeSheet()">Paint anything missing now</button>
+    <div style="height:7px"></div>
+    <button class="btn" data-seed="kpp" onclick="repaintPaper()">Repaint the paper</button>
     <div style="height:7px"></div>
     <button class="btn" data-seed="kt3" onclick="makeTestCreatures(3)">Make 3 test creatures (free)</button>
     <div style="height:7px"></div>
@@ -1645,25 +1740,26 @@ async function testKey(){
 
 /* ══ OPENAI PAINTER ════════════════════════════════════════ */
 const OAI_MODEL="gpt-image-2.5-sunburst";
-async function openaiImage(prompt){
+async function openaiImage(prompt,size,extra){
   S.genStats=S.genStats||{calls:0,ok:0,err:""};
   S.genStats.calls++;
   let r, j={};
   try{
     r=await fetch("https://api.openai.com/v1/images/generations",{method:"POST",
       headers:{"Content-Type":"application/json","Authorization":"Bearer "+S.openaiKey},
-      body:JSON.stringify({model:OAI_MODEL,prompt:String(prompt).slice(0,32000),size:"1536x1024",quality:(S.imgQuality==="high"?"high":"medium"),n:1})});
+      body:JSON.stringify(Object.assign({model:OAI_MODEL,prompt:String(prompt).slice(0,32000),size:size||"1536x1024",quality:(S.imgQuality==="high"?"high":"medium"),n:1},extra||{}))});
     j=await r.json().catch(()=>({}));
   }catch(e){
     const m="OpenAI: the browser could not reach it ("+(e&&e.message||e)+")";
     S.genStats.err=m; save(); throw new Error(m);
   }
   const b=j.data&&j.data[0]&&j.data[0].b64_json;
-  if(r.ok&&b){ S.genStats.ok++; S.genStats.err=""; save(); return "data:image/png;base64,"+b; }
+  if(r.ok&&b){ S.genStats.ok++; S.genStats.err=""; S.genStats.hostErr={}; save(); return "data:image/png;base64,"+b; }
+  if(extra&&r.status===400&&/background|transparen|output_format/i.test(String((j.error&&j.error.message)||""))) return openaiImage(prompt,size);
   const m="OpenAI "+r.status+" "+OAI_MODEL+": "+String((j.error&&j.error.message)||"no image").slice(0,240);
   S.genStats.err=m; save(); throw new Error(m);
 }
-function qualityLabel(){ return "Picture quality: "+(S.imgQuality==="high"?"high (about 4 times the cost)":"medium"); }
+function qualityLabel(){ return "Quality: "+(S.imgQuality==="high"?"HIGH (about 4 times the cost). Tap for medium":"medium (cheaper). Tap for high"); }
 function toggleQuality(){
   S.imgQuality=(S.imgQuality==="high")?"medium":"high"; save();
   const b=$('[data-seed="kq"]'); if(b) b.textContent=qualityLabel();
@@ -1699,6 +1795,13 @@ function advanceTests(){
   openSheet(`<h2>Stages moved</h2><div class="note">${n} test creature${n===1?"":"s"} moved on. Open one to see it.</div>
     <div style="height:12px"></div><button class="btn" data-seed="adv" onclick="closeSheet();render()">Back</button>`);
 }
+const CUR_ART={polllen:"a small heap of glowing golden pollen grains",hunneee:"a single thick drop of dark amber honey",
+  gold:"one tarnished, worn gold coin with a strange face",mystrieousness:"a curl of violet smoke with a faint eye inside it",
+  nector:"a tiny cup-shaped petal holding a bead of shining nectar",purple_puff:"a soft puff of drifting purple spores",
+  shadowpuff:"a wisp of black smoke shaped like a small ghost",chocolate:"a jagged shard of dark chocolate",
+  stuff:"a small mysterious bundle tied with twine, faintly glowing, impossible to tell what it is"};
+function curPrompt(k){ return [MEDIUM,"A single small object centered on aged paper: "+(CUR_ART[k]||"a curious trinket")+
+  ". Painted like a specimen illustration, softly lit, plain stained-paper background, no text."].join(" "); }
 function saveOai(){
   const v=($("#koai").value||"").trim();
   if(!/^sk-/.test(v)){ $("#ktest").textContent="An OpenAI key starts with sk-. Paste the whole key."; return; }
@@ -2768,7 +2871,7 @@ function uiRolodex(d){
   const p=all[rolIdx];
   openSheet(`<h2>${esc(p.name)}</h2>
     <div id="rolcard" style="animation:flip .45s ease">
-      <div class="row" style="align-items:flex-start">${artThumb(p)}
+      <div class="row" style="align-items:flex-start">${artBig(p)}
         <div><div class="mono" style="font-size:18px">${int(p.stage)}/2</div>
         <div class="lbl" style="margin:3px 0 0">${C.STAGE1[int(p.stage)]}</div></div></div>
       <div class="lbl">Traits</div>
@@ -2798,6 +2901,7 @@ function uiMemory(){
 
 /* ══ BOOT ══════════════════════════════════════════════════ */
 function boot(){
+  applyPaper();
   activeEvent();
   sweepEggs();
   checkEventTriggers();
@@ -2821,6 +2925,7 @@ function boot(){
 })();
 (function(){
   const _ub=uiBull; uiBull=function(){ sfx("buzz"); return _ub(); };
+  const _ae=addEggling; addEggling=function(res){ const r=_ae(res); ensureAmbientArt(true); return r; };
   const _up=uiPlant; uiPlant=function(id){
     const p=S.plantimals.find(x=>x.id===id);
     if(p){ sfx("coo"+Math.min(2,int(p.stage)));
