@@ -179,20 +179,35 @@ input{background:rgba(255,248,228,.55) !important;border:none !important;border-
 .card,.btn{position:relative;}
 .card::after,.btn::after,#sheet::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:var(--burn) no-repeat 0 0/100% 100%;mix-blend-mode:multiply;}
-html.painted{background:#14100c !important;}
-html.painted body{background:linear-gradient(rgba(12,9,6,.30),rgba(12,9,6,.62)),var(--bgimg,none) center top/cover fixed,#14100c !important;}
-html.painted .card,html.painted #sheet{background:linear-gradient(rgba(255,250,236,.10),rgba(120,80,40,.10)),var(--paperimg) center/cover !important;
-  clip-path:none !important;border:1px solid rgba(58,36,16,.55) !important;border-radius:3px !important;
-  box-shadow:0 1px 0 rgba(255,246,222,.35) inset,0 0 38px rgba(120,78,36,.22) inset,0 12px 28px rgba(0,0,0,.55) !important;}
-html.painted .btn{background:rgba(18,13,9,.42) !important;color:#efe2c4 !important;border:1px solid rgba(239,226,196,.55) !important;
-  border-radius:2px !important;box-shadow:0 4px 14px rgba(0,0,0,.35) !important;clip-path:none !important;
-  letter-spacing:.06em !important;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);}
-html.painted .btn .ac{color:#e8a597 !important;}
-html.painted .card .btn,html.painted #sheet .btn{background:rgba(255,249,232,.35) !important;color:#2a1c10 !important;
-  border:1px solid rgba(58,36,16,.55) !important;box-shadow:0 2px 6px rgba(60,36,14,.18) !important;-webkit-backdrop-filter:none;backdrop-filter:none;}
+html.painted{background:#15110d !important;
+ --grain:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .14 0 0 0 .07 0'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>");}
+html.painted body{background:linear-gradient(rgba(14,10,7,.35),rgba(14,10,7,.70)),var(--bgimg) center top/cover fixed,
+  radial-gradient(ellipse 90% 45% at 50% 0%,rgba(150,112,58,.26),transparent 70%),
+  radial-gradient(ellipse 120% 60% at 50% 100%,rgba(30,52,34,.38),transparent 70%),#15110d !important;}
+html.painted .card,html.painted #sheet{background:var(--grain),linear-gradient(rgba(255,250,236,.06),rgba(120,80,40,.05)),var(--paperimg) center/cover !important;
+  clip-path:none !important;border:none !important;border-radius:2px !important;
+  box-shadow:inset 0 0 0 1px rgba(70,45,20,.55),inset 0 0 46px rgba(120,78,36,.18),0 14px 34px rgba(0,0,0,.55) !important;
+  outline:1px solid rgba(70,45,20,.32) !important;outline-offset:-7px !important;}
+html.painted h1{font-weight:600 !important;color:#f0e3c4 !important;text-shadow:0 2px 12px rgba(0,0,0,.8) !important;}
+html.painted #subtitle{color:#cbb68a !important;font-style:italic;text-shadow:0 1px 6px rgba(0,0,0,.9) !important;opacity:1 !important;}
+html.painted .lbl,html.painted .cap .lb{color:#7a6040 !important;letter-spacing:.18em !important;}
+html.painted .cap .v span{color:#8a7354 !important;}
+html.painted .ink{background:none !important;box-shadow:none !important;}
+html.painted .ink::before,html.painted .ink::after{display:none !important;}
+html.painted .st{color:#6b5236 !important;}
+html.painted .row{gap:12px !important;}
+html.painted .row+.row{margin-top:12px !important;}
+html.painted .ink svg{stroke:#3b2816 !important;color:#3b2816 !important;}
+html.painted .cur .nm{color:#5c4428 !important;letter-spacing:.12em;}
+html.painted .cur .v{color:#2b1d10 !important;}
+html.painted .cur.dim .v{color:rgba(43,29,16,.38) !important;}
+html.painted .btn{background:rgba(240,227,196,.04) !important;color:#efe2c4 !important;border:1px solid rgba(239,226,196,.5) !important;
+  border-radius:1px !important;box-shadow:none !important;clip-path:none !important;letter-spacing:.08em !important;
+  outline:1px solid rgba(239,226,196,.16);outline-offset:3px;-webkit-backdrop-filter:none;backdrop-filter:none;}
+html.painted .btn .ac{color:#e6a596 !important;font-style:italic;}
+html.painted .card .btn,html.painted #sheet .btn{background:transparent !important;color:#2a1c10 !important;
+  border:1px solid rgba(58,36,16,.6) !important;outline:none;}
 html.painted .card .btn .ac,html.painted #sheet .btn .ac{color:#8e2b2b !important;}
-html.painted h1{color:#f3e7c9 !important;text-shadow:0 2px 10px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9) !important;}
-html.painted #subtitle{color:#e2d1a7 !important;text-shadow:0 1px 6px rgba(0,0,0,.9) !important;opacity:1 !important;}
 html.painted .card::after,html.painted .btn::after,html.painted #sheet::after{display:none;}
 </style>
 </head>
@@ -523,7 +538,7 @@ function render(){
   const bullArt=(S.pastyUnlocked&&ART.bull_pasty)||ART.bull;
   h+=`<div class="card tap quiver plant" data-seed="bull" onclick="uiBull()">
     ${bullArt?`<img class="art breathe" alt="" src="${bullArt}" style="width:96px;height:96px;object-fit:cover;border-radius:50%;flex:none"/>`
-      :`<div style="width:96px;height:96px;border-radius:50%;border:1px dashed var(--slate);flex:none"></div>`}
+      :``}
     <div><div class="nm">${S.pastyUnlocked?"Bull the Pasty Bee":"Bull the Bee"}</div>
     <div class="tr">${!bullReady()?"Resting. About "+bullWaitMins()+" minutes.":S.plantimals.filter(x=>x.stage>=2).length>=2?"<b>Ready to breed.</b> Tap to pair two grown ones.":"Hovering near the Fylth."}</div></div></div>`;
   for(const p of S.plantimals){
@@ -551,6 +566,7 @@ function render(){
     <button class="btn" data-seed="nsnd" onclick="uiSound()">Sound</button></div>`;
   if(int(S.stuff)>=C.STUFF.event) h+=`<button class="btn" data-seed="call" onclick="uiCall()">Call something · <span class="ac">3 STUFF</span></button>`;
   if(int(S.stuff)>=C.STUFF.capacity) h+=`<div style="height:7px"></div><button class="btn" data-seed="room" onclick="if(spendStuff('capacity'))render()">Make room · <span class="ac">10 STUFF</span></button>`;
+  h+=`<div class="mono" style="text-align:center;font-size:11px;opacity:.75;margin:22px 0 8px;color:#e2d1a7 !important">${BUILD}</div>`;
   applyEventPalette();
   $("#app").style.position="relative";
   $("#app").innerHTML=h;
@@ -1313,11 +1329,13 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
+const BUILD="build 2026-10-16b";
 function applyPaper(){
   const root=document.documentElement;
-  if(ART["ui:paper2"]){ root.style.setProperty("--paperimg",`url("${ART["ui:paper2"]}")`); root.classList.add("painted"); }
-  else root.classList.remove("painted");
-  if(ART["ui:bg"]) root.style.setProperty("--bgimg",`url("${ART["ui:bg"]}")`);
+  root.classList.add("painted");
+  root.style.setProperty("--paperimg",ART["ui:paper2"]?`url("${ART["ui:paper2"]}")`
+    :"linear-gradient(168deg,#efe3c1 0%,#e4d1a3 55%,#d3bb8a 100%)");
+  root.style.setProperty("--bgimg",ART["ui:bg"]?`url("${ART["ui:bg"]}")`:"none");
 }
 function repaintPaper(){ delete ART["ui:paper2"]; delete ART["ui:bg"]; applyPaper(); closeSheet(); render(); ensureAmbientArt(true); }
 function stageKey(p){ return ["baby","teen","adult"][int(p.stage)]||"baby"; }
@@ -2963,6 +2981,7 @@ load();
   Object.assign(ART,await ArtDB.all());
   try{ navigator.storage&&navigator.storage.persist&&navigator.storage.persist(); }catch(e){}
   await migrateArt();
+  applyPaper();
   if(!S.pinHash) pinGate(); else boot();
 })();
 window.addEventListener("resize",()=>requestAnimationFrame(shapeAll));
