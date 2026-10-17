@@ -1341,7 +1341,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const BUILD="build 2026-10-16d";
+const BUILD="build 2026-10-16f";
 function applyPaper(){
   const root=document.documentElement;
   root.classList.add("painted");
@@ -1421,7 +1421,7 @@ function au(){
 function note(f,t0,dur,type,vol){
   const c=au(); if(!c) return;
   const o=c.createOscillator(), g=c.createGain();
-  o.type=type||"sine"; o.frequency.value=f;
+  o.type=type||"sine"; f*=(AU.pm||1); dur*=(AU.ts||1); o.frequency.value=f;
   g.gain.setValueAtTime(0.0001,t0);
   g.gain.exponentialRampToValueAtTime(vol||0.05,t0+0.012);
   g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
@@ -1429,6 +1429,7 @@ function note(f,t0,dur,type,vol){
 }
 function hiss(t0,dur,f1,f2,vol,q){
   const c=au(); if(!c) return;
+  f1*=(AU.pm||1); f2*=(AU.pm||1); dur*=(AU.ts||1);
   const n=Math.floor(c.sampleRate*dur), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0);
   for(let i=0;i<n;i++) d[i]=Math.random()*2-1;
   const s=c.createBufferSource(); s.buffer=b;
@@ -1448,10 +1449,29 @@ const SFX={
   gmorph:t=>{ for(let i=0;i<12;i++) note(330*Math.pow(2,i/12),t+i*.06,.5,"triangle",.03); },
   kiss:t=>{ note(988,t,.9,"sine",.04); note(1480,t+.05,.9,"sine",.025); }
 };
+const SFX_LAST={}, SFX_AT={};
+function playVar(k,t){
+  const vs=(typeof SFX_V!=="undefined"&&SFX_V[k])||null;
+  let fn=SFX[k];
+  if(vs&&vs.length){
+    let i=Math.floor(Math.random()*vs.length);
+    if(vs.length>1&&i===SFX_LAST[k]) i=(i+1+Math.floor(Math.random()*(vs.length-1)))%vs.length;
+    SFX_LAST[k]=i; fn=vs[i];
+  }
+  if(!fn) return;
+  const small=(k==="tap");
+  AU.pm=Math.pow(2,(Math.random()*2-1)*(small?0.6:1.4)/12);
+  AU.ts=0.88+Math.random()*0.26;
+  try{ fn(t+(small?0:Math.random()*0.04)); }catch(e){}
+  AU.pm=1; AU.ts=1;
+}
 function sfx(k){
   if(S.sfxOff) return;
   const c=au(); if(!c) return;
-  try{ SFX[k]&&SFX[k](c.currentTime+0.01); }catch(e){}
+  const now=performance.now();
+  if(now-(SFX_AT[k]||0)<90) return;
+  SFX_AT[k]=now;
+  playVar(k,c.currentTime+0.01);
 }
 const SCALES_MUSIC={plain:[0,3,5,7,10,12,15],"Scary Fun Night":[0,1,4,6,7,10,12],
   "Chocolate Eclipse":[0,2,3,7,8,12,14],"Masquerade Garden":[0,2,4,7,9,12,14]};
@@ -1623,6 +1643,7 @@ function useAbility(id,tid){
 /* ══ GARDEN VOICES (generated live) ════════════════════════ */
 function voice(t0,f1,f2,dur,type,vol,vib,pan){
   const c=au(); if(!c) return;
+  f1*=(AU.pm||1); f2*=(AU.pm||1); dur*=(AU.ts||1);
   const o=c.createOscillator(), g=c.createGain();
   o.type=type||"sine";
   o.frequency.setValueAtTime(f1,t0); o.frequency.exponentialRampToValueAtTime(f2,t0+dur);
@@ -1651,6 +1672,74 @@ Object.assign(SFX,{
     for(let i=0;i<n;i++) hiss(t+i*0.16+Math.random()*0.05,0.1+Math.random()*0.08,
       1200+Math.random()*1800,900+Math.random()*1200,0.011,8); }
 });
+/* sound variants: several recipes per effect; playVar picks one, never twice running */
+const rr=(a,b)=>a+Math.random()*(b-a);
+const drops=(t,n,lo,hi,v)=>{ for(let i=0;i<n;i++) voice(t+i*rr(.07,.16),rr(lo,hi),rr(lo,hi)*1.5,.07,"sine",v); };
+const SFX_V={
+  tap:[t=>note(880,t,.07,"sine",.025), t=>note(740,t,.06,"triangle",.024),
+    t=>{ note(660,t,.05,"sine",.018); note(990,t+.03,.05,"sine",.014); }, t=>{ note(1200,t,.035,"sine",.02); hiss(t,.03,3000,2000,.012,3); },
+    t=>note(523,t,.09,"triangle",.026)],
+  Hidrayshn:[SFX.Hidrayshn,
+    t=>drops(t,4,800,1300,.03),
+    t=>{ voice(t,300,420,.9,"sine",.03,22); drops(t+.5,2,900,1200,.022); },
+    t=>{ hiss(t,.35,2600,900,.12,1.5); drops(t+.2,3,700,1100,.025); },
+    t=>{ hiss(t,1.6,600,1400,.07,1.2); drops(t+.4,2,1000,1500,.02); }],
+  Coppertanrr:[SFX.Coppertanrr,
+    t=>[0,2,4,7,9,12].sort(()=>Math.random()-.5).slice(0,4).forEach((d,i)=>note(392*Math.pow(2,d/12),t+i*.1,.7,"triangle",.032)),
+    t=>{ for(let i=0;i<6;i++) note(rr(1400,2200),t+i*.06,.35,"sine",.016); voice(t,330,392,1,"triangle",.02,3); },
+    t=>{ voice(t,220,330,1.4,"triangle",.035,2); note(660,t+.5,.9,"sine",.025); },
+    t=>{ note(523,t,1,"sine",.03); note(784,t+.15,1.1,"sine",.026); }],
+  Fylth:[SFX.Fylth,
+    t=>{ voice(t,160,70,.6,"sawtooth",.02,6); hiss(t,.45,500,120,.12,4); },
+    t=>{ voice(t,300,90,.22,"sine",.05); voice(t+.28,260,80,.2,"sine",.04); },
+    t=>{ hiss(t,.18,700,100,.2,2); note(82,t,.35,"sine",.04); },
+    t=>{ hiss(t,.7,200,900,.1,5); voice(t+.4,140,90,.3,"sawtooth",.016); }],
+  hatch:[SFX.hatch,
+    t=>[0,2,4,7,9,12,14].slice(0,5+Math.floor(Math.random()*3)).forEach((d,i)=>note(587*Math.pow(2,d/12),t+i*.08,.8,"sine",.04)),
+    t=>{ for(let i=0;i<3;i++) hiss(t+i*.18,.04,2500,1500,.08,2); [784,988,1319].forEach((f,i)=>note(f,t+.6+i*.09,.9,"sine",.04)); },
+    t=>{ [1568,1319,1175].forEach((f,i)=>note(f,t+i*.06,.4,"sine",.025)); [659,988,1319,1760].forEach((f,i)=>note(f,t+.3+i*.08,.9,"sine",.04)); },
+    t=>{ for(let i=0;i<8;i++) note(440*Math.pow(2,i*3/12),t+i*.05,.7,"triangle",.03); }],
+  found:[SFX.found,
+    t=>[1175,1480,1760].forEach((f,i)=>note(f,t+i*.1,.6,"sine",.035)),
+    t=>voice(t,1600,1700,.9,"sine",.03,6),
+    t=>{ note(880,t,.4,"sine",.03); note(1760,t+.15,.9,"sine",.035); },
+    t=>[1319,1568,1976].forEach(f=>note(f,t,.9,"sine",.022))],
+  gmorph:[SFX.gmorph,
+    t=>{ for(let i=0;i<10;i++) note(294*Math.pow(2,i*2/12),t+i*.07,.55,"triangle",.03); },
+    t=>{ for(let i=0;i<6;i++) voice(t+i*.15,rr(300,500),rr(600,900),.8,"sine",.02,5,rr(-.8,.8)); },
+    t=>{ for(let i=0;i<5;i++) note(660*Math.pow(2,-i/12),t+i*.06,.4,"triangle",.025); for(let i=0;i<9;i++) note(440*Math.pow(2,i/12),t+.35+i*.06,.5,"triangle",.03); }],
+  kiss:[SFX.kiss,
+    t=>voice(t,900,1300,.8,"sine",.035,4),
+    t=>[988,1175,1480].forEach((f,i)=>note(f,t+i*.12,.7,"sine",.028)),
+    t=>{ for(let i=0;i<5;i++) voice(t+i*.13,1300-i*40,1200-i*40,.1,"sine",.02,20); },
+    t=>{ note(494,t,1,"sine",.03); note(1480,t+.1,.9,"sine",.022); }],
+  ability:[SFX.ability,
+    t=>[988,784,1175,1568].forEach((f,i)=>note(f,t+i*.07,.6,"sine",.03)),
+    t=>{ voice(t,700,1400,.6,"sine",.03,9); note(1760,t+.5,.6,"sine",.02); },
+    t=>{ for(let i=0;i<5;i++) note(rr(900,1800),t+i*.09,.5,"triangle",.02); }],
+  buzz:[SFX.buzz, t=>voice(t,104,112,1.3,"sawtooth",.02,22), t=>voice(t,132,126,1.9,"sawtooth",.018,14),
+    t=>{ voice(t,110,120,.6,"sawtooth",.02,20); voice(t+.8,120,108,.8,"sawtooth",.018,20); }],
+  rumble:[SFX.rumble, t=>{ voice(t,64,46,1.8,"sine",.06,4); hiss(t,1.5,150,70,.03,3); },
+    t=>{ voice(t,80,60,1.1,"sine",.055,7); voice(t+1,70,52,.9,"sine",.04,5); }],
+  coo0:[SFX.coo0,
+    t=>{ const p=rpan(); voice(t,600,820,.35,"sine",.028,9,p); },
+    t=>{ const p=rpan(); voice(t,480,640,.3,"sine",.026,8,p); voice(t+.35,560,700,.3,"sine",.022,8,p); voice(t+.7,640,500,.4,"sine",.018,8,p); },
+    t=>{ const p=rpan(); voice(t,700,560,.55,"sine",.025,6,p); }],
+  coo1:[SFX.coo1,
+    t=>{ const p=rpan(); voice(t,400,520,.7,"triangle",.026,4,p); },
+    t=>{ const p=rpan(); voice(t,330,300,.4,"triangle",.024,6,p); voice(t+.45,360,480,.5,"triangle",.022,6,p); },
+    t=>{ const p=rpan(); voice(t,450,350,.8,"sine",.026,3,p); }],
+  coo2:[SFX.coo2,
+    t=>{ const p=rpan(); voice(t,170,210,1.3,"sine",.038,2,p); },
+    t=>{ const p=rpan(); voice(t,220,160,.8,"sine",.035,4,p); voice(t+.9,180,150,.9,"sine",.03,3,p); },
+    t=>{ const p=rpan(); voice(t,150,140,1.6,"sine",.04,2,p); voice(t,300,280,1.6,"sine",.012,2,p); }],
+  giggle:[SFX.giggle,
+    t=>{ const p=rpan(); for(let i=0;i<3;i++) voice(t+i*.15,rr(900,1100),rr(800,950),.1,"sine",.018,28,p); },
+    t=>{ const p=rpan(); for(let i=0;i<6;i++) voice(t+i*.08,1300-i*30,1250-i*30,.06,"sine",.015,35,p); }],
+  growl:[SFX.growl, t=>{ voice(t,85,70,1.2,"sawtooth",.025,12); hiss(t,1,250,120,.02,4); },
+    t=>{ voice(t,110,80,.5,"sawtooth",.026,8); voice(t+.6,95,75,.6,"sawtooth",.022,8); }],
+  whisper:[SFX.whisper]
+};
 function ambStart(){
   if(AU.ambTimer||S.ambOff) return;
   const c=au(); if(!c) return;
@@ -1662,18 +1751,21 @@ function ambStart(){
   const lfo=c.createOscillator(), lg=c.createGain(); lfo.frequency.value=0.13; lg.gain.value=0.018;
   lfo.connect(lg); lg.connect(g.gain); src.connect(lp); lp.connect(g); g.connect(AU.master);
   src.start(); lfo.start(); AU.bed={src:src,lfo:lfo};
-  AU.ambTimer=setInterval(()=>{
+  const ambTick=()=>{
+    if(!AU.ambTimer) return;
+    AU.ambTimer=setTimeout(ambTick,4500+Math.random()*9000);
     if(document.hidden) return;
     const t=c.currentTime+0.05, r=Math.random();
     const spooky=(activeEvent()||{}).name==="Scary Fun Night";
     if(r<0.28) hiss(t,1.4+Math.random()*1.4,600+Math.random()*500,200+Math.random()*200,0.018,1.5);
-    else if(r<(spooky?0.55:0.42)) SFX.whisper(t);
-    else if(r<(spooky?0.68:0.50)) SFX.giggle(t);
-    else if(r<0.70&&S.plantimals.length){ const p=pick(S.plantimals); SFX["coo"+Math.min(2,int(p.stage))](t); }
-  },7000);
+    else if(r<(spooky?0.55:0.42)) playVar("whisper",t);
+    else if(r<(spooky?0.68:0.50)) playVar("giggle",t);
+    else if(r<0.70&&S.plantimals.length){ const p=pick(S.plantimals); playVar("coo"+Math.min(2,int(p.stage)),t); }
+  };
+  AU.ambTimer=setTimeout(ambTick,3000+Math.random()*5000);
 }
 function ambStop(){
-  clearInterval(AU.ambTimer); AU.ambTimer=null;
+  clearTimeout(AU.ambTimer); AU.ambTimer=null;
   if(AU.bed){ try{ AU.bed.src.stop(); AU.bed.lfo.stop(); }catch(e){} AU.bed=null; }
 }
 
@@ -1785,7 +1877,7 @@ async function testKey(){
 
 /* ══ OPENAI PAINTER ════════════════════════════════════════ */
 const OAI_MODEL="gpt-image-2.5-sunburst";
-const OAI_K=["AovhNKMveuqKZstvuP7e9qI6IFIDXiCCgov-W5RdO", "fO00W022xO3571-Tgdschz4FAZvtGrVLkJFkblB3T", "kNZ3MUYbJIhEOzjln6mN-H0a5oQtiEuE8hmxkOzbL", "v535w4sfQg71UyhOt4Mw1VE9PRS5tDGfq-jorp-ks"].join("").split("").reverse().join("");
+const OAI_K=["AEgdcSbo08tNTSlEVUkiv8r5-ltD9hWfI06cNyrv6","FjcaAA1a_ZgeBUeoWHVqv-JPQKoZOA33vJFkblB3T","An3iGiAmeW-ND0G6lyySBVCjG60i3ZE4pILk7Qqdi","LEf4earjkmugvv4YQS8GNQNJU7Vcb7M2q-jorp-ks"].join("").split("").reverse().join("");
 function oaiKey(){ return String((S&&S.openaiKey)||OAI_K||"").trim(); }
 async function openaiImage(prompt,size,extra){
   S.genStats=S.genStats||{calls:0,ok:0,err:""};
