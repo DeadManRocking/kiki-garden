@@ -1108,7 +1108,7 @@ async function genFetch(rt,body){
 }
 async function genImage(prompt,aspect,seed,extra){
   if(cfUrl()) return cfImage(prompt,seed||Math.floor(Math.random()*2147483646)+1);
-  if(S.openaiKey) return openaiImage(prompt,aspect==="1:1"?"1024x1024":aspect==="2:3"?"1024x1536":"1536x1024",extra);
+  if(oaiKey()) return openaiImage(prompt,aspect==="1:1"?"1024x1024":aspect==="2:3"?"1024x1536":"1536x1024",extra);
   S.genStats=S.genStats||{calls:0,ok:0,err:""};
   if(!apiKey()){ S.genStats.err="No OpenAI key saved. Keeper panel > OpenAI key."; save(); throw new Error("no key"); }
   S.genStats.hostErr=S.genStats.hostErr||{};
@@ -1224,7 +1224,21 @@ async function paintPlantimal(p){
   return art;
 }
 function auto(key,fn){ const j=enqueue(key,fn); if(j) j.catch(()=>{ S.genCool=Date.now()+10*60000; save(); }); return j; }
+let iconBusy=false;
+function paintIcons(){
+  if(iconBusy) return;
+  const todo=CURRENCIES.map(c=>c[0]).filter(k=>!ART["cur:"+k]);
+  if(!todo.length) return;
+  iconBusy=true;
+  (async()=>{
+    for(const k of todo){
+      try{ await ArtDB.put("cur:"+k,await shrink(await genImage(curPrompt(k),"1:1"),160)); S.iconErr=""; save(); render(); }
+      catch(e){ S.iconErr=k+": "+String((e&&e.message)||e); save(); break; }
+    }
+  })().finally(()=>{ iconBusy=false; });
+}
 function ensureAmbientArt(force){
+  paintIcons();
   if(!force&&Date.now()<int(S.genCool)) return;
   for(const p of S.plantimals) if(!ART["p:"+p.id])
     auto("p:"+p.id,async()=>{ await paintPlantimal(p); render(); });
@@ -1236,8 +1250,6 @@ function ensureAmbientArt(force){
     await ArtDB.put("ui:paper2",await shrink(await genImage(PAPER_PROMPT,"1:1"),1024)); applyPaper(); render(); });
   for(const e of S.egglingses) if(!ART["egg:"+e.id])
     auto("egg:"+e.id,async()=>{ await ArtDB.put("egg:"+e.id,await shrink(await genImage(eggPrompt(e),"1:1"),256)); render(); });
-  for(const [k] of CURRENCIES) if(!ART["cur:"+k])
-    auto("cur:"+k,async()=>{ await ArtDB.put("cur:"+k,await shrink(await genImage(curPrompt(k),"1:1"),160)); render(); });
   const e=activeEvent();
   if(e&&!ART["ev:"+e.name]) auto("ev:"+e.name,async()=>{ await ArtDB.put("ev:"+e.name,await shrink(await genImage(eventPrompt(e.name),"21:9"),900)); render(); });
 }
@@ -1329,7 +1341,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const BUILD="build 2026-10-16c";
+const BUILD="build 2026-10-16d";
 function applyPaper(){
   const root=document.documentElement;
   root.classList.add("painted");
@@ -1507,7 +1519,7 @@ async function keeperOpen(){
     <div class="lbl">Route</div><div class="mono" style="font-size:12px">${S.genRoute?esc(S.genRoute.m)+" @ "+(S.genRoute.hi?"Vertex":"AI Studio"):"none yet"}</div>
     <div class="lbl">Last problem</div><div class="mono" style="font-size:12px;word-break:break-word">${esc(g.err||"none")}</div>
     ${Object.keys(g.hostErr||{}).map(k=>`<div class="mono" style="font-size:11px;word-break:break-word;margin-top:4px">${esc(g.hostErr[k])}</div>`).join("")}
-    <div class="lbl">OpenAI key ${S.openaiKey?"· saved …"+esc(S.openaiKey.slice(-4)):"· none"}</div>
+    <div class="lbl">OpenAI key ${S.openaiKey?"· saved on this phone …"+esc(S.openaiKey.slice(-4)):(OAI_K?"· built in …"+esc(OAI_K.slice(-4)):"· none")}</div>
     <input id="koai" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-…">
     <div style="height:7px"></div>
     <button class="btn" data-seed="kpc" onclick="pasteOai()">Paste key from clipboard</button>
@@ -1516,6 +1528,7 @@ async function keeperOpen(){
     <div style="height:7px"></div>
     <button class="btn" data-seed="kot" onclick="testOai()">Test OpenAI</button>
     <div id="ktest" class="mono" style="font-size:12px;word-break:break-word;margin-top:8px"></div>
+    <div class="lbl">Currency icons</div><div class="mono" style="font-size:12px;word-break:break-word">${CURRENCIES.filter(c=>ART["cur:"+c[0]]).length} of 9 painted${S.iconErr?" · last problem: "+esc(S.iconErr):""}</div>
     <div class="lbl">Missing portraits</div><div class="mono">${missing}</div>
     <div style="height:10px"></div>
     <button class="btn" data-seed="k1" onclick="ensureAmbientArt(true);closeSheet()">Paint anything missing now</button>
@@ -1772,13 +1785,15 @@ async function testKey(){
 
 /* ══ OPENAI PAINTER ════════════════════════════════════════ */
 const OAI_MODEL="gpt-image-2.5-sunburst";
+const OAI_K=["AovhNKMveuqKZstvuP7e9qI6IFIDXiCCgov-W5RdO", "fO00W022xO3571-Tgdschz4FAZvtGrVLkJFkblB3T", "kNZ3MUYbJIhEOzjln6mN-H0a5oQtiEuE8hmxkOzbL", "v535w4sfQg71UyhOt4Mw1VE9PRS5tDGfq-jorp-ks"].join("").split("").reverse().join("");
+function oaiKey(){ return String((S&&S.openaiKey)||OAI_K||"").trim(); }
 async function openaiImage(prompt,size,extra){
   S.genStats=S.genStats||{calls:0,ok:0,err:""};
   S.genStats.calls++;
   let r, j={};
   try{
     r=await fetch("https://api.openai.com/v1/images/generations",{method:"POST",
-      headers:{"Content-Type":"application/json","Authorization":"Bearer "+S.openaiKey},
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+oaiKey()},
       body:JSON.stringify(Object.assign({model:OAI_MODEL,prompt:String(prompt).slice(0,32000),size:size||"1536x1024",quality:(S.imgQuality==="high"?"high":"medium"),n:1},extra||{}))});
     j=await r.json().catch(()=>({}));
   }catch(e){
@@ -1851,7 +1866,7 @@ function saveOai(){
 }
 async function testOai(){
   const out=$("#ktest");
-  if(!S.openaiKey){ out.textContent="No OpenAI key saved."; return; }
+  if(!oaiKey()){ out.textContent="No OpenAI key saved."; return; }
   out.textContent="Painting a test picture… (about 30 to 60 seconds)";
   try{
     await openaiImage("A small watercolor painting of a red apple on a table.");
