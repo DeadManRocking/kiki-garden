@@ -1039,6 +1039,7 @@ function artPrompt(p){
 }
 function bullPrompt(kind){
   return [MEDIUM,BULL_BODY,BULL_COAT[kind],
+    "Composition: the whole creature, from antler tips to the end of the dangling stinger, is small and centered, fitting entirely inside the middle square of the picture, with wide empty margins of background on the left and right and above the antlers. Nothing touches the edges.",
     "Behind it: a gloomy overgrown garden at dusk, faint golden pollen drifting. Slightly spooky, mystical and absurd.",
     "No text, labels or signatures."].join(" ");
 }
@@ -1233,11 +1234,13 @@ function paintIcons(){
   (async()=>{
     for(const k of todo){
       try{ await ArtDB.put("cur:"+k,await shrink(await genImage(curPrompt(k),"1:1"),160)); S.iconErr=""; save(); render(); }
-      catch(e){ S.iconErr=k+": "+String((e&&e.message)||e); save(); break; }
+      catch(e){ const em=String((e&&e.message)||e); S.iconErr=k+": "+em; save();
+        if(/ 401 | 403 |credit|quota|billing|could not reach/i.test(em)) break; }
     }
   })().finally(()=>{ iconBusy=false; });
 }
 function ensureAmbientArt(force){
+  if(!S.bullArtV2){ S.bullArtV2=true; save(); delete ART.bull; delete ART.bull_pasty; }
   paintIcons();
   if(!force&&Date.now()<int(S.genCool)) return;
   for(const p of S.plantimals) if(!ART["p:"+p.id])
@@ -1341,7 +1344,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const BUILD="build 2026-10-16f";
+const BUILD="build 2026-10-16g";
 function applyPaper(){
   const root=document.documentElement;
   root.classList.add("painted");
@@ -1881,22 +1884,33 @@ const OAI_K=["AEgdcSbo08tNTSlEVUkiv8r5-ltD9hWfI06cNyrv6","FjcaAA1a_ZgeBUeoWHVqv-
 function oaiKey(){ return String((S&&S.openaiKey)||OAI_K||"").trim(); }
 async function openaiImage(prompt,size,extra){
   S.genStats=S.genStats||{calls:0,ok:0,err:""};
-  S.genStats.calls++;
-  let r, j={};
-  try{
-    r=await fetch("https://api.openai.com/v1/images/generations",{method:"POST",
-      headers:{"Content-Type":"application/json","Authorization":"Bearer "+oaiKey()},
-      body:JSON.stringify(Object.assign({model:OAI_MODEL,prompt:String(prompt).slice(0,32000),size:size||"1536x1024",quality:(S.imgQuality==="high"?"high":"medium"),n:1},extra||{}))});
-    j=await r.json().catch(()=>({}));
-  }catch(e){
-    const m="OpenAI: the browser could not reach it ("+(e&&e.message||e)+")";
-    S.genStats.err=m; save(); throw new Error(m);
+  let m="";
+  for(let attempt=0;attempt<4;attempt++){
+    S.genStats.calls++;
+    let r, j={};
+    try{
+      r=await fetch("https://api.openai.com/v1/images/generations",{method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":"Bearer "+oaiKey()},
+        body:JSON.stringify(Object.assign({model:OAI_MODEL,prompt:String(prompt).slice(0,32000),size:size||"1536x1024",quality:(S.imgQuality==="high"?"high":"medium"),n:1},extra||{}))});
+      j=await r.json().catch(()=>({}));
+    }catch(e){
+      m="OpenAI: the browser could not reach it ("+(e&&e.message||e)+")";
+      S.genStats.err=m; save();
+      if(attempt<1){ await nap(5000); continue; }
+      throw new Error(m);
+    }
+    const b=j.data&&j.data[0]&&j.data[0].b64_json;
+    if(r.ok&&b){ S.genStats.ok++; S.genStats.err=""; S.genStats.hostErr={}; save(); return "data:image/png;base64,"+b; }
+    const em=String((j.error&&j.error.message)||"no image");
+    if(extra&&r.status===400&&/background|transparen|output_format/i.test(em)) return openaiImage(prompt,size);
+    m="OpenAI "+r.status+" "+OAI_MODEL+": "+em.slice(0,240);
+    S.genStats.err=m; save();
+    const busy=(r.status===429&&!/credit|quota|billing/i.test(em))||r.status>=500;
+    if(!busy||attempt===3) break;
+    const ra=parseFloat(r.headers&&r.headers.get&&r.headers.get("retry-after"))||0;
+    await nap(Math.max(ra*1000,20000*(attempt+1)));
   }
-  const b=j.data&&j.data[0]&&j.data[0].b64_json;
-  if(r.ok&&b){ S.genStats.ok++; S.genStats.err=""; S.genStats.hostErr={}; save(); return "data:image/png;base64,"+b; }
-  if(extra&&r.status===400&&/background|transparen|output_format/i.test(String((j.error&&j.error.message)||""))) return openaiImage(prompt,size);
-  const m="OpenAI "+r.status+" "+OAI_MODEL+": "+String((j.error&&j.error.message)||"no image").slice(0,240);
-  S.genStats.err=m; save(); throw new Error(m);
+  throw new Error(m);
 }
 function qualityLabel(){ return "Quality: "+(S.imgQuality==="high"?"HIGH (about 4 times the cost). Tap for medium":"medium (cheaper). Tap for high"); }
 function toggleQuality(){
