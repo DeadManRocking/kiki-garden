@@ -562,7 +562,7 @@ function render(){
     <button class="btn" data-seed="ns" onclick="uiShops()">Shops</button></div>
   <div class="row"><button class="btn" data-seed="nc" onclick="uiRolodex(0)">Collection</button>
     <button class="btn" data-seed="nk" onclick="uiMemory()">Kept</button></div>
-  <div class="row"><button class="btn" data-seed="nm" onclick="uiMessages()">Messages</button>
+  <div class="row"><button class="btn" data-seed="nm" onclick="uiMessages()">Messages${chatUnread()?` <span class="ac">·</span>`:""}</button>
     <button class="btn" data-seed="nsnd" onclick="uiSound()">Sound</button></div>`;
   if(int(S.stuff)>=C.STUFF.event) h+=`<button class="btn" data-seed="call" onclick="uiCall()">Call something · <span class="ac">3 STUFF</span></button>`;
   if(int(S.stuff)>=C.STUFF.capacity) h+=`<div style="height:7px"></div><button class="btn" data-seed="room" onclick="if(spendStuff('capacity'))render()">Make room · <span class="ac">10 STUFF</span></button>`;
@@ -1344,7 +1344,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const BUILD="build 2026-10-16g";
+const BUILD="build 2026-10-17a";
 function applyPaper(){
   const root=document.documentElement;
   root.classList.add("painted");
@@ -1481,18 +1481,51 @@ const SCALES_MUSIC={plain:[0,3,5,7,10,12,15],"Scary Fun Night":[0,1,4,6,7,10,12]
 function synthMusicStart(){
   if(AU.musicTimer||S.musicOn===false) return;
   const c=au(); if(!c) return;
-  let step=0, deg=0;
-  AU.musicTimer=setInterval(()=>{
-    if(document.hidden) return;
+  const MOTIFS={
+    1:[[0]],
+    2:[[0,1],[0,-1],[2,0],[0,2],[1,0],[0,-2]],
+    3:[[0,1,2],[2,1,0],[0,2,1],[0,-1,0],[1,0,2]]
+  };
+  const ANCHORS=[0,2,4,5,2,0];
+  let deg=2, rest=0, step=0;
+  const bell=(f,t,v)=>{            // soft tuned-mallet / music-box tine
+    note(f,t,2.0,"sine",v);
+    note(f*2.76,t,.55,"sine",v*.28);
+    note(f*5.4,t,.18,"sine",v*.10);
+  };
+  const strike=(f,t,v)=>{          // occasional flam: two strikes a few ms apart
+    const r=Math.random();
+    if(r<0.14){
+      const same=Math.random()<0.5, g=0.022+Math.random()*0.03;
+      bell(f,t,v*0.55);
+      bell(same?f:f*Math.pow(2,(Math.random()<0.5?2:-3)/12),t+g,v);
+    } else bell(f,t,v);
+  };
+  const phrase=()=>{
     const ev=activeEvent(), sc=SCALES_MUSIC[ev&&ev.name]||SCALES_MUSIC.plain;
     const base=ev&&ev.name==="Chocolate Eclipse"?174.6:220;
-    const t=c.currentTime+0.05;
-    deg=Math.max(0,Math.min(sc.length-1,deg+[-2,-1,0,1,1,2][Math.floor(Math.random()*6)]));
     const waltz=ev&&ev.name==="Masquerade Garden";
-    if(Math.random()<(waltz&&step%3?0.55:0.82)) note(base*2*Math.pow(2,sc[deg]/12),t,1.6,"sine",0.032);
-    if(step%(waltz?3:8)===0) note(base/2*Math.pow(2,sc[Math.floor(Math.random()*3)]/12),t,3.2,"triangle",0.018);
+    const r=Math.random(), L=r<0.34?1:(r<0.86?2:3);   // three-note phrases are rare
+    const m=pick(MOTIFS[L]);
+    const anchor=pick(ANCHORS);
+    const beat=(waltz?400:540)+Math.random()*120;
+    let t=c.currentTime+0.05;
+    m.forEach((off,i)=>{
+      deg=Math.max(0,Math.min(sc.length-1,anchor+off));
+      const f=base*2*Math.pow(2,sc[deg]/12);
+      strike(f,t+i*(beat/1000)*(0.9+Math.random()*0.3),0.034);
+    });
+    if(step%(waltz?3:5)===0){ note(base/2*Math.pow(2,sc[pick([0,0,2,4])]/12),c.currentTime+0.05,3.4,"triangle",0.016); }
     step++;
-  },520);
+    return (L+1+Math.floor(Math.random()*4))*beat;    // rest of 1-4 beats after the phrase
+  };
+  const loop=()=>{
+    if(!AU.musicTimer) return;
+    let wait=1800;
+    if(!document.hidden) wait=phrase();
+    AU.musicTimer=setTimeout(loop,wait);
+  };
+  AU.musicTimer=setTimeout(loop,600);
   AU.whisperTimer=setInterval(()=>{
     if(document.hidden||Math.random()<0.5) return;
     const t=c.currentTime;
@@ -1500,7 +1533,7 @@ function synthMusicStart(){
     hiss(t+0.2,1.2,2200,1400,0.01,12);
   },9000);
 }
-function musicStop(){ clearInterval(AU.musicTimer); clearInterval(AU.whisperTimer); AU.musicTimer=AU.whisperTimer=null;
+function musicStop(){ clearTimeout(AU.musicTimer); clearInterval(AU.whisperTimer); AU.musicTimer=AU.whisperTimer=null;
   if(MP.el){ try{ MP.el.pause(); }catch(e){} } MP.key=null; }
 document.addEventListener("pointerdown",()=>{ au(); musicStart(); ambStart(); },{passive:true});
 document.addEventListener("click",ev=>{ if(ev.target.closest&&ev.target.closest(".btn,.opt")) sfx("tap"); },true);
@@ -1558,7 +1591,10 @@ async function keeperOpen(){
     <div style="height:7px"></div>
     <button class="btn" data-seed="kpp" onclick="repaintPaper()">Repaint the paper</button>
     <div style="height:7px"></div>
-    <button class="btn" data-seed="kt3" onclick="makeTestCreatures(3)">Make 3 test creatures (free)</button>
+    <div class="lbl">Make test creatures (free)</div>
+    <div class="row"><button class="btn" data-seed="kt1" onclick="makeTestCreatures(1)">1</button>
+    <button class="btn" data-seed="kt2" onclick="makeTestCreatures(2)">2</button>
+    <button class="btn" data-seed="kt3" onclick="makeTestCreatures(3)">3</button></div>
     <div style="height:7px"></div>
     <button class="btn" data-seed="kadv" onclick="advanceTests()">Move test creatures on one stage</button>
     <div style="height:7px"></div>
@@ -2670,16 +2706,94 @@ function releasedGifts(){
 }
 
 /* ══ MESSAGES ══════════════════════════════════════════════ */
+const CHAT_PAPERS={
+  plain:{label:"Plain",bg:"transparent",fg:"#2E2A26",k:"rgba(163,22,33,.10)",c:"rgba(46,42,38,.09)"},
+  dusk:{label:"Dusk",bg:"#3E3A52",fg:"#EEE6D2",k:"rgba(255,255,255,.16)",c:"rgba(255,255,255,.08)",own:"themeDusk"},
+  ember:{label:"Ember",bg:"#4A2E22",fg:"#F1DFC6",k:"rgba(255,220,180,.16)",c:"rgba(255,255,255,.08)",own:"themeEmber"},
+  moss:{label:"Moss",bg:"#34402F",fg:"#E6EBD8",k:"rgba(220,255,200,.15)",c:"rgba(255,255,255,.08)",own:"themeMoss"}
+};
+const STICKER_SHEETS={
+  stickerSmall:["Hello you","Come and see","Thinking of you","Still here"],
+  stickerNight:["Can't sleep","Stay","Boo","Keep the light on"]
+};
+function chatUnread(){
+  const last=(S.chat||[]).filter(m=>m.f==="C").pop();
+  return !!(last&&last.at>int(S.chatSeen));
+}
+function chatPush(f,t,b){
+  S.chat=S.chat||[];
+  S.chat.push({f:f,t:t,b:String(b).slice(0,400),at:Date.now()});
+  if(S.chat.length>200) S.chat=S.chat.slice(-200);
+  save();
+}
+function myStickers(){
+  const o=S.owned||{}, out=[];
+  for(const k in STICKER_SHEETS) if(int(o[k])>0) STICKER_SHEETS[k].forEach(x=>out.push(x));
+  return out;
+}
+let chatView="chat";
 function uiMessages(){
-  const msgs=(S.pm||[]).slice(0,40);
+  const th=CHAT_PAPERS[S.chatPaper]||CHAT_PAPERS.plain;
+  const own=Object.keys(CHAT_PAPERS).filter(k=>!CHAT_PAPERS[k].own||int((S.owned||{})[CHAT_PAPERS[k].own])>0);
+  const rows=[];
+  (S.pm||[]).slice(0,40).forEach(m=>rows.push({f:"S",t:"sys",b:m.body,at:m.at,raw:true}));
+  (S.chat||[]).forEach(m=>rows.push(m));
+  rows.sort((a,b)=>a.at-b.at);
+  const shown=rows.slice(-60);
+  const bub=m=>{
+    const when=new Date(m.at).toLocaleDateString();
+    if(m.f==="S") return `<div style="text-align:center;font-size:12px;opacity:.7;margin:10px 8px;line-height:1.4">${m.raw?m.b:esc(m.b)}</div>`;
+    const mine=m.f==="K";
+    const inner=m.t==="stk"
+      ? `<span style="display:inline-block;border:1.5px solid currentColor;padding:6px 12px;font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:15px;transform:rotate(${mine?-2:2}deg)">${esc(m.b)}</span>`
+      : `<span style="font-size:14px;line-height:1.4;white-space:pre-wrap;word-break:break-word">${esc(m.b)}</span>`;
+    return `<div style="display:flex;justify-content:${mine?"flex-end":"flex-start"};margin:7px 0">
+      <div style="max-width:82%;padding:${m.t==="stk"?"4px":"9px 12px"};background:${m.t==="stk"?"transparent":(mine?th.k:th.c)};border-radius:2px">
+      ${m.f==="C"?`<div class="lbl" style="margin:0 0 3px;color:inherit !important;opacity:.8">Cj</div>`:""}${inner}
+      <div style="font-size:10px;opacity:.55;margin-top:3px;text-align:${mine?"right":"left"}">${when}</div></div></div>`;
+  };
+  const stk=myStickers();
   openSheet(`<h2>Messages</h2>
-    ${msgs.length?msgs.map(m=>`<div style="padding:11px 0;border-bottom:1px solid rgba(46,42,38,.12)">
-      <div style="font-size:14px;line-height:1.4">${esc(m.body)}</div>
-      <div class="lbl" style="margin:5px 0 0">${new Date(m.at).toLocaleDateString()}</div>
-      </div>`).join(""):`<div class="note">Nothing yet.</div>`}
-    <div style="height:14px"></div>
-    <button class="btn" data-seed="mb" onclick="closeSheet()">Back</button>`);
-  S.pmSeen=(S.pm||[]).length; save();
+    <div id="chatbox" style="background:${th.bg};color:${th.fg};max-height:42vh;overflow-y:auto;padding:${th.bg==="transparent"?"0":"8px 10px"};border-radius:2px">
+      ${shown.length?shown.map(bub).join(""):`<div class="note" style="color:inherit">Nothing yet.</div>`}
+    </div>
+    <div style="height:10px"></div>
+    <textarea id="chatin" rows="2" maxlength="400" placeholder="Write to Cj…" style="width:100%;box-sizing:border-box;font:inherit;font-size:15px;padding:9px;background:rgba(255,255,255,.55);border:1px solid rgba(46,42,38,.35);border-radius:2px"></textarea>
+    <div class="row" style="margin-top:7px"><button class="btn" data-seed="chs" onclick="chatSend()">Send</button>
+      <button class="btn" data-seed="cha" onclick="chatAsk()">Ask for a Butterfly Kiss</button></div>
+    ${stk.length?`<div class="lbl">Stickers</div><div class="opts">${stk.map((x,i)=>`<button class="opt" onclick="chatSticker(${i})">${esc(x)}</button>`).join("")}</div>`:""}
+    ${own.length>1?`<div class="lbl">Paper</div><div class="opts">${own.map(k=>`<button class="opt ${(S.chatPaper||"plain")===k?"sel":""}" onclick="chatPaper('${k}')">${esc(CHAT_PAPERS[k].label)}</button>`).join("")}</div>`:""}
+    <div id="cjbox" style="display:none;margin-top:10px">
+      <div class="lbl">Cj</div>
+      <input id="cjpin" class="mono" type="tel" inputmode="numeric" maxlength="6" placeholder="······">
+      <textarea id="cjin" rows="2" maxlength="400" placeholder="·" style="width:100%;box-sizing:border-box;font:inherit;font-size:15px;padding:9px;margin-top:7px;background:rgba(255,255,255,.55);border:1px solid rgba(46,42,38,.35);border-radius:2px"></textarea>
+      <div class="msg" id="cjmsg"></div>
+      <button class="btn" data-seed="cjs" onclick="chatAsCj()">Send</button>
+    </div>
+    <div style="height:12px"></div>
+    <div class="row"><button class="btn" data-seed="mb" onclick="closeSheet();render()">Back</button>
+      <button class="btn" data-seed="cjt" style="max-width:56px" onclick="const b=$('#cjbox');b.style.display=b.style.display==='none'?'block':'none'">·</button></div>`);
+  S.pmSeen=(S.pm||[]).length; S.chatSeen=Date.now(); save();
+  const cb=$("#chatbox"); if(cb) cb.scrollTop=cb.scrollHeight;
+}
+function chatSend(){
+  const v=($("#chatin").value||"").trim();
+  if(!v) return;
+  chatPush("K","text",v); sfx("tap"); uiMessages();
+}
+function chatAsk(){
+  chatPush("K","ask","A Butterfly Kiss, please."); sfx("tap"); uiMessages();
+}
+function chatSticker(i){
+  const x=myStickers()[i]; if(!x) return;
+  chatPush("K","stk",x); sfx("tap"); uiMessages();
+}
+function chatPaper(k){ S.chatPaper=k; save(); uiMessages(); }
+async function chatAsCj(){
+  const m=$("#cjmsg"), v=($("#cjin").value||"").trim();
+  if(await sha(($("#cjpin").value||"").replace(/\D/g,""))!==S.pinHash){ m.textContent="·"; return; }
+  if(!v){ m.textContent="·"; return; }
+  chatPush("C","text",v); S.chatSeen=Date.now(); save(); uiMessages();
 }
 
 
@@ -2951,7 +3065,12 @@ const SHOPS={
     ["A hint",3,"eggHint","Something hidden becomes easier to notice."]]},
   purple_puff:{label:"Purple Puff",items:[
     ["Rare bloodline",2,"legendary","A trait that does not occur on its own."],
-    ["Festival Eggling",3,"eventEgg","Only available while something is happening."]]},
+    ["Festival Eggling",3,"eventEgg","Only available while something is happening."],
+    ["Writing paper: Dusk",1,"themeDusk","Something to write to Cj on."],
+    ["Writing paper: Ember",1,"themeEmber","Something to write to Cj on."],
+    ["Writing paper: Moss",1,"themeMoss","Something to write to Cj on."],
+    ["Small Things",1,"stickerSmall","Four little stamps."],
+    ["Night Things",1,"stickerNight","Four more, for later."]]},
   shadowpuff:{label:"Shadowpuff",items:[
     ["Shadow cast",2,"shadowSkin","The garden darkens, and stays that way."],
     ["Long night",3,"nightMode","Everything sits in a deeper dusk."]]},
