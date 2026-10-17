@@ -140,8 +140,12 @@ input.mono{font-family:'IBM Plex Mono',monospace;letter-spacing:.34em;font-size:
   z-index:1;border-radius:50%;opacity:.16;
   background:radial-gradient(circle,transparent 56%,var(--mauve) 62%,transparent 72%)}
 .artbig{width:100%;display:block;border-radius:14px}
-@keyframes breathe{0%,100%{scale:1 1;translate:0 0}42%{scale:1.016 1.026;translate:0 -.5%}58%{scale:1.017 1.027;translate:0 -.55%}}
-.breathe{animation:breathe 5.6s ease-in-out infinite;animation-delay:var(--bd,0s);transform-origin:50% 88%}
+@keyframes breatheS{0%,100%{scale:1}50%{scale:calc(1 + var(--bamp,.009))}}
+@keyframes breatheY{0%,100%{translate:0 0}50%{translate:0 calc(var(--bmov,.6) * -1%)}}
+@keyframes breatheC{0%{translate:calc(var(--bmov,.6) * 1%) 0}25%{translate:0 calc(var(--bmov,.6) * -1%)}50%{translate:calc(var(--bmov,.6) * -1%) 0}75%{translate:0 calc(var(--bmov,.6) * 1%)}100%{translate:calc(var(--bmov,.6) * 1%) 0}}
+.breathe{animation:breatheS 6.2s ease-in-out infinite;animation-delay:var(--bd,0s);transform-origin:50% 50%}
+html[data-breathe=Y] .breathe{animation-name:breatheY}
+html[data-breathe=C] .breathe{animation-name:breatheC;animation-timing-function:linear;animation-duration:8.4s}
 @keyframes shim{0%,100%{box-shadow:0 0 0 0 rgba(255,240,180,0)}50%{box-shadow:0 0 24px 8px rgba(255,240,180,.6)}}
 .shimmer{animation:shim 1.6s ease-in-out infinite}
 
@@ -294,7 +298,11 @@ html.painted #sheet .btn{padding:11px 12px !important;min-height:44px;font-size:
 /* sheets: entrances, exits, swipes */
 #veil{perspective:1300px;background:rgba(16,11,8,.30) !important;transition:background .3s ease}
 #veil.out{background:rgba(16,11,8,0) !important}
-#sheet{transition:transform .46s cubic-bezier(.2,.85,.25,1),opacity .34s ease;transform-origin:50% 0;touch-action:pan-y}
+#sheet{transform-origin:50% 0;touch-action:pan-y;will-change:transform;backface-visibility:hidden}
+#sheet.k-card{transform-origin:50% 40%}
+#sheet.k-wood{transform-origin:0 50%}
+html,body{overscroll-behavior:none}
+#veil{overscroll-behavior:contain}
 #sheet.k-paper.enter{transform:translateY(80px) rotate(-3deg);opacity:0}
 #sheet.k-paper.leave{transform:translateY(100px) rotate(3.5deg);opacity:0}
 #sheet.k-card{transform-origin:50% 40%}
@@ -422,9 +430,10 @@ html[data-night="1"]:not([data-shadow="1"]) #wxsky{opacity:1;background:linear-g
 #rolo{position:relative;height:300px;perspective:900px;overflow:hidden;touch-action:none;cursor:grab;margin:6px 0 4px;
   -webkit-mask-image:linear-gradient(transparent,#000 22%,#000 78%,transparent);mask-image:linear-gradient(transparent,#000 22%,#000 78%,transparent)}
 #rring{position:absolute;left:0;right:0;top:50%;height:0;transform-style:preserve-3d;will-change:transform}
+.rcard{will-change:opacity}
 .rspindle{position:absolute;left:4%;right:4%;top:50%;height:6px;margin-top:-3px;border-radius:3px;background:linear-gradient(#6b5136,#3a2a1a);box-shadow:0 1px 2px rgba(0,0,0,.4)}
 .rcard{position:absolute;left:6%;right:6%;top:-98px;height:196px;display:flex;gap:10px;padding:10px;box-sizing:border-box;backface-visibility:hidden;
-  background:linear-gradient(#f3e7c9,#e5d3a8);border:1px solid rgba(70,45,20,.35);border-radius:10px;box-shadow:0 6px 14px rgba(40,22,8,.35);color:#2a1c10}
+  background:linear-gradient(#f3e7c9,#e5d3a8);border:1px solid rgba(70,45,20,.35);border-radius:10px;box-shadow:0 3px 8px rgba(40,22,8,.3);color:#2a1c10}
 .rcard:after{content:"";position:absolute;left:50%;bottom:-1px;width:40px;margin-left:-20px;height:9px;border-radius:9px 9px 0 0;background:rgba(40,25,10,.35)}
 .rpic{width:38%;flex:none;position:relative}
 .rpic img.base{width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:6px;display:block}
@@ -514,6 +523,33 @@ body.opening #veil:has(#sheet.k-fixed){z-index:800}
 #turn{display:none;position:fixed;inset:0;z-index:3000;background:#191d3a;color:#e6dcc6;align-items:center;justify-content:center;
   font:italic 20px 'Fraunces',Georgia,serif}
 @media (orientation:landscape) and (max-height:520px){#turn{display:flex}}
+
+/* ══ purse and more menu ══ */
+#top{position:relative;display:flex;align-items:center;gap:8px;min-height:46px;z-index:30}
+#top #strip{margin:0;flex:1;justify-content:flex-end;flex-wrap:wrap}
+#purseBtn{display:flex;align-items:center;gap:7px;min-height:44px;padding:3px 12px 3px 3px;border-radius:24px;cursor:pointer;
+  background:transparent;border:1px solid rgba(240,226,196,.5);color:#f2e6c9;font-size:13px;text-shadow:0 1px 3px #000}
+#purseBtn img,#purseBtn .ink{width:34px;height:34px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 1px rgba(240,226,196,.35),0 2px 6px rgba(0,0,0,.55)}
+#purseBtn .ink{display:grid;place-items:center;background:rgba(240,226,196,.1)}
+#purseBtn .ink svg{width:17px;height:17px;stroke:#efe2c4}
+#purseBtn.open{border-color:rgba(240,226,196,.85)}
+#purseBtn .mono{color:#f6ecd2 !important;font-size:14px;text-shadow:0 1px 3px #000,0 0 6px #000}
+#purse{position:absolute;left:0;top:52px;width:min(92vw,330px);display:grid;grid-template-columns:repeat(3,1fr);gap:6px 4px;padding:12px 8px 10px;
+  border:1px solid rgba(240,226,196,.6);border-radius:16px;background:rgba(14,10,7,.08);
+  box-shadow:inset 0 0 0 4px rgba(240,226,196,.06),0 10px 28px rgba(0,0,0,.25);
+  transform-origin:24px -8px;transform:scale(.6) translateY(-10px);opacity:0;pointer-events:none;transition:transform .32s cubic-bezier(.16,.84,.3,1),opacity .22s ease}
+#purse.open{transform:none;opacity:1;pointer-events:auto}
+#purse .coin{display:flex;flex-direction:column;align-items:center;min-height:0;padding:2px 0}
+#purse .coin img,#purse .coin .ink{width:46px;height:46px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 1px rgba(240,226,196,.4),0 3px 8px rgba(0,0,0,.55)}
+#purse .coin .ink{display:grid;place-items:center;background:rgba(240,226,196,.1)}
+#purse .coin .cn{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:#efe2c4;margin-top:4px;text-shadow:0 1px 3px #000,0 0 6px #000;white-space:nowrap}
+#purse .coin .cv{font-size:12px;color:#f6ecd2 !important;text-shadow:0 1px 3px #000,0 0 6px #000;margin-top:1px}
+#purse .coin.dim .cv{opacity:.55}
+#more{position:absolute;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 74px);display:grid;grid-template-columns:repeat(2,1fr);gap:7px;padding:10px;
+  border:1px solid rgba(240,226,196,.6);border-radius:18px;background:rgba(14,10,7,.10);z-index:25;
+  transform:translateY(calc(100% + 90px));opacity:0;pointer-events:none;transition:transform .36s cubic-bezier(.16,.84,.3,1),opacity .25s ease}
+#more.open{transform:none;opacity:1;pointer-events:auto}
+#more .nb:last-child:nth-child(odd){grid-column:span 2}
 </style>
 </head>
 <body>
@@ -811,54 +847,87 @@ function spendStuff(kind){
 
 /* ══ MODAL ═════════════════════════════════════════════════ */
 let nextKind=null, sheetTimer=null, sheetIsOpen=false, sheetKind="paper";
+const EASE_IN="cubic-bezier(.45,0,.9,.55)", EASE_OUT="cubic-bezier(.16,.84,.3,1)";
+const SHEET_IN={
+  paper:[{transform:"translateY(70px) rotate(-2.5deg)",opacity:0},{transform:"translateY(0) rotate(0)",opacity:1,offset:.55},{transform:"none",opacity:1}],
+  card:[{transform:"rotateY(-90deg) scale(.94)"},{transform:"none"}],
+  wood:[{transform:"rotateY(-92deg)"},{transform:"none"}],
+  drift:[{transform:"scale(.9) translateY(-16px)",opacity:0},{transform:"none",opacity:1}],
+  fixed:[{transform:"scale(.97)",opacity:0},{transform:"none",opacity:1}]};
+const SHEET_OUT={
+  paper:"translateY(105vh) rotate(5deg)", card:"rotateY(90deg) scale(.94)", wood:"rotateY(-92deg)",
+  drift:"scale(.9) translateY(-16px)", fixed:"translateY(60vh)"};
+const SHEET_SND={paper:"slide",card:"flip",wood:"creak",drift:"whoosh",fixed:"slide"};
+function sheetAnims(sh){ (sh.getAnimations?sh.getAnimations():[]).forEach(a=>a.cancel()); }
 function openSheet(html,kind){
   const v=$("#veil"), sh=$("#sheet");
   clearTimeout(sheetTimer);
   const k=kind||nextKind||"paper"; nextKind=null; sheetKind=k;
   const was=sheetIsOpen&&v.classList.contains("on");
+  sheetAnims(sh);
   sh.innerHTML=html;
-  sh.className="k-"+k; sh.style.transform=""; sh.style.opacity=""; sh.style.transition="";
+  sh.className="k-"+k; sh.style.transform=""; sh.style.opacity="";
   v.classList.remove("out"); v.classList.add("on"); sheetIsOpen=true;
-  if(!was){ sh.classList.add("enter"); requestAnimationFrame(()=>requestAnimationFrame(()=>sh.classList.remove("enter"))); }
-  else { sh.classList.add("swap"); setTimeout(()=>sh.classList.remove("swap"),320); }
+  if(!was){
+    if(sh.animate) sh.animate(SHEET_IN[k]||SHEET_IN.paper,{duration:k==="card"||k==="wood"?440:400,easing:EASE_OUT});
+    sfx(SHEET_SND[k]||"slide");
+  } else if(sh.animate) sh.animate([{transform:"translateY(6px)",opacity:.7},{transform:"none",opacity:1}],{duration:200,easing:EASE_OUT});
   v.scrollTop=0;
   requestAnimationFrame(()=>{ shapeCard(sh); placeWear(sh); });
 }
-function closeSheet(dir){
+function closeSheet(dir,opt){
   const v=$("#veil"), sh=$("#sheet");
-  if(!v.classList.contains("on")) return;
-  sheetIsOpen=false;
-  sh.style.transform=""; sh.style.opacity="";
-  sh.classList.add(dir?"fly-"+dir:"leave"); v.classList.add("out");
-  clearTimeout(sheetTimer);
-  sheetTimer=setTimeout(()=>{ v.classList.remove("on","out"); sh.className=""; maybeFounder(); },dir?420:360);
+  if(!v.classList.contains("on")||!sheetIsOpen) return;
+  sheetIsOpen=false; clearTimeout(sheetTimer);
+  const from=sh.style.transform||"none";
+  sheetAnims(sh);
+  let to, ms, ease=EASE_IN;
+  if(dir){
+    const vel=Math.max(1.5,Math.abs((opt&&opt.v)||0));                    /* px per ms, keeps the flick's speed */
+    const remain=dir==="down"?innerHeight:innerWidth;
+    ms=Math.max(150,Math.min(300,remain/vel));
+    to=dir==="down"?"translateY(110vh) rotate(6deg)":dir==="left"?"translateX(-120vw) rotate(-9deg)":"translateX(120vw) rotate(9deg)";
+    ease="cubic-bezier(.3,.4,.7,1)";
+    sfx("swish");
+  } else { to=SHEET_OUT[sheetKind]||SHEET_OUT.paper; ms=sheetKind==="card"||sheetKind==="wood"?300:280; sfx(SHEET_SND[sheetKind]||"slide"); }
+  const fade=(!dir&&sheetKind==="drift");
+  const fin=()=>{ sheetAnims(sh); v.classList.remove("on","out"); sh.className=""; sh.style.transform=""; sh.style.opacity=""; maybeFounder(); };
+  v.classList.add("out");
+  if(sh.animate){ const a=sh.animate([{transform:from,opacity:1},{transform:to,opacity:fade?0:1}],{duration:ms,easing:ease,fill:"forwards"}); a.onfinish=fin; sheetTimer=setTimeout(fin,ms+120); }
+  else fin();
+  sh.style.transform="";
 }
 (function(){
-  let sx=0,sy=0,dx=0,dy=0,drag=false,ok=false,t0=0;
+  let sx=0,sy=0,dx=0,dy=0,drag=false,ok=false,raf=0,samples=[];
   const sh=document.getElementById("sheet"), v=document.getElementById("veil");
-  sh.addEventListener("touchstart",e=>{
-    ok=sheetKind!=="fixed"&&!e.target.closest("input,textarea,select,[data-noswipe]");
-    if(!ok) return; const t=e.touches[0]; sx=t.clientX; sy=t.clientY; dx=dy=0; drag=false; t0=Date.now();
+  const paint=()=>{ raf=0; if(!drag) return;
+    sh.style.transform=drag==="x"?`translate3d(${dx}px,0,0) rotate(${(dx/42).toFixed(2)}deg)`:`translate3d(0,${Math.max(0,dy)}px,0) rotate(${(Math.max(0,dy)/110).toFixed(2)}deg)`; };
+  v.addEventListener("touchstart",e=>{
+    ok=sheetIsOpen&&sheetKind!=="fixed"&&!e.target.closest("input,textarea,select,[data-noswipe]");
+    if(!ok) return; const t=e.touches[0]; sx=t.clientX; sy=t.clientY; dx=dy=0; drag=false; samples=[[t.clientX,t.clientY,performance.now()]];
   },{passive:true});
-  sh.addEventListener("touchmove",e=>{
+  v.addEventListener("touchmove",e=>{
     if(!ok) return; const t=e.touches[0]; dx=t.clientX-sx; dy=t.clientY-sy;
+    samples.push([t.clientX,t.clientY,performance.now()]); if(samples.length>6) samples.shift();
     if(!drag){
-      if(Math.abs(dx)>16&&Math.abs(dx)>Math.abs(dy)*1.4) drag="x";
-      else if(dy>16&&dy>Math.abs(dx)*1.4&&v.scrollTop<=0) drag="y";
+      if(Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.2) drag="x";
+      else if(dy>12&&dy>Math.abs(dx)*1.2&&v.scrollTop<=1) drag="y";
       else return;
+      sheetAnims(sh);
     }
-    sh.style.transition="none";
-    sh.style.transform=drag==="x"?`translateX(${dx}px) rotate(${(dx/38).toFixed(2)}deg)`:`translateY(${Math.max(0,dy)}px) rotate(${(dy/95).toFixed(2)}deg)`;
-    sh.style.opacity=String(1-Math.min(.55,Math.abs(drag==="x"?dx:dy)/650));
+    if(!raf) raf=requestAnimationFrame(paint);
   },{passive:true});
-  sh.addEventListener("touchend",()=>{
-    if(!drag) return; const fast=Date.now()-t0<280;
-    sh.style.transition="";
-    if(drag==="x"&&(Math.abs(dx)>110||(fast&&Math.abs(dx)>55))) closeSheet(dx<0?"left":"right");
-    else if(drag==="y"&&(dy>120||(fast&&dy>60))) closeSheet("down");
-    else { sh.style.transform=""; sh.style.opacity=""; }
-    drag=false;
-  });
+  const end=()=>{
+    if(!drag){ ok=false; return; }
+    const a=samples[0], b=samples[samples.length-1], dt=Math.max(1,b[2]-a[2]);
+    const vx=(b[0]-a[0])/dt, vy=(b[1]-a[1])/dt;
+    const was=drag; drag=false; ok=false; cancelAnimationFrame(raf); raf=0;
+    if(was==="x"&&(Math.abs(dx)>90||(Math.abs(vx)>0.45&&Math.abs(dx)>30))) closeSheet(dx<0?"left":"right",{v:vx});
+    else if(was==="y"&&(dy>100||(vy>0.45&&dy>30))) closeSheet("down",{v:vy});
+    else if(sh.animate){ const from=sh.style.transform; sh.style.transform=""; sh.animate([{transform:from},{transform:"none"}],{duration:240,easing:EASE_OUT}); }
+    else sh.style.transform="";
+  };
+  v.addEventListener("touchend",end); v.addEventListener("touchcancel",end);
 })();
 $("#veil").addEventListener("click",e=>{ if(e.target.id==="veil"&&sheetKind!=="fixed") closeSheet(); });
 
@@ -1010,36 +1079,52 @@ function layoutFlock(){
     el.style.setProperty("--rot",((r()-.5)*5).toFixed(1)+"deg");
   });
 }
+let purseOpen=false, moreOpen=false;
+function togglePurse(){ purseOpen=!purseOpen; if(purseOpen) moreOpen=false; sfx(purseOpen?"slide":"tick");
+  const p=$("#purse"), b=$("#purseBtn"); if(p) p.classList.toggle("open",purseOpen); if(b) b.classList.toggle("open",purseOpen);
+  const m=$("#more"); if(m) m.classList.toggle("open",moreOpen); }
+function toggleMore(){ moreOpen=!moreOpen; if(moreOpen) purseOpen=false; sfx("slide");
+  const m=$("#more"); if(m) m.classList.toggle("open",moreOpen);
+  const b=$("#moreBtn"); if(b) b.firstChild.textContent=moreOpen?"Less":"More";
+  const p=$("#purse"); if(p) p.classList.toggle("open",purseOpen); }
+function moreGo(fn){ moreOpen=false; const m=$("#more"); if(m) m.classList.remove("open"); const b=$("#moreBtn"); if(b) b.firstChild.textContent="More"; fn(); }
+document.addEventListener("pointerdown",e=>{
+  if(purseOpen&&!e.target.closest("#purse,#purseBtn")){ purseOpen=false; const p=$("#purse"); if(p) p.classList.remove("open"); const b=$("#purseBtn"); if(b) b.classList.remove("open"); }
+  if(moreOpen&&!e.target.closest("#more,#moreBtn")){ moreOpen=false; const m=$("#more"); if(m) m.classList.remove("open"); const b=$("#moreBtn"); if(b) b.firstChild.textContent="More"; }
+},true);
 function render(){
   if(S.plantimals.length>=2&&!S.foundersDone){ S.foundersDone=true; save(); }
   const cap=capacity(), used=occupied(), ev=activeEvent();
-  let h=`<div id="scene"><div id="purse">`;
+  const coin=(k,tint)=>ART["cur:"+k]?`<img alt="" src="${ART["cur:"+k]}">`:`<span class="ink ${tint}"><svg viewBox="0 0 24 24">${ICONS[k]}</svg></span>`;
+  let h=`<div id="scene"><div id="top"><button id="purseBtn" class="${purseOpen?"open":""}" onclick="togglePurse()" aria-label="Purse">${coin("polllen","")}<span class="mono">${int(S.polllen)}</span></button>
+    <div id="purse" class="${purseOpen?"open":""}">`;
   for(const [k,label,tint] of CURRENCIES){
     const v=int(S[k]);
-    h+=`<button class="coin ${v===0?"dim":""}" aria-label="${label}" onclick="coinName(this,'${label}')">
-      ${ART["cur:"+k]?`<img alt="" src="${ART["cur:"+k]}">`:`<span class="ink ${tint}"><svg viewBox="0 0 24 24">${ICONS[k]}</svg></span>`}
-      <span class="cv mono">${v}</span></button>`;
+    h+=`<div class="coin ${v===0?"dim":""}">${coin(k,tint)}<span class="cn">${label}</span><span class="cv mono">${v}</span></div>`;
   }
   h+=`</div><div id="strip"><span class="pill mono">${int(used)} / ${int(cap)}</span>
     ${ev?`<span class="pill ev" onclick="uiEventCard()">${esc(ev.name)}</span>`:""}
-    ${shadowOwned()?`<span class="pill moon ${S.shadowOn&&midnightNow()&&S.moonHeard!==nightKey()?"stir":""}" onclick="uiMoon()" aria-label="Moon"><svg viewBox="0 0 24 24" width="13" height="13"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></span>`:""}</div>
+    ${shadowOwned()?`<span class="pill moon ${S.shadowOn&&midnightNow()&&S.moonHeard!==nightKey()?"stir":""}" onclick="uiMoon()" aria-label="Moon"><svg viewBox="0 0 24 24" width="13" height="13"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></span>`:""}</div></div>
     <div id="field">${bullMarkup()}${eggMarkup("garden"+dayKey(),["garden"])}
       ${live().map(figMarkup).join("")}${S.egglingses.map(eggFig).join("")}
       ${int((S.owned||{}).hiddenGarden)?`<div id="hdoor" onclick="uiHidden()" aria-label="A small door"><svg viewBox="0 0 24 34"><path d="M3 33V12a9 9 0 0 1 18 0v21z" fill="rgba(30,20,12,.55)" stroke="rgba(240,226,196,.55)"/><path d="M12 33V8.5" stroke="rgba(240,226,196,.35)"/><path d="M12 33l7-3V11" fill="rgba(240,200,120,.18)" stroke="rgba(240,226,196,.45)"/><circle cx="15" cy="21" r="1" fill="rgba(240,226,196,.7)"/></svg></div>`:""}</div>
+    <div id="more" class="${moreOpen?"open":""}">
+      <button class="nb" onclick="moreGo(uiJournal)">Journal</button>
+      <button class="nb" onclick="moreGo(()=>uiRolodex(0))">Collection</button>
+      <button class="nb" onclick="moreGo(uiMessages)">Messages${chatUnread()?` <span class="ac">·</span>`:""}</button>
+      <button class="nb" onclick="moreGo(uiMemory)">Kept</button>
+      <button class="nb" onclick="moreGo(uiSound)">Settings</button>
+      ${int(S.stuff)>=C.STUFF.event?`<button class="nb" onclick="moreGo(uiCall)">Call something · <span class="ac">3 STUFF</span></button>`:""}
+      ${int(S.stuff)>=C.STUFF.capacity?`<button class="nb" onclick="moreGo(()=>{ if(spendStuff('capacity')) render(); })">Make room · <span class="ac">10 STUFF</span></button>`:""}
+    </div>
     <nav id="nav">
       <button class="nb" onclick="uiConvert()">Convert</button>
       <button class="nb" onclick="uiKiss()">Butterfly <span class="ac">Kiss</span></button>
-      <button class="nb" onclick="uiJournal()">Journal</button>
       <button class="nb" onclick="uiShops()">Shops</button>
-      <button class="nb" onclick="uiRolodex(0)">Collection</button>
-      <button class="nb" onclick="uiMemory()">Kept</button>
-      <button class="nb" onclick="uiMessages()">Messages${chatUnread()?` <span class="ac">·</span>`:""}</button>
-      <button class="nb" onclick="uiSound()">Settings</button>
-      ${int(S.stuff)>=C.STUFF.event?`<button class="nb wide" onclick="uiCall()">Call something · <span class="ac">3 STUFF</span></button>`:""}
-      ${int(S.stuff)>=C.STUFF.capacity?`<button class="nb wide" onclick="if(spendStuff('capacity'))render()">Make room · <span class="ac">10 STUFF</span></button>`:""}
+      <button class="nb" id="moreBtn" onclick="toggleMore()">${moreOpen?"Less":"More"}${chatUnread()?` <span class="ac">·</span>`:""}</button>
     </nav>
     <div id="ver" onclick="verTap()">${BUILD}</div></div>`;
-  applyEventPalette(); applyWeather(); applyShadow();
+  applyEventPalette(); applyWeather(); applyShadow(); applyBreath();
   $("#app").innerHTML=h;
   layoutFlock();
   placeWear($("#app"));
@@ -1894,7 +1979,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.0.0";
+const VERSION="1.0.1";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2152,6 +2237,9 @@ async function keeperOpen(){
     <div style="height:7px"></div>
     <button class="btn" data-seed="kpp" onclick="repaintPaper(this)">Repaint the paper and garden</button>
     <div style="height:7px"></div>
+    <div class="lbl">Breathing <span id="kbv" class="mono" style="letter-spacing:0">${int(S.breathLvl==null?6:S.breathLvl)} of 12</span></div>
+    <input type="range" min="0" max="12" step="1" value="${int(S.breathLvl==null?6:S.breathLvl)}" style="width:100%" oninput="setBreath(this.value)">
+    <div class="opts">${[["S","Expand-contract"],["Y","Up-down"],["C","Circle"]].map(([k,l])=>`<button class="opt ${(S.breathMode||"S")===k?"sel":""}" data-bm="${k}" onclick="setBreath(null,'${k}')">${l}</button>`).join("")}</div>
     <div class="lbl">Make test creatures (free)</div>
     <div class="row"><button class="btn" data-seed="kt1" onclick="makeTestCreatures(1)">1</button>
     <button class="btn" data-seed="kt2" onclick="makeTestCreatures(2)">2</button>
@@ -2342,6 +2430,14 @@ const SFX_V={
   growl:[SFX.growl, t=>{ voice(t,85,70,1.2,"sawtooth",.025,12); hiss(t,1,250,120,.02,4); },
     t=>{ voice(t,110,80,.5,"sawtooth",.026,8); voice(t+.6,95,75,.6,"sawtooth",.022,8); }],
   whisper:[SFX.whisper],
+  slide:[t=>hiss(t,.26,2600,900,.05,1.1), t=>hiss(t,.22,3000,1200,.045,1.3), t=>hiss(t,.3,2200,800,.05,1)],
+  flip:[t=>{ hiss(t,.05,3500,2500,.06,2); hiss(t+.07,.05,3200,2200,.05,2); hiss(t+.14,.06,2800,1800,.04,2); },
+    t=>{ hiss(t,.06,3800,2600,.055,2); hiss(t+.09,.07,3000,2000,.05,2); }],
+  creak:[t=>{ voice(t,120,160,.38,"sawtooth",.012,9); hiss(t+.32,.06,500,180,.08,3); },
+    t=>{ voice(t,100,140,.45,"sawtooth",.011,11); hiss(t+.4,.07,420,160,.07,3); }],
+  whoosh:[t=>hiss(t,.45,900,2400,.035,.8), t=>hiss(t,.5,700,2000,.03,.8)],
+  swish:[t=>hiss(t,.18,1600,4200,.06,.9), t=>hiss(t,.16,1800,4600,.055,1), t=>hiss(t,.2,1400,3800,.06,.9)],
+  tick:[t=>note(2200,t,.03,"triangle",.012), t=>note(2050,t,.03,"triangle",.011), t=>{ hiss(t,.02,4000,3000,.03,4); }],
   pulse:[t=>{ hiss(t,.5,320,120,.12,6); voice(t,92,70,.45,"sine",.05); },
     t=>{ hiss(t,.35,420,140,.1,5); voice(t+.05,110,80,.35,"sine",.045); voice(t+.4,100,76,.3,"sine",.03); },
     t=>{ voice(t,80,64,.6,"sine",.055,3); hiss(t+.1,.4,260,110,.08,7); }],
@@ -3181,6 +3277,17 @@ function lightMul(){ let w=WX_MUL[weather()]; if(int((S.owned||{}).weather)>0) w
   return w*SEASON_MUL[season()]; }
 function fmtMins(m){ m=int(m); const h=Math.floor(m/60), r=m%60; return h?h+" h "+String(r).padStart(2,"0"):r+" min"; }
 let wxKey="", boltT=null;
+/* breathing: level 0 (next to nothing) .. 12 (just past slightly obvious); median sits under the old movement */
+function applyBreath(){
+  const L=Math.max(0,Math.min(12,S.breathLvl==null?6:int(S.breathLvl))), m=S.breathMode||"S";
+  const r=document.documentElement;
+  r.style.setProperty("--bamp",(0.0015+L/12*(0.017-0.0015)).toFixed(4));       /* scale: 0.15% .. 1.7% (old was 1.4%) */
+  r.style.setProperty("--bmov",(0.1+L/12*(1.1-0.1)).toFixed(3));               /* move: 0.1% .. 1.1% of its height */
+  r.dataset.breathe=m;
+}
+function setBreath(l,m){ if(l!=null) S.breathLvl=int(l); if(m) S.breathMode=m; save(); applyBreath();
+  const v=$("#kbv"); if(v) v.textContent=int(S.breathLvl==null?6:S.breathLvl)+" of 12";
+  document.querySelectorAll(".opt[data-bm]").forEach(o=>o.classList.toggle("sel",o.dataset.bm===(S.breathMode||"S"))); }
 function applyWeather(){
   const w=weather(), se=season(), k=w+se;
   document.documentElement.dataset.wx=w; document.documentElement.dataset.season=se;
@@ -4295,44 +4402,62 @@ function uiRolodex(d){
     <button class="btn" data-seed="rb" onclick="closeSheet()">Back</button>`);
   rolBind(all.length,STEP,R);
 }
-let rolAng=0, rolVel=0, rolRaf=null, rolN=1, rolStep=36, rolR=270;
+let rolAng=0, rolVel=0, rolRaf=null, rolN=1, rolStep=36, rolR=270, rolLastI=-1;
 function rolApply(){
   const ring=$("#rring"); if(!ring) return;
-  ring.style.transform=`translateZ(${-rolR}px) rotateX(${rolAng}deg)`;
+  ring.style.transform=`translate3d(0,0,${-rolR}px) rotateX(${rolAng.toFixed(2)}deg)`;
   const i=Math.max(0,Math.min(rolN-1,Math.round(rolAng/rolStep)));
-  ring.querySelectorAll(".rcard").forEach(c=>{ const d=Math.abs(+c.dataset.i*rolStep-rolAng); c.style.opacity=String(Math.max(0,1-d/110)); c.classList.toggle("front",+c.dataset.i===i); });
-  const ct=$("#rcount"); if(ct) ct.textContent=(i+1)+" of "+rolN;
+  const cards=ring.children;
+  for(let c=0;c<cards.length;c++){ const el=cards[c]; if(!el.dataset||el.dataset.i==null) continue;
+    const d=Math.abs(+el.dataset.i*rolStep-rolAng); el.style.opacity=(d>110?0:1-d/110).toFixed(3); }
+  if(i!==rolLastI){ rolLastI=i; const ct=$("#rcount"); if(ct) ct.textContent=(i+1)+" of "+rolN; sfx("tick");
+    for(let c=0;c<cards.length;c++) if(cards[c].dataset) cards[c].classList.toggle("front",+cards[c].dataset.i===i); }
 }
 function rolSettle(){
   cancelAnimationFrame(rolRaf);
-  const go=()=>{
-    if(Math.abs(rolVel)>0.15){ rolAng+=rolVel; rolVel*=0.9; }
-    const max=(rolN-1)*rolStep;
-    if(rolAng<0){ rolAng*=0.7; rolVel*=0.5; } if(rolAng>max){ rolAng=max+(rolAng-max)*0.7; rolVel*=0.5; }
-    if(Math.abs(rolVel)<=0.15){
+  let last=performance.now();
+  const max=(rolN-1)*rolStep;
+  const go=t=>{
+    const dt=Math.min(40,t-last); last=t;
+    if(Math.abs(rolVel)>0.03){                       /* glide (degrees per ms), easing off smoothly */
+      rolAng+=rolVel*dt; rolVel*=Math.exp(-dt/260);
+      if(rolAng<-12||rolAng>max+12){ rolVel*=Math.exp(-dt/60); }
+    } else {
       const target=Math.max(0,Math.min(rolN-1,Math.round(rolAng/rolStep)))*rolStep;
-      rolAng+=(target-rolAng)*0.25;
-      if(Math.abs(target-rolAng)<0.2){ rolAng=target; rolIdx=Math.round(target/rolStep); rolApply(); sfx("tap"); return; }
+      const k=1-Math.exp(-dt/75); rolAng+=(target-rolAng)*k;
+      if(Math.abs(target-rolAng)<0.05){ rolAng=target; rolIdx=Math.round(target/rolStep); rolVel=0; rolApply(); return; }
     }
     rolApply(); rolRaf=requestAnimationFrame(go);
   };
   rolRaf=requestAnimationFrame(go);
 }
-function rolSpin(d){ rolVel=0; rolAng=Math.max(0,Math.min(rolN-1,Math.round(rolAng/rolStep)+d))*rolStep+(d>0?-0.01:0.01); rolSettle(); }
+function rolSpin(d){
+  const cur=Math.max(0,Math.min(rolN-1,Math.round(rolAng/rolStep)));
+  const target=Math.max(0,Math.min(rolN-1,cur+d))*rolStep;
+  rolVel=0; cancelAnimationFrame(rolRaf);
+  const from=rolAng, t0=performance.now(), ms=360;
+  const go=t=>{ const k=Math.min(1,(t-t0)/ms), e=1-Math.pow(1-k,3); rolAng=from+(target-from)*e; rolApply();
+    if(k<1) rolRaf=requestAnimationFrame(go); else { rolIdx=Math.round(target/rolStep); } };
+  rolRaf=requestAnimationFrame(go);
+}
 function rolBind(n,step,R){
-  rolN=n; rolStep=step; rolR=R; rolAng=(rolIdx||0)*step; rolVel=0; rolApply();
+  rolN=n; rolStep=step; rolR=R; rolAng=(rolIdx||0)*step; rolVel=0; rolLastI=rolIdx||0; rolApply();
   const el=$("#rolo"); if(!el) return;
-  let y0=null, t0=0, a0=0, last=0, lastT=0, moved=0;
-  el.addEventListener("pointerdown",e=>{ y0=e.clientY; a0=rolAng; last=e.clientY; lastT=performance.now(); moved=0; cancelAnimationFrame(rolRaf); el.setPointerCapture(e.pointerId); });
-  el.addEventListener("pointermove",e=>{ if(y0==null) return; const now=performance.now();
-    rolAng=a0-(e.clientY-y0)*0.42; moved=Math.max(moved,Math.abs(e.clientY-y0));
-    rolVel=-(e.clientY-last)*0.42/Math.max(1,(now-lastT)/16); last=e.clientY; lastT=now; rolApply(); });
+  let y0=null, a0=0, moved=0, samp=[], pend=false, curY=0;
+  const draw=()=>{ pend=false; if(y0==null) return; rolAng=a0-(curY-y0)*0.42; rolApply(); };
+  el.addEventListener("pointerdown",e=>{ y0=e.clientY; curY=y0; a0=rolAng; moved=0; samp=[[e.clientY,performance.now()]]; cancelAnimationFrame(rolRaf); el.setPointerCapture(e.pointerId); });
+  el.addEventListener("pointermove",e=>{ if(y0==null) return; curY=e.clientY; moved=Math.max(moved,Math.abs(curY-y0));
+    samp.push([curY,performance.now()]); if(samp.length>6) samp.shift();
+    if(!pend){ pend=true; requestAnimationFrame(draw); } });
   const end=()=>{ if(y0==null) return; y0=null;
     if(moved<6){ const f=$("#rring .rcard.front"); if(f) uiPlant(S.plantimals[+f.dataset.i].id); return; }
+    const a=samp[0], b=samp[samp.length-1], dt=Math.max(1,b[1]-a[1]);
+    rolVel=-((b[0]-a[0])/dt)*0.42;                     /* degrees per ms */
     rolSettle(); };
   el.addEventListener("pointerup",end); el.addEventListener("pointercancel",end);
   requestAnimationFrame(()=>placeWear($("#rolo")));
 }
+
 
 /* ══ MEMORY GARDEN ═════════════════════════════════════════ */
 function uiMemory(){
