@@ -690,6 +690,14 @@ textarea.notebook{width:100%;min-height:52vh;box-sizing:border-box;border:0;outl
   margin-top:14px;opacity:0;transform:translateY(6px)}
 #oc3.on .fpres{animation:fpres 1.1s ease 2.9s forwards}
 @keyframes fpres{to{opacity:1;transform:none}}
+
+.brand.iso{font-size:clamp(24px,8vw,36px);letter-spacing:.12em}
+.fpl.lc{text-transform:none}
+#oc3 .fpres{margin:0 0 12px;opacity:0;transform:translateY(-6px)}
+#oc3.on .fpres{animation:fpres 1s ease .2s forwards}
+#oc3.on .fF{animation:fF .4s ease 1.2s forwards}
+#oc3.on .fring{animation:fring .9s cubic-bezier(.5,.1,.3,1) 1.3s forwards}
+#oc3.on .fP{animation:fP .6s cubic-bezier(.3,1.6,.5,1) 3.3s forwards}
 </style>
 </head>
 <body>
@@ -702,10 +710,11 @@ textarea.notebook{width:100%;min-height:52vh;box-sizing:border-box;border:0;outl
 <div id="open">
   <button id="oskip" onclick="openSkip()">Skip</button>
   <div class="oc" id="oc1"><div class="brand">M<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>I<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>N<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>D<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>M<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>E<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>R<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>C</div><div class="brand2">Studios</div></div>
-  <div class="oc" id="oc2"><div class="assoc">In cooperation with</div><div class="lipr">Lipreader Games</div></div>
-  <div class="oc" id="oc3"><div class="fpl">An</div>
+  <div class="oc" id="oc2"><div class="assoc">in cooperation with</div><div class="lipr">Lipreader Games</div></div>
+  <div class="oc" id="oc4"><div class="brand iso">I.S.O.C.A.N.-5</div></div>
+  <div class="oc" id="oc3"><div class="fpres">presents</div><div class="fpl lc">an</div>
     <div class="fmark"><svg viewBox="0 0 160 120"><path class="fring" d="M86 14C48 8 16 26 14 58c-2 30 30 50 66 48 36-2 64-22 62-52C140 30 112 12 70 18"/></svg><span class="fF">F</span><span class="fP">+</span></div>
-    <div class="fpl">in Art production</div><div class="fpres">presents</div></div>
+    <div class="fpl lc">in Art production</div></div>
   <div class="oc" id="otitle"><div class="motes"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="ttop"><div class="tname">Kiki's Secret Pocket Garden</div><div class="tof">of Quivering Delights and Shocking Mysterios</div>
       <div class="tsub">The Dawn of the Plantimals' Return in the Glow of Sunset in Past's, Perhaps Last, Winter</div><div class="tback" id="tback"></div></div>
@@ -1145,7 +1154,7 @@ function showIntro(replay){
   Promise.race([document.fonts?document.fonts.ready:Promise.resolve(),nap(1500)]).then(()=>{ o.style.transition="opacity .6s ease"; o.style.opacity="1"; setTimeout(()=>{ o.style.transition=""; },700); });
   if(!S.seenStudio||replay){
     o.classList.add("skippable");
-    oShow("oc1"); oNext(()=>{ oShow("oc2"); oNext(()=>{ oShow("oc3"); oNext(openTitle,7400); },5600); },5600);
+    oShow("oc1"); oNext(()=>{ oShow("oc2"); oNext(()=>{ oShow("oc4"); oNext(()=>{ oShow("oc3"); oNext(openTitle,5600); },3600); },3600); },3600);
   } else openTitle();
 }
 function openSkip(){
@@ -2269,7 +2278,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.3.1";
+const VERSION="1.3.2";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
