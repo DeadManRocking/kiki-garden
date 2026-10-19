@@ -609,7 +609,9 @@ body.opening #veil:has(#sheet.k-fixed){z-index:800}
 #zcap.in{opacity:1}
 body.pollinating #app{opacity:0;pointer-events:none}
 /* ══ the C-Keeki and the Keeper ══ */
-#keeki{position:absolute;top:2px;right:min(36%,152px);z-index:4;width:30px;height:30px;padding:6px;border:0;background:none;color:rgba(240,226,196,.42);cursor:pointer}
+#keeki{width:30px;height:30px;padding:6px;border:0;background:none;color:rgba(240,226,196,.4);cursor:pointer;flex:none}
+#sheet.k-keeper .kk-lock{cursor:pointer;padding:6px}
+#sheet.k-keeper .btn.kk-on{background:rgba(160,60,60,.45) !important;border-color:#e08a8a !important}
 #keeki svg{width:18px;height:17px;display:block}
 html.painted #sheet.k-keeper{background:linear-gradient(180deg,#141733,#0e1024) !important;color:#e4e1d6;border-radius:16px !important;
   outline:1px solid rgba(110,118,220,.35) !important;outline-offset:-6px !important;box-shadow:0 18px 40px rgba(0,0,0,.7),inset 0 0 0 1px rgba(25,25,112,.9) !important}
@@ -638,6 +640,14 @@ html.painted #sheet.k-keeper input[type=text],html.painted #sheet.k-keeper input
 #chartbox{max-height:58vh;overflow:auto;border-radius:8px;-webkit-overflow-scrolling:touch}
 #chartimg{width:100%;display:block;cursor:zoom-in;transition:width .3s ease}
 #chartimg.zoom{width:220%;cursor:zoom-out}
+
+.poof{position:fixed;z-index:3000;pointer-events:none;width:0;height:0}
+.poof i{position:absolute;width:5px;height:5px;margin:-2.5px;border-radius:50%;background:rgba(255,222,140,.95);box-shadow:0 0 8px rgba(255,210,120,.9);
+  animation:poof 1s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes poof{0%{transform:translate(0,0) scale(.4);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1.1);opacity:0}}
+.poof b{position:absolute;left:0;top:-30px;transform:translateX(-50%);white-space:nowrap;font:600 15px 'Fraunces',Georgia,serif;color:#fff3d2;
+  text-shadow:0 1px 6px #000,0 0 10px rgba(255,200,120,.8);animation:poofw 1.5s ease-out forwards}
+@keyframes poofw{0%{opacity:0;transform:translate(-50%,8px)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-26px)}}
 </style>
 </head>
 <body>
@@ -863,6 +873,7 @@ function decayMood(){
 }
 
 /* ══ CURRENCY OPERATIONS ═══════════════════════════════════ */
+let lastConv=null;
 function convert(from,to,amt){
   amt=int(amt);
   if(from==="stuff"||to==="stuff") return "STUFF cannot be converted.";
@@ -876,9 +887,10 @@ function convert(from,to,amt){
   if(int(S.polllen)<amt) return "Not enough Polllen.";
   const got=Math.floor(amt/rate);
   if(got<1) return `At least ${rate} Polllen needed.`;
-  S.polllen=int(S.polllen)-amt;
+  S.polllen=int(S.polllen)-got*rate;          /* only what was used; the rest stays hers */
   S[to]=int(S[to])+got;
   save();
+  lastConv={got:got,to:to,used:got*rate};
   return null;
 }
 function craftPurplePuff(){
@@ -958,7 +970,7 @@ function openSheet(html,kind){
   sh.className="k-"+k; sh.style.transform=""; sh.style.opacity=""; sheetPose={x:0,y:0,rot:0}; veilDim(0);
   v.classList.remove("out"); v.classList.add("on"); sheetIsOpen=true;
   if(!was){
-    if(sh.animate) sh.animate(SHEET_IN[k]||SHEET_IN.paper,{duration:k==="card"||k==="wood"?440:400,easing:EASE_OUT});
+    if(sh.animate) sh.animate(SHEET_IN[k]||SHEET_IN.paper,{duration:k==="card"||k==="wood"?340:300,easing:EASE_OUT});
     sfx(SHEET_SND[k]||"slide");
   } else if(sh.animate) sh.animate([{transform:"translate3d(0,6px,0)",opacity:.7},{transform:"none",opacity:1}],{duration:200,easing:EASE_OUT});
   v.scrollTop=0;
@@ -975,7 +987,7 @@ function throwSheet(st){
   let last=performance.now();
   const step=t=>{
     const dt=Math.max(0,Math.min(34,t-last)); last=t;
-    st.vy+=0.0028*dt; st.x+=st.vx*dt; st.y+=st.vy*dt; st.rot+=st.vr*dt;
+    st.vy+=0.0045*dt; st.x+=st.vx*dt; st.y+=st.vy*dt; st.rot+=st.vr*dt;
     poseSheet(st);
     const p=Math.max(Math.abs(st.x)/W,st.y/H); veilDim(p);
     if(st.y>H*1.08||Math.abs(st.x)>W*1.2||st.y<-H*1.2){ sh.classList.remove("moving"); finishClose(); return; }
@@ -991,18 +1003,18 @@ function closeSheet(dir,opt){
   sheetAnims(sh);
   if(dir){
     const vx=(opt&&opt.vx)||0, vy=(opt&&opt.vy)||0;
-    if(dir==="down") throwSheet({x:p.x,y:p.y,rot:p.rot,vx:vx*.7,vy:Math.max(1.5,vy),vr:p.rot*.004+vx*.02});
-    else { const sg=dir==="left"?-1:1; throwSheet({x:p.x,y:p.y,rot:p.rot,vx:sg*Math.max(1.9,Math.abs(vx)),vy:vy*.6-.12,vr:sg*.1}); }
+    if(dir==="down") throwSheet({x:p.x,y:p.y,rot:p.rot,vx:vx*.7,vy:Math.max(2.6,vy*1.15),vr:p.rot*.004+vx*.02});
+    else { const sg=dir==="left"?-1:1; throwSheet({x:p.x,y:p.y,rot:p.rot,vx:sg*Math.max(2.8,Math.abs(vx)*1.15),vy:vy*.6-.12,vr:sg*.12}); }
     sfx("swish"); return;
   }
   sfx(SHEET_SND[sheetKind]||"slide");
-  if(sheetKind==="paper"||sheetKind==="fixed"){ throwSheet({x:0,y:0,rot:0,vx:(Math.random()-.5)*.3,vy:.75,vr:(Math.random()<.5?-1:1)*.045}); return; }
+  if(sheetKind==="paper"||sheetKind==="fixed"){ throwSheet({x:0,y:0,rot:0,vx:(Math.random()-.5)*.4,vy:1.7,vr:(Math.random()<.5?-1:1)*.06}); return; }
   if(!sh.animate){ finishClose(); return; }
   v.classList.add("out");
   let frames, ms, ease;
-  if(sheetKind==="card"){ frames=[{transform:"none"},{transform:"translate3d(20px,0,0) rotateY(92deg) scale(.95)"}]; ms=240; ease="cubic-bezier(.5,0,.9,.5)"; }
-  else if(sheetKind==="wood"){ frames=[{transform:"none"},{transform:"rotateY(-97deg)"}]; ms=330; ease="cubic-bezier(.55,0,.85,.3)"; setTimeout(()=>sfx("thunk"),300); }
-  else { frames=[{transform:"none",opacity:1},{transform:"scale(.9) translate3d(0,-14px,0)",opacity:0}]; ms=260; ease="cubic-bezier(.5,0,.9,.6)"; }
+  if(sheetKind==="card"){ frames=[{transform:"none"},{transform:"translate3d(20px,0,0) rotateY(92deg) scale(.95)"}]; ms=190; ease="cubic-bezier(.5,0,.9,.5)"; }
+  else if(sheetKind==="wood"){ frames=[{transform:"none"},{transform:"rotateY(-97deg)"}]; ms=260; ease="cubic-bezier(.55,0,.85,.3)"; setTimeout(()=>sfx("thunk"),240); }
+  else { frames=[{transform:"none",opacity:1},{transform:"scale(.9) translate3d(0,-14px,0)",opacity:0}]; ms=210; ease="cubic-bezier(.5,0,.9,.6)"; }
   const a=sh.animate(frames,{duration:ms,easing:ease,fill:"forwards"});
   a.onfinish=finishClose; sheetTimer=setTimeout(finishClose,ms+150);
 }
@@ -1152,7 +1164,7 @@ function bullMarkup(){
   return `<div id="bull" onclick="uiBull()" aria-label="${S.pastyUnlocked?"Bull the Pasty Bee":"Bull the Bee"}">
     <div class="pollen"></div>${art?`<img alt="" class="${cut?"cut":"soft"}" src="${art}">`:`<div style="height:90px"></div>`}
     <div class="bcap">${line}</div></div>
-    <button id="keeki" aria-label="" onclick="keekiTap(event)"><svg viewBox="0 0 24 22"><path d="M12 21C5 15.5 1.5 12 1.5 7.2 1.5 4 4 1.5 7 1.5c2.2 0 3.8 1.2 5 3 1.2-1.8 2.8-3 5-3 3 0 5.5 2.5 5.5 5.7 0 4.8-3.5 8.3-10.5 13.8z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="9.2" r="1.9" fill="currentColor"/><path d="M11.1 10.4h1.8l.6 4.2h-3z" fill="currentColor"/></svg></button>`;
+    <button id="keekiOld" style="display:none"><svg viewBox="0 0 24 22"><path d="M12 21C5 15.5 1.5 12 1.5 7.2 1.5 4 4 1.5 7 1.5c2.2 0 3.8 1.2 5 3 1.2-1.8 2.8-3 5-3 3 0 5.5 2.5 5.5 5.7 0 4.8-3.5 8.3-10.5 13.8z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="9.2" r="1.9" fill="currentColor"/><path d="M11.1 10.4h1.8l.6 4.2h-3z" fill="currentColor"/></svg></button>`;
 }
 function figMarkup(p){
   const a=ART["p:"+p.id], src=a&&a[stageKey(p)];
@@ -1224,7 +1236,7 @@ function render(){
     const v=int(S[k]);
     h+=`<div class="coin ${v===0?"dim":""}">${coin(k,tint)}<span class="cn">${label}</span><span class="cv mono">${v}</span></div>`;
   }
-  h+=`</div><div id="strip"><span class="pill mono">${int(used)} / ${int(cap)}</span>
+  h+=`</div><div id="strip"><button id="keeki" aria-label="" onclick="keekiTap(event)"><svg viewBox="0 0 24 22"><path d="M12 21C5 15.5 1.5 12 1.5 7.2 1.5 4 4 1.5 7 1.5c2.2 0 3.8 1.2 5 3 1.2-1.8 2.8-3 5-3 3 0 5.5 2.5 5.5 5.7 0 4.8-3.5 8.3-10.5 13.8z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="9.2" r="1.9" fill="currentColor"/><path d="M11.1 10.4h1.8l.6 4.2h-3z" fill="currentColor"/></svg></button><span class="pill mono">${int(used)} / ${int(cap)}</span>
     ${ev?`<span class="pill ev" onclick="uiEventCard()">${esc(ev.name)}</span>`:""}
     ${shadowOwned()?`<span class="pill moon ${S.shadowOn&&midnightNow()&&S.moonHeard!==nightKey()?"stir":""}" onclick="uiMoon()" aria-label="Moon"><svg viewBox="0 0 24 24" width="13" height="13"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></span>`:""}</div></div>
     <div id="field">${bullMarkup()}${eggMarkup("garden"+dayKey(),["garden"])}
@@ -1353,6 +1365,7 @@ function gradeOf(score){
   return "Failed";
 }
 function actionLocked(p,action){
+  if(S.noCool) return false;
   const until=(p.locks||{})[action]||0;
   return Date.now()<until;
 }
@@ -2164,7 +2177,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.1.1";
+const VERSION="1.1.2";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2298,6 +2311,7 @@ function playVar(k,t){
   try{ fn(t+(small?0:Math.random()*0.04)); }catch(e){}
   AU.pm=1; AU.ts=1;
 }
+function buzz(p){ try{ if(!S.buzzOff&&navigator.vibrate) navigator.vibrate(p); }catch(e){} }
 function loud(k,g){ AU.gm=g||2.4; sfx(k); AU.gm=1; }
 function sfx(k){
   if(S.sfxOff) return;
@@ -2395,8 +2409,8 @@ function keekiTap(e){
   const now=Date.now(); keekiTaps=keekiTaps.filter(t=>now-t<1800); keekiTaps.push(now);
   if(keekiTaps.length<3) return;
   keekiTaps=[]; pinTaps=[];
-  openSheet(`<div class="kk-lock"><svg viewBox="0 0 24 22" width="28" height="26"><path d="M12 21C5 15.5 1.5 12 1.5 7.2 1.5 4 4 1.5 7 1.5c2.2 0 3.8 1.2 5 3 1.2-1.8 2.8-3 5-3 3 0 5.5 2.5 5.5 5.7 0 4.8-3.5 8.3-10.5 13.8z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="9.2" r="1.9" fill="currentColor"/><path d="M11.1 10.4h1.8l.6 4.2h-3z" fill="currentColor"/></svg></div>
-    <input id="kpin" class="mono" type="password" inputmode="numeric" maxlength="6" autocomplete="off" onclick="pinTap()">
+  openSheet(`<div class="kk-lock" onclick="pinTap()"><svg viewBox="0 0 24 22" width="28" height="26"><path d="M12 21C5 15.5 1.5 12 1.5 7.2 1.5 4 4 1.5 7 1.5c2.2 0 3.8 1.2 5 3 1.2-1.8 2.8-3 5-3 3 0 5.5 2.5 5.5 5.7 0 4.8-3.5 8.3-10.5 13.8z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="9.2" r="1.9" fill="currentColor"/><path d="M11.1 10.4h1.8l.6 4.2h-3z" fill="currentColor"/></svg></div>
+    <input id="kpin" class="mono" type="password" inputmode="numeric" maxlength="6" autocomplete="off">
     <div class="msg" id="kmsg"></div>`,"keeper");
 }
 async function pinTap(){
@@ -2435,7 +2449,8 @@ function keeperPanel(){
     ${sec("Growing",kv("Coppertanrr now",`${weather()}, ${season()} · slider ${fmtMins(Math.round(sunBest()/lightMul()/5)*5)}${weather()==="Storm"?" · not Open Ridge or Ashen Clearing":""}`)
       +`<div class="kk-sub">Test creatures (free)</div>
       <div class="kk-row"><button class="btn" data-seed="kt1" onclick="makeTestCreatures(1)">1</button><button class="btn" data-seed="kt2" onclick="makeTestCreatures(2)">2</button><button class="btn" data-seed="kt3" onclick="makeTestCreatures(3)">3</button></div>
-      <button class="btn" data-seed="kadv" onclick="advanceTests()">Move every creature on one stage</button>`)}
+      <button class="btn" data-seed="kadv" onclick="advanceTests()">Move every creature on one stage</button>
+      <div class="kk-row"><button class="btn ${S.noCool?"kk-on":""}" data-seed="knc" onclick="S.noCool=!S.noCool;save();render();keeperPanel()">Rests and lock-outs: ${S.noCool?"OFF (testing)":"on"}</button></div>`)}
     ${sec("Breathing",`<div class="kk-kv"><span>Strength</span><span id="kbv" class="mono">${int(S.breathLvl==null?6:S.breathLvl)} of 12</span></div>
       <input type="range" min="0" max="12" step="1" value="${int(S.breathLvl==null?6:S.breathLvl)}" style="width:100%" oninput="setBreath(this.value)">
       <div class="opts">${[["S","Expand-contract"],["Y","Up-down"],["C","Circle"]].map(([k,l])=>`<button class="opt ${(S.breathMode||"S")===k?"sel":""}" data-bm="${k}" onclick="setBreath(null,'${k}')">${l}</button>`).join("")}</div>`)}
@@ -2485,7 +2500,7 @@ function abilityOf(p){
 function abilityDef(p){ const a=abilityOf(p); return a?(int(p.stage)===0?BABY_AB:TEEN_AB)[a]:null; }
 function abilityMarkup(p){
   const a=abilityOf(p); if(!a) return "";
-  const def=abilityDef(p), last=int((p.abAt||{})[int(p.stage)]);
+  const def=abilityDef(p), last=(S.noCool?0:int((p.abAt||{})[int(p.stage)]));
   const left=def.cd*3600000-(Date.now()-last);
   const spent=def.once&&p.pathUsed, ready=!spent&&(!last||left<=0);
   return `<div class="lbl">Gift</div><button class="btn" data-seed="ab${p.id}" ${ready?"":"disabled"}
@@ -2494,7 +2509,7 @@ function abilityMarkup(p){
 function useAbility(id,tid){
   const p=S.plantimals.find(x=>x.id===id); if(!p) return;
   const a=abilityOf(p), def=abilityDef(p); if(!def) return;
-  const last=int((p.abAt||{})[int(p.stage)]);
+  const last=(S.noCool?0:int((p.abAt||{})[int(p.stage)]));
   if((def.once&&p.pathUsed)||(last&&Date.now()-last<def.cd*3600000)) return;
   if(def.target&&!tid){
     const pool=S.plantimals.filter(x=>x.id!==p.id&&(def.target!=="quirked"||(x.quirks||[]).some(q=>NEGLECT_QUIRKS.indexOf(q)>=0)));
@@ -2624,6 +2639,7 @@ const SFX_V={
     t=>{ voice(t,100,140,.45,"sawtooth",.011,11); hiss(t+.4,.07,420,160,.07,3); }],
   whoosh:[t=>hiss(t,.45,900,2400,.035,.8), t=>hiss(t,.5,700,2000,.03,.8)],
   swish:[t=>hiss(t,.18,1600,4200,.06,.9), t=>hiss(t,.16,1800,4600,.055,1), t=>hiss(t,.2,1400,3800,.06,.9)],
+  pour:[t=>hiss(t,.3,1800+Math.random()*600,1200,.035,1.2), t=>{ hiss(t,.25,2400,1500,.03,1.4); voice(t+.1,900,1300,.06,"sine",.012); }, t=>hiss(t,.32,1500,1000,.035,1)],
   splat:[t=>{ hiss(t,.12,900,160,.16,2.5); voice(t,240,70,.18,"sine",.05); }, t=>{ hiss(t,.14,800,140,.15,2); voice(t+.02,210,60,.2,"sine",.05); }],
   thunk:[t=>{ voice(t,90,55,.16,"sine",.07); hiss(t,.05,600,200,.08,3); }],
   sparkle:[t=>{ for(let i=0;i<7;i++) note(1600+Math.random()*1600,t+i*.05,.5,"sine",.018); }],
@@ -2741,6 +2757,8 @@ function uiSound(){
     <button class="btn" data-seed="am" onclick="S.ambOff=!S.ambOff;save();S.ambOff?ambStop():ambStart();uiSound()">Garden sounds · ${S.ambOff?"off":"on"}</button>
     <div style="height:7px"></div>
     <button class="btn" data-seed="sf" onclick="S.sfxOff=!S.sfxOff;save();uiSound()">Effects · ${S.sfxOff?"off":"on"}</button>
+    <div style="height:7px"></div>
+    <button class="btn" data-seed="sbz" onclick="S.buzzOff=!S.buzzOff;save();uiSound();buzz(20)">Touch feel · ${S.buzzOff?"off":"on"}</button>
     <div style="height:14px"></div>
     <button class="btn" data-seed="sop" onclick="replayOpening()">Play the opening again</button>
     <div style="height:7px"></div>
@@ -3352,7 +3370,9 @@ function pickWater(el){
 const POURS=["Hold","Sprinkle","Tip"];
 const POUR_PREF={Smooth:"Tip",Scale:"Tip",Fur:"Sprinkle",Feather:"Sprinkle",Bark:"Hold"};
 let pourMode="Hold", tiltOff=null, tiltSeen=false;
-function setFill(v){ holdVal=Math.max(0,Math.min(140,Math.round(v)));
+let pourT=0;
+function setFill(v){ const now=Date.now(); if(now-pourT>260){ pourT=now; sfx("pour"); if(holdVal<100) buzz(8); else buzz([25,30,25]); }
+  holdVal=Math.max(0,Math.min(140,Math.round(v)));
   const rv=$("#rv"), rg=$("#ring"); if(rv) rv.textContent=holdVal; if(rg) rg.style.transform="scale("+(1+holdVal/260)+")"; }
 function pickPour(el,id){
   $("#sheet").querySelectorAll(".opt[data-pm]").forEach(o=>o.classList.remove("sel"));
@@ -3403,7 +3423,7 @@ function holdOn(){
   if(holdTimer) return;
   holdVal=0; holdStart=Date.now();
   holdTimer=setInterval(()=>{
-    holdVal=Math.min(140,Math.round((Date.now()-holdStart)/18));
+    holdVal=Math.min(140,Math.round((Date.now()-holdStart)/18)); if(Date.now()-pourT>260){ pourT=Date.now(); sfx("pour"); buzz(holdVal<100?8:[25,30,25]); }
     const rv=$("#rv"), rg=$("#ring");
     if(rv) rv.textContent=holdVal;
     if(rg) rg.style.transform="scale("+(1+holdVal/260)+")";
@@ -3616,7 +3636,7 @@ function cudStart(p,quirk){
   cud.iv=setInterval(()=>{
     if(!$("#cudpad")){ clearInterval(cud.iv); return; }
     const left=Math.max(0,Math.ceil((cud.end-Date.now())/1000)); const t=$("#cudt"); if(t) t.textContent=left;
-    if(cud.holding&&Date.now()-cud.holdT>450){ cudGain("Talk",0.9); if(Math.random()<.06) sfx("coo"+Math.min(2,int(p.stage))); }
+    if(cud.holding&&Date.now()-cud.holdT>450){ cudGain("Talk",0.9); if(Math.random()<.05) buzz(4); if(Math.random()<.06) sfx("coo"+Math.min(2,int(p.stage))); }
     if(Date.now()>nextSwitch){ let w=cud.want; while(w===cud.want) w=pick(["Pet","Tickle","Talk"]); cud.want=w; cue(); nextSwitch=Date.now()+4000+Math.random()*2500; }
     if(Date.now()>=cud.end&&!cud.done) cudFinish(false);
   },100);
@@ -3627,11 +3647,11 @@ function cudStart(p,quirk){
     const now=performance.now(), d=Math.hypot(e.clientX-cud.lx,e.clientY-cud.ly), sp=d/Math.max(1,now-cud.lt);
     cud.moved+=d; cud.lx=e.clientX; cud.ly=e.clientY; cud.lt=now;
     if(cud.moved>10) cud.holding=false;
-    if(sp<0.9&&d>0){ cudGain("Pet",d/16); cudFx(e,"pet"); }
+    if(sp<0.9&&d>0){ cudGain("Pet",d/16); cudFx(e,"pet"); if(Math.random()<.18) buzz(6); }
   });
   const up=e=>{ if(cud.lx==null) return;
     if(cud.moved<10&&Date.now()-cud.holdT<300){ const now=Date.now(); cud.taps=cud.taps.filter(t=>now-t<700); cud.taps.push(now);
-      if(cud.taps.length>=2){ cudGain("Tickle",3.2); cudFx(e,"tickle"); if(Math.random()<.3) sfx("giggle"); } }
+      if(cud.taps.length>=2){ cudGain("Tickle",3.2); cudFx(e,"tickle"); buzz([5,25,5]); if(Math.random()<.3) sfx("giggle"); } }
     cud.holding=false; cud.lx=null; };
   pad.addEventListener("pointerup",up); pad.addEventListener("pointercancel",up);
 }
@@ -3712,6 +3732,7 @@ function uiConvert(){
       <button class="opt" data-t="hunneee" onclick="pickTo(this)">Hunneee · 10</button>
       <button class="opt" data-t="gold" onclick="pickTo(this)">Gold · 20</button>
       <button class="opt" data-t="mystrieousness" onclick="pickTo(this)">Mystrieousness · 5</button>
+      ${eventActive("Chocolate Eclipse")?`<button class="opt" data-t="chocolate" onclick="pickTo(this)">Chocolate · 50</button>`:""}
     </div>
     <div class="lbl">Amount of Polllen</div>
     <input id="amt" type="tel" inputmode="numeric" placeholder="0">
@@ -3721,7 +3742,9 @@ function uiConvert(){
     <div style="height:16px"></div>
     <button class="btn" data-seed="pp" onclick="doCraft()">
       Craft Purple Puff · <span class="ac">1 Nector + 50 Polllen</span></button>
-    <div class="note">You have ${int(S.polllen)} Polllen, ${int(S.nector)} Nector.</div>`);
+    <div class="note" id="vbal">You have ${int(S.polllen)} Polllen, ${int(S.nector)} Nector.</div>
+    <div style="height:12px"></div><button class="btn" data-seed="cvb" onclick="closeSheet()">Done</button>`);
+  if(convTo){ const o=$("#sheet").querySelector(`.opt[data-t="${convTo}"]`); if(o) o.classList.add("sel"); else convTo=null; }
 }
 let convTo=null;
 function pickTo(el){
@@ -3731,14 +3754,28 @@ function pickTo(el){
 function doConvert(){
   const m=$("#vmsg");
   if(!convTo){ m.textContent="Choose what it becomes."; return; }
+  const btn=$("#sheet").querySelector('[data-seed="cv"]');
   const err=convert("polllen",convTo,$("#amt").value);
   if(err){ m.textContent=err; return; }
-  closeSheet(); render();
+  const name=(CURRENCIES.find(c=>c[0]===lastConv.to)||[0,lastConv.to])[1];
+  render(); poof(btn,`+${lastConv.got} ${name}`); buzz([12,30,12]);
+  m.textContent=`${lastConv.used} Polllen became ${lastConv.got} ${name}.`;
+  $("#vbal").textContent=`You have ${int(S.polllen)} Polllen, ${int(S.nector)} Nector.`; $("#amt").value="";
 }
 function doCraft(){
+  const btn=$("#sheet").querySelector('[data-seed="pp"]');
   const err=craftPurplePuff();
   if(err){ $("#vmsg").textContent=err; return; }
-  closeSheet(); render();
+  render(); poof(btn,"+1 Purple Puff"); buzz([12,30,12]);
+  $("#vmsg").textContent="A Purple Puff, made."; $("#vbal").textContent=`You have ${int(S.polllen)} Polllen, ${int(S.nector)} Nector.`;
+}
+/* a little burst of pollen with words in it */
+function poof(el,txt){
+  const r=el?el.getBoundingClientRect():{left:innerWidth/2-40,top:innerHeight/2,width:80,height:20};
+  const d=document.createElement("div"); d.className="poof";
+  d.style.left=(r.left+r.width/2)+"px"; d.style.top=(r.top+r.height/2)+"px";
+  let dots=""; for(let i=0;i<16;i++){ const a=i/16*6.283, k=26+Math.random()*30; dots+=`<i style="--dx:${(Math.cos(a)*k).toFixed(0)}px;--dy:${(Math.sin(a)*k-10).toFixed(0)}px"></i>`; }
+  d.innerHTML=dots+(txt?`<b>${esc(txt)}</b>`:""); document.body.appendChild(d); sfx("sparkle"); setTimeout(()=>d.remove(),1600);
 }
 
 let kissSpot=null, kissStuff=false;
@@ -3778,7 +3815,7 @@ async function doKiss(){
 
 /* ══ BULL ══════════════════════════════════════════════════ */
 const BULL_COOLDOWN=4*3600000;
-function bullCool(){ const e=S.event&&Date.now()<S.event.ends&&S.event.name; return e==="Anniversary Garden"?BULL_COOLDOWN/2:BULL_COOLDOWN; }
+function bullCool(){ if(S.noCool) return 0; const e=S.event&&Date.now()<S.event.ends&&S.event.name; return e==="Anniversary Garden"?BULL_COOLDOWN/2:BULL_COOLDOWN; }
 function bullReady(){ return Date.now() >= (S.bullLast||0)+bullCool(); }
 function bullWaitMins(){ return Math.ceil(((S.bullLast||0)+bullCool()-Date.now())/60000); }
 
@@ -3968,7 +4005,7 @@ function pollScene(){
           add({x:fD.x,y:fD.y,vx:Math.cos(a3)*sp,vy:Math.sin(a3)*sp,life:40+Math.random()*30,sz:1.1+Math.random()*1.9,tx:n.x,ty:n.y,g:0}); } }
       setTimeout(()=>{ loud("splat",2.8); gild=true; B.classList.add("gilded"); },380); await wait(2100);
     /* 4 */ say(BEATS[3]); drip=true; await wait(2300);
-    /* 5 */ say(BEATS[4]); loud("rumble",3); B.classList.add("shake");
+    /* 5 */ say(BEATS[4]); loud("rumble",3); buzz([60,40,90,40,60]); B.classList.add("shake");
       { const h=noseOf(P); for(let i=0;i<3;i++) setTimeout(()=>doodad(`<svg viewBox="0 0 30 16" width="30"><path d="M2 8c4-6 8 6 12 0s8 6 12 0" fill="none" stroke="#f3e7cb" stroke-width="1.6" stroke-linecap="round"/></svg>`,P.x+bw*.5,P.y-6-i*4,"rise",1600),i*350); }
       await wait(2000); B.classList.remove("shake");
     /* 6 */ say(BEATS[5]); D.classList.remove("throb"); drip=false; trail=true; loud("buzz",2.2);
@@ -3978,7 +4015,7 @@ function pollScene(){
     /* 8 */ say(BEATS[7]); drip=false; probe(true,2400); loud("pulse",2.2); await wait(2700);
     /* 9 */ say(BEATS[8]); M.classList.add("open2"); await wait(2200);
     /* 10 */ say(BEATS[9]); stream=true; loud("chime",2.6); await wait(2800); stream=false;
-    /* 11 */ say(BEATS[10]); M.classList.add("shiver"); loud("sigh",3.2);
+    /* 11 */ say(BEATS[10]); M.classList.add("shiver"); loud("sigh",3.2); buzz([8,30,8,30,8,30,8,30,8,30,8]);
       doodad(`<svg viewBox="0 0 24 30" width="22"><path d="M12 28c-6-4 6-8 0-12s6-8 0-12" fill="none" stroke="#f3e7cb" stroke-width="1.6" stroke-linecap="round"/></svg>`,fM.x+10,Py-10,"rise slow",2600);
       await wait(2600); M.classList.remove("shiver");
     /* 12 */ say(BEATS[11]); after=true; gild=false; B.classList.remove("gilded"); M.classList.add("after"); D.classList.add("tired"); probe(false,1400); loud("zzz",2.6);
@@ -3991,7 +4028,7 @@ function pollScene(){
     /* the Eggling */
       const ex=W/2, ey=base-ph*.35, ez=Math.min(W*.3,120);
       const e=doodad(`<div class="zegg" style="width:${ez}px;height:${ez}px">${eggPic(egg,ez)}</div>`,ex-ez/2,ey-ez/2,"egg",60000);
-      loud("sparkle",2.4); for(let i=0;i<60;i++){ const a4=Math.random()*7, sp=.8+Math.random()*2.6; add({x:ex,y:ey,vx:Math.cos(a4)*sp,vy:Math.sin(a4)*sp,life:70+Math.random()*40,sz:1+Math.random()*2,g:.01}); }
+      loud("sparkle",2.4); buzz([20,50,40]); for(let i=0;i<60;i++){ const a4=Math.random()*7, sp=.8+Math.random()*2.6; add({x:ex,y:ey,vx:Math.cos(a4)*sp,vy:Math.sin(a4)*sp,life:70+Math.random()*40,sz:1+Math.random()*2,g:.01}); }
       say("An Eggling.");
       await wait(3600);
     ended=true; ov.classList.remove("on"); document.body.classList.remove("pollinating");
@@ -4450,7 +4487,7 @@ function uiJournal(tab){
   const gens=S.genSeen||[], recs=S.recipesSeen||[], lore=S.loreSeen||[];
   const tabs=[["eggs","Eggs",found.length,EGGS.length],
               ["gen","Genetics",gens.length,GENE_SPACE],
-              ["rec","Recipes",recs.length,66],
+              ["rec","Recipes",recs.length,286],
               ["triv","Trivia",triv.length,TRIVIA.length],
               ["lore","Lore",lore.length,12],
               ["note","Notes",0,0]];
@@ -4550,7 +4587,19 @@ function uiShop(k){
     <div style="height:12px"></div>
     <button class="btn" data-seed="sb3" onclick="uiShops()">Back</button>`);
 }
+const WHERE={fylthBonus:"Kept for her next Fylth.",cuddleBoost:"Kept for the next Cuddle Time.",cosmetic:"In Dress up, on any card.",
+  moodTreat:"Everyone feels it now.",passiveUp:"Down in the roots now.",autoWater:"Done. It stays.",weather:"Done. It stays.",
+  eggHint:"Look closely, quickly.",legendary:"The next Eggling will carry it.",mysteryEgg:"In the garden.",eventEgg:"In the garden.",
+  lore:"In the Journal, under Lore.",hiddenGarden:"Look low, at the edge of the garden.",shadowSkin:"Look up, beside the room count.",
+  nightMode:"The nights are longer now.",bullChoc:"Bull will remember.",themeDusk:"In Messages.",themeEmber:"In Messages.",themeMoss:"In Messages.",
+  stickerSmall:"In Messages.",stickerNight:"In Messages.",mutBoost:"The next Eggling is likelier to come out strange.",triggerEclipse:"The dark is coming."};
 function buy(k,i){
+  const before=int(S[k]); buyCore(k,i);
+  if(int(S[k])<before){ const it=SHOPS[k].items[i];
+    const b=$("#sheet").querySelectorAll(".shelf .btn")[i]; poof(b,it[0]); buzz([12,30,12]);
+    const m=$("#shmsg"); if(m) m.textContent=it[0]+". "+(WHERE[it[2]]||"Yours."); }
+}
+function buyCore(k,i){
   const it=SHOPS[k].items[i];
   if(int(S[k])<it[1]){ $("#shmsg").textContent="Not enough."; return; }
   S[k]=int(S[k])-it[1];
@@ -4649,13 +4698,13 @@ function rolSettle(){
   let last=performance.now();
   const max=(rolN-1)*rolStep;
   const go=t=>{
-    const dt=Math.min(40,t-last); last=t;
+    const dt=Math.max(0,Math.min(40,t-last)); last=t;
     if(Math.abs(rolVel)>0.03){                       /* glide (degrees per ms), easing off smoothly */
-      rolAng+=rolVel*dt; rolVel*=Math.exp(-dt/260);
+      rolAng+=rolVel*dt; rolVel*=Math.exp(-dt/200);
       if(rolAng<-12||rolAng>max+12){ rolVel*=Math.exp(-dt/60); }
     } else {
       const target=Math.max(0,Math.min(rolN-1,Math.round(rolAng/rolStep)))*rolStep;
-      const k=1-Math.exp(-dt/75); rolAng+=(target-rolAng)*k;
+      const k=1-Math.exp(-dt/55); rolAng+=(target-rolAng)*k;
       if(Math.abs(target-rolAng)<0.05){ rolAng=target; rolIdx=Math.round(target/rolStep); rolVel=0; rolApply(); return; }
     }
     rolApply(); rolRaf=requestAnimationFrame(go);
@@ -4666,7 +4715,7 @@ function rolSpin(d){
   const cur=Math.max(0,Math.min(rolN-1,Math.round(rolAng/rolStep)));
   const target=Math.max(0,Math.min(rolN-1,cur+d))*rolStep;
   rolVel=0; cancelAnimationFrame(rolRaf);
-  const from=rolAng, t0=performance.now(), ms=360;
+  const from=rolAng, t0=performance.now(), ms=260;
   const go=t=>{ const k=Math.min(1,(t-t0)/ms), e=1-Math.pow(1-k,3); rolAng=from+(target-from)*e; rolApply();
     if(k<1) rolRaf=requestAnimationFrame(go); else { rolIdx=Math.round(target/rolStep); } };
   rolRaf=requestAnimationFrame(go);
@@ -4724,7 +4773,9 @@ function boot(){
 (function(){
   const _find=findEgg; findEgg=function(n){ if((S.foundEggs||[]).indexOf(n)<0) sfx("found"); return _find(n); };
   const _gm=gmorph; gmorph=function(p){ sfx("gmorph"); return _gm(p); };
-  const _fc=finishCare; finishCare=function(id,a,sc){ sfx(a); return _fc(id,a,sc); };
+  const _fc=finishCare; finishCare=function(id,a,sc){ sfx(a); const g=gradeOf(sc);
+    setTimeout(()=>{ if(g==="Perfect"){ sfx("found"); buzz([18,40,18,40,30]); } else if(g==="Good") sfx("tap"); else if(g==="Failed"){ sfx("growl"); buzz(60); } },420);
+    return _fc(id,a,sc); };
   const _se=startEvent; startEvent=function(n,q){ const r=_se(n,q); ensureAmbientArt(true); return r; };
   const _fb=feedBull; feedBull=function(){ const r=_fb(); ensureAmbientArt(true); return r; };
 })();
