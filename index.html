@@ -6,6 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Kiki's Secret Pocket Garden of Quivering Delights and Shocking Mysterios: The Dawn of the Plantimals' Return in the Glow of Sunset in Past's, Perhaps Last, Winter</title>
 <meta name="color-scheme" content="dark light">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#191d3a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Nunito+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&family=Cinzel:wght@700&family=Spectral:ital,wght@0,500;1,400&family=Oswald:wght@500;700&family=Pinyon+Script&family=Caveat:wght@500&display=swap" rel="stylesheet">
@@ -780,7 +784,7 @@ const C={
   DOM:{ color:["Crimson","Solar","Verdant","Azure","Twilight"],
         appendage:["Limb","Wing","Tendril"],
         behavior:["Mischievous","Playful","Contemplative"] },
-  MUTATIONS:["Ghost-Petal","Extra Bloom","Iris-Shift","Split-Root","Static Bloom"],
+  MUTATIONS:["Ghost-Petal","Extra Bloom","Iris-Shift","Split-Root","Static Bloom","Mismatched Pair","Sixfold"],
   BASE_MUTATION:0.10
 };
 
@@ -1617,9 +1621,14 @@ const GENE={
   marks:["Rosette","Stripe","Freckle","Vein","Glow"],
   apps:["Limb","Wing","Tendril"],
   behs:["Mischievous","Playful","Contemplative"],
-  surfs:["Scale","Feather","Fur","Bark","Smooth"]
+  surfs:["Scale","Feather","Fur","Bark","Smooth"],
+  wings:["Bat","Bird","Bee","Moth","Dragonfly","None"],
+  arms:["Pair","Twin","None"]
 };
-const GENE_SPACE=15*15*3*6*3*5;
+/* looks: color 15 x markings 15 x covering 5 x behavior 3 x root-legs 4 x upper limbs 75 (arms 0/2/4, tendrils 0-6, wings 7 ways, never all three) */
+const GENE_SPACE=15*15*5*3*4*75;
+const WING_DESC={Bat:"leathery bat-like wings, thin membranes stretched between long finger-bones like a small dragon's",Bird:"feathered bird wings",
+  Bee:"small, glassy, faintly golden bee wings",Moth:"soft, dusty moth or butterfly wings with painted eye-spots",Dragonfly:"long, glassy, finely veined dragonfly wings"};
 function pairName(a,b,list){
   if(a===b) return a;
   return [a,b].sort((x,y)=>list.indexOf(x)-list.indexOf(y)).join("-");
@@ -1631,39 +1640,52 @@ function fillGeno(g,key){
   const one=list=>list[Math.floor(r()*list.length)];
   if(!g.color) g.color=[one(GENE.colors),one(GENE.colors)];
   if(!g.marking){ const m=one(GENE.marks); g.marking=[m,m]; }
-  if(!g.appendage) g.appendage=[one(GENE.apps),one(GENE.apps)];
-  if(!g.count) g.count=[1,1];
   if(!g.behavior) g.behavior=[one(GENE.behs),one(GENE.behs)];
   if(!g.surface) g.surface=["Smooth","Smooth"];
+  /* older creatures: carry their single appendage gene over into the new limbs */
+  const oldKind=g.appendage?domPick(g.appendage[0],g.appendage[1],["Limb","Wing","Tendril"]):null;
+  const oldN=g.count?Math.max(0,Math.min(5,int(g.count[0])+int(g.count[1]))):0;
+  if(!g.legs) g.legs=[1,1];
+  if(!g.arms) g.arms=oldKind==="Limb"&&oldN>0?["Pair","None"]:["None","None"];
+  if(!g.tendril) g.tendril=oldKind==="Tendril"?[Math.min(3,Math.floor(oldN/2)),Math.min(3,oldN-Math.floor(oldN/2))]:[0,0];
+  if(!g.wing) g.wing=oldKind==="Wing"&&oldN>0?["Moth","None"]:["None","None"];
   return g;
 }
 function resolveDominance(g){
   g=fillGeno(g);
+  const legs=Math.max(0,Math.min(3,int(g.legs[0])+int(g.legs[1])));
+  const arms=(g.arms[0]==="Twin"&&g.arms[1]==="Twin")?4:(g.arms.some(a=>a!=="None")?2:0);
+  let tendrils=Math.max(0,Math.min(6,int(g.tendril[0])+int(g.tendril[1])));
+  const wing=domPick(g.wing[0],g.wing[1],GENE.wings);
+  const wingCount=wing==="None"?0:(g.wing[0]==="Dragonfly"&&g.wing[1]==="Dragonfly"?4:2);
+  let crowded=false;
+  if(arms&&tendrils&&wingCount){ crowded=true; tendrils=0; }       /* never all three: the tendrils stay hidden */
   return {
     color:pairName(g.color[0],g.color[1],GENE.colors),
     marking:pairName(g.marking[0],g.marking[1],GENE.marks),
-    appendage:domPick(g.appendage[0],g.appendage[1],GENE.apps),
-    count:Math.max(0,Math.min(5,int(g.count[0])+int(g.count[1]))),
+    legs:legs, arms:arms, tendrils:tendrils, wing:wing, wingCount:wingCount, crowded:crowded,
+    appendage:wingCount?"Wing":arms?"Limb":tendrils?"Tendril":"Limb",
+    count:arms+tendrils+wingCount,
     behavior:domPick(g.behavior[0],g.behavior[1],GENE.behs),
     surface:domPick(g.surface[0],g.surface[1],GENE.surfs)
   };
 }
 function randomGeno(){
   const two=l=>[pick(l),pick(l)];
-  return {color:two(GENE.colors),marking:two(GENE.marks),appendage:two(GENE.apps),
-    count:[Math.floor(Math.random()*4),Math.floor(Math.random()*4)],
-    behavior:two(GENE.behs),surface:two(GENE.surfs)};
+  return {color:two(GENE.colors),marking:two(GENE.marks),behavior:two(GENE.behs),surface:two(GENE.surfs),
+    legs:two([0,1,1,2]), arms:two(["Pair","None","None","Twin"]), tendril:two([0,0,1,2,3]),
+    wing:two(["None","None","Bat","Bird","Bee","Moth","Dragonfly"])};
 }
 const SLIP=0.02;   /* chance each inherited copy is miscopied into another variant */
 function slip(k,v){
   if(Math.random()>=SLIP) return v;
-  const L={color:GENE.colors,marking:GENE.marks,appendage:GENE.apps,behavior:GENE.behs,surface:GENE.surfs}[k];
-  return L?pick(L):Math.floor(Math.random()*4);
+  const L={color:GENE.colors,marking:GENE.marks,behavior:GENE.behs,surface:GENE.surfs,wing:GENE.wings,arms:GENE.arms,legs:[0,1,2],tendril:[0,1,2,3]}[k];
+  return L?pick(L):v;
 }
 function breed(a,b,opts){
   opts=opts||{};
   const ga=fillGeno(a.geno,a.id), gb=fillGeno(b.geno,b.id), g={};
-  for(const k of ["color","marking","appendage","count","behavior","surface"])
+  for(const k of ["color","marking","legs","arms","tendril","wing","behavior","surface"])
     g[k]=[slip(k,pick(ga[k])),slip(k,pick(gb[k]))];
   const out={geno:g,pheno:resolveDominance(g),mutation:null,
     generation:Math.max(int(a.generation),int(b.generation))+1, parent1:a.id, parent2:b.id, pname1:a.name, pname2:b.name};
@@ -1678,9 +1700,13 @@ function carrier(chosen,order){
   return weaker.length&&Math.random()<0.7?pick(weaker):chosen;
 }
 function makePlantimal(name,d){
-  const n=Math.max(0,Math.min(5,int(d.count)));
+  const L=Math.max(0,Math.min(3,int(d.legs))), T=Math.max(0,Math.min(6,int(d.tendrils)));
+  const r=Math.random();
   const geno={color:[d.color,d.color],marking:[d.marking,d.marking],
-    appendage:[d.appendage,carrier(d.appendage,GENE.apps)],count:[Math.floor(n/2),n-Math.floor(n/2)],
+    legs:[Math.floor(L/2),L-Math.floor(L/2)],
+    arms:int(d.arms)>=2?["Pair",r<.3?"Twin":r<.7?"None":"Pair"]:["None","None"],
+    tendril:[Math.floor(T/2),T-Math.floor(T/2)],
+    wing:[d.wing||"None",carrier(d.wing||"None",GENE.wings)],
     behavior:[d.behavior,carrier(d.behavior,GENE.behs)],surface:[d.surface,carrier(d.surface,GENE.surfs)]};
   return {id:uid(),name:name,geno:geno,pheno:resolveDominance(geno),
     mutation:null,generation:0,stage:0,used:[],mood:C.MOOD.start,
@@ -1688,10 +1714,10 @@ function makePlantimal(name,d){
 }
 function colorsOf(x){ return String((x.pheno||x).color).split("-"); }
 function phenoLine(ph){
-  const n=int(ph.count);
-  const app=n===0?"no appendages":`${n} ${ph.appendage}${n===1?"":"s"}`;
+  const L=int(ph.legs), A=int(ph.arms), T=int(ph.tendrils), W=int(ph.wingCount);
+  const up=[A?A+" arms":"",T?T+" tendril"+(T===1?"":"s"):"",W?W+" "+ph.wing+" wings":""].filter(Boolean).join(", ")||"no upper limbs";
   return [String(ph.color).replace("-"," & "),String(ph.marking||"").replace("-"," & "),
-    app,ph.behavior,ph.surface].filter(Boolean).join(" · ");
+    (L===0?"no root-legs":L+" root-leg"+(L===1?"":"s"))+"; "+up,ph.behavior,ph.surface].filter(Boolean).join(" · ");
 }
 
 /* ══ ART VOCABULARY ════════════════════════════════════════ */
@@ -1737,6 +1763,8 @@ const MUT_DESC={"Ghost-Petal":"Its whole body is ghostly and semi-transparent li
   "Extra Bloom":"A second, oversized flower head blooms from its back, far too big for it, drooping heavily.",
   "Iris-Shift":"Its eyes are iridescent and oil-slick, shimmering with shifting colors and faintly glowing.",
   "Split-Root":"Below the chest it forks into twin root-halves like a mandrake, one limb duplicated.",
+  "Mismatched Pair":"Its wings do not match: one pair is of a different kind from the other.",
+  "Sixfold":"It has three pairs of wings instead of one.",
   "Gilded Vein":"Fine veins of real gold run through its skin and petals, catching the light like old leaf.",
   "Static Bloom":"Tiny crackling electric sparks and static arcs dance between its petals, lighting it from within."};
 const EYES=["enormous glossy black eyes with a single pinprick of light","pale milky eyes like moonstones",
@@ -1846,11 +1874,11 @@ function artPrompt(p){
   const ph=p.pheno, L=artLook(p), n=int(ph.count);
   const cols=colorsOf(p), marks=String(ph.marking).split("-");
   const colorTxt=cols.length>1
-    ? `codominant two-color coloring, patches of ${COLOR_DESC[cols[0]]} and of ${COLOR_DESC[cols[1]]} mottled together, both clearly visible`
+    ? `two distinct colors in zones: its head and upper body are ${COLOR_DESC[cols[0]]}; its lower body and legs are ${COLOR_DESC[cols[1]]}; where the two meet they blend softly into each other, both colors clearly visible`
     : `${COLOR_DESC[cols[0]]}, mottled and uneven, never one flat color`;
   const markTxt=marks.map(m=>MARK_DESC[m]).join(" together with ");
   const plural=n===1?"":"s";
-  const appTxt=appSentence(ph,n);
+  const appTxt=appSentence(ph,n,p);
   const egg=p.artEgg||{n:1,z:0};
   return [
     "One wide image divided into three equal vertical panels side by side, separated by thin dark gutters, on one sheet of antique stained, foxed paper.",
@@ -2278,7 +2306,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.3.2";
+const VERSION="1.4.1";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2302,13 +2330,23 @@ function repaintPaper(el){
   repaintArmed=0;
   delete ART["ui:paper2"]; delete ART["ui:bg"]; delete ART["ui:bg2"]; delete ART["ui:bg3"]; applyPaper(); closeSheet(); render(); ensureAmbientArt(true); }
 /* one rule for every painting: it stands on roots, never legs; its only appendages are the counted ones */
-function appSentence(ph,n){
-  const base="it has no legs and no arms of its own: it stands on a tangle of roots";
-  if(!n) return base+", and it has no wings, no tendrils and no limbs at all";
-  const one=n===1, num=NUMW[n];
-  const kind=ph.appendage==="Wing"?(one?"leaf-veined wing like a pressed petal":"leaf-veined wings like pressed petals")
-    :ph.appendage==="Tendril"?(one?"curling vine tendril":"curling vine tendrils"):(one?"knotted root-arm":"knotted root-arms");
-  return `${base}; its ONLY appendages are exactly ${num} ${kind}, each one separate, clearly countable and not joined to another (count: ${n}, no more, no fewer); the roots it stands on are not appendages`;
+function appSentence(ph,n,p){
+  const L=int(ph.legs), A=int(ph.arms), T=int(ph.tendrils);
+  let W=int(ph.wingCount); const mut=p&&p.mutation;
+  const legs=L===0?"it has no legs: its body rises straight out of one tangled mass of roots in the soil"
+    :`it stands on exactly ${NUMW[L]} thick taproot leg${L>1?"s":""}, each ending in a foot of branching roots with tiny pale root-tips for toes (count: ${L})`;
+  const up=[];
+  if(A) up.push(`exactly ${NUMW[A]} branch-twig arms ending in small twiggy hands (count: ${A})`);
+  if(T) up.push(`exactly ${NUMW[T]} curling vine tendril${T>1?"s":""} sprouting from its torso and head (count: ${T})`);
+  if(W){
+    const g=p?fillGeno(p.geno,p.id):null, hidden=g?(g.wing[0]===ph.wing?g.wing[1]:g.wing[0]):"None";
+    if(mut==="Sixfold") up.push(`exactly six ${WING_DESC[ph.wing]} in three pairs (count: 6)`);
+    else if(mut==="Mismatched Pair"&&hidden!=="None"&&hidden!==ph.wing) up.push(`two pairs of wings that do not match: one pair of ${WING_DESC[ph.wing]} and one pair of ${WING_DESC[hidden]} (count: 4)`);
+    else if(mut==="Mismatched Pair") up.push(`exactly four ${WING_DESC[ph.wing]} in two pairs (count: 4)`);
+    else up.push(`exactly ${NUMW[W]} ${WING_DESC[ph.wing]}${W===4?" in two pairs":""} (count: ${W})`);
+  }
+  return legs+"; "+(up.length?"its only other limbs are "+up.join(" and ")+", each one separate and clearly countable, none joined to another"
+    :"it has no arms, no tendrils and no wings at all")+"; nothing else grows from it: no extra arms, legs, wings or tendrils";
 }
 function stageKey(p){ return ["baby","teen","adult"][int(p.stage)]||"baby"; }
 function artThumb(p){
@@ -3070,9 +3108,9 @@ const STAGE_F={
 function stagePrompt(p,k){
   const ph=p.pheno, L=artLook(p), n=int(ph.count);
   const cols=colorsOf(p), marks=String(ph.marking).split("-");
-  const colorTxt=cols.length>1?`two colors mottled together, ${COLOR_DESC[cols[0]]}, and ${COLOR_DESC[cols[1]]}`
+  const colorTxt=cols.length>1?`two distinct colors in zones: head and upper body ${COLOR_DESC[cols[0]]}, lower body and legs ${COLOR_DESC[cols[1]]}, blending softly where they meet`
     :`${COLOR_DESC[cols[0]]}, mottled, never flat`;
-  const appTxt=appSentence(ph,n);
+  const appTxt=appSentence(ph,n,p);
   const egg=p.artEgg||{n:1,z:0};
   let t=[MEDIUM_F,STAGE_F[k],
     `Half plant, half animal: ${L.p1}, ${L.p2}, ${appTxt}. Coloring: ${colorTxt}. Markings: ${marks.map(m=>MARK_DESC[m]).join(" with ")}. Covered in ${SURF_DESC[ph.surface]}. A vivid spot of ${L.accent} on ${L.spot}. It has ${L.eyes}; subtly wrong: ${L.wrong}.`,
@@ -3346,7 +3384,7 @@ function uiCreate(){
     arr.map(v=>`<button class="opt" data-cat="${cat}" data-v="${v}" onclick="pickOpt(this)">${v}</button>`).join("")+`</div>`;
   openSheet(`<h2>${S.plantimals.length?"Your second":"Your first"}</h2>
     ${grp("Color","color",GENE.colors)}${grp("Markings","marking",GENE.marks)}
-    ${grp("Appendages","appendage",["Tendril","Wing","Limb"])}${grp("How many","count",["0","1","2","3","4","5"])}
+    ${grp("Root-legs","legs",["0","1","2","3"])}${grp("Arms","arms",["0","2"])}${grp("Tendrils","tendrils",["0","1","2","3","4","5","6"])}${grp("Wings","wing",["None","Bat","Bird","Bee","Moth","Dragonfly"])}
     ${grp("Behavior","behavior",["Playful","Contemplative","Mischievous"])}${grp("Covering","surface",["Smooth","Bark","Fur","Feather","Scale"])}
     <div class="lbl">Name</div>
     <input id="pname" type="text" maxlength="40" placeholder="">
@@ -3362,8 +3400,9 @@ function pickOpt(el){
 }
 function doCreate(){
   const m=$("#cmsg");
-  if(["color","marking","appendage","count","behavior","surface"].some(k=>draft[k]==null)){
+  if(["color","marking","legs","arms","tendrils","wing","behavior","surface"].some(k=>draft[k]==null)){
     m.textContent="Choose one of each."; return; }
+  if(int(draft.arms)>0&&int(draft.tendrils)>0&&draft.wing!=="None"){ m.textContent="Arms, tendrils or wings: two of them at most, never all three."; return; }
   const nm=$("#pname").value.trim();
   if(!nm){ m.textContent="It needs a name."; return; }
   if(occupied()>=capacity()){ m.textContent="The garden is full."; return; }
@@ -3829,23 +3868,9 @@ function doRename(id){
 }
 function uiGene(id){
   const p=S.plantimals.find(x=>x.id===id); if(!p) return;
-  const g=fillGeno(p.geno,p.id), ph=p.pheno;
-  const chip=(v,on)=>`<span style="font-size:${on?"15px":"12px"};opacity:${on?1:.45};
-    font-weight:${on?700:400};margin-right:9px">${esc(String(v))}</span>`;
-  const both=(k,label)=>{ const [a,b]=g[k];
-    return `<div class="lbl">${label}</div><div>${chip(a,true)}${chip(b,true)}</div>`; };
-  const dom=(k,label)=>{ const [a,b]=g[k], d=ph[k];
-    return `<div class="lbl">${label}</div><div>${chip(a,a===d)}${chip(b,b===d&&(a!==d||a===b))}</div>`; };
-  openSheet(`<h2>${esc(p.name)}</h2>
-    ${both("color","Color")}${both("marking","Markings")}
-    ${dom("appendage","Appendages")}
-    <div class="lbl">How many</div><div class="mono">${int(g.count[0])} + ${int(g.count[1])} = ${int(ph.count)}</div>
-    ${dom("behavior","Behavior")}${dom("surface","Covering")}
-    ${p.mutation?`<div class="lbl">Mutation</div>
-      <div style="color:var(--accent);font-size:14px">✦ ${esc(p.mutation)}</div>`:""}
-    <div class="lbl">Generation</div><div class="mono">${int(p.generation)}</div>
-    <div style="height:14px"></div>
-    <button class="btn" data-seed="gb" onclick="uiPlant('${id}')">Back</button>`);
+  openSheet(`<h2>${esc(p.name)}</h2>${geneCard(p)}
+    <div class="note">Faded copies are hidden: they do not show, but can be handed on.</div>
+    <div style="height:14px"></div><button class="btn" data-seed="gb" onclick="uiPlant('${id}')">Back</button>`);
 }
 
 /* ══ CONVERT / KISS UI ═════════════════════════════════════ */
@@ -4368,7 +4393,31 @@ function chatUnread(){
   const last=(S.chat||[]).filter(m=>m.f==="C").pop();
   return !!(last&&last.at>int(S.chatSeen));
 }
+/* messages to and from Cj's phone, through a free notification service (ntfy) on one secret channel */
+const NTFY="kpg-kofmudguq14zpcbb3pbunx";
+function ntfySend(text){ try{ if(location.protocol==="file:") return; fetch("https://ntfy.sh/"+NTFY,{method:"POST",body:text,headers:{"Title":"Kiki","Tags":"seedling"}}).catch(()=>{}); }catch(e){} }
+let ntfyBusy=false;
+async function ntfyPoll(){
+  if(ntfyBusy||location.protocol==="file:") return; ntfyBusy=true;
+  try{
+    const r=await fetch("https://ntfy.sh/"+NTFY+"/json?poll=1&since="+encodeURIComponent(S.ntfySince||"12h"));
+    const txt=await r.text(); let got=false;
+    S.ntfySeen=S.ntfySeen||[];
+    for(const line of txt.split("\n")){
+      if(!line.trim()) continue; let m; try{ m=JSON.parse(line); }catch(e){ continue; }
+      if(m.event!=="message") continue; S.ntfySince=m.id;
+      if(m.title==="Kiki"||S.ntfySeen.indexOf(m.id)>=0) continue;
+      S.ntfySeen.push(m.id); if(S.ntfySeen.length>300) S.ntfySeen=S.ntfySeen.slice(-300);
+      S.chat=S.chat||[]; S.chat.push({f:"C",t:"text",b:String(m.message||"").slice(0,400),at:(int(m.time)*1000)||Date.now()}); got=true;
+    }
+    save();
+    if(got){ render(); sfx("found"); buzz([20,40,20]); if(sheetIsOpen&&$("#chatbox")) uiMessages(); }
+  }catch(e){}
+  ntfyBusy=false;
+}
+setInterval(ntfyPoll,60000); setTimeout(ntfyPoll,4000);
 function chatPush(f,t,b){
+  if(f==="K") ntfySend(t==="ask"?"Kiki asks for a Butterfly Kiss.":t==="stk"?"Kiki sent a sticker: "+b:String(b).slice(0,400));
   S.chat=S.chat||[];
   S.chat.push({f:f,t:t,b:String(b).slice(0,400),at:Date.now()});
   if(S.chat.length>200) S.chat=S.chat.slice(-200);
@@ -4421,7 +4470,7 @@ function uiMessages(){
     <div style="height:12px"></div>
     <div class="row"><button class="btn" data-seed="mb" onclick="closeSheet();render()">Back</button>
       <button class="btn" data-seed="cjt" style="max-width:56px" onclick="const b=$('#cjbox');b.style.display=b.style.display==='none'?'block':'none'">·</button></div>`);
-  S.pmSeen=(S.pm||[]).length; S.chatSeen=Date.now(); save();
+  S.pmSeen=(S.pm||[]).length; S.chatSeen=Date.now(); save(); ntfyPoll();
   const cb=$("#chatbox"); if(cb) cb.scrollTop=cb.scrollHeight;
 }
 function chatSend(){
@@ -4685,21 +4734,29 @@ function uiJournal(tab){
 }
 function saveNotes(v){ S.notes=v; save(); }
 /* ── the Genetics page: who carries what, and what two of them could make ── */
-const GENE_ROWS=[["color","Color"],["marking","Markings"],["appendage","Appendages"],["count","How many"],["behavior","Behavior"],["surface","Covering"]];
-const ORDER={appendage:GENE.apps,behavior:GENE.behs,surface:GENE.surfs};
+const GENE_ROWS=[["color","Color"],["marking","Markings"],["legs","Lower Limbs"],["arms","Upper: arms"],["tendril","Upper: tendrils"],["wing","Upper: wings"],["behavior","Behavior"],["surface","Covering"]];
+const ORDER={behavior:GENE.behs,surface:GENE.surfs,wing:GENE.wings};
+function showOf(k,ph){
+  if(k==="legs") return String(ph.legs);
+  if(k==="arms") return ph.arms?ph.arms+" arms":"none";
+  if(k==="tendril") return ph.crowded?"hidden (crowded out)":(ph.tendrils?String(ph.tendrils):"none");
+  if(k==="wing") return ph.wingCount?ph.wing+" × "+ph.wingCount:"none";
+  return String(ph[k]||"").replace("-"," & ");
+}
 let genA=null, genB=null;
 function chip(k,v){
   if(k==="color") return `<span class="gchip" style="background:${CH[v]||"#888"}"></span>${esc(v)}`;
   return esc(String(v));
 }
 function geneCard(p){
-  const g=p.geno||{}, ph=p.pheno||{};
+  const g=fillGeno(p.geno,p.id), ph=p.pheno||{};
   const rows=GENE_ROWS.map(([k,l])=>{
     const c=g[k]||[]; let a=c[0], b=c[1];
-    if(k==="count") return `<tr><td>${l}</td><td>${int(a)}</td><td>${int(b)}</td><td>${int(a)+int(b)}</td></tr>`;
+    if(k==="legs"||k==="tendril") return `<tr><td>${l}</td><td>${int(a)}</td><td>${int(b)}</td><td>${esc(showOf(k,ph))}</td></tr>`;
     const shows=String(ph[k]||"");
-    const hid=v=>ORDER[k]&&shows.indexOf(v)<0?` class="hid"`:"";
-    return `<tr><td>${l}</td><td${hid(a)}>${chip(k,a)}</td><td${hid(b)}>${chip(k,b)}</td><td>${esc(shows.replace("-"," & "))}</td></tr>`;
+    const hid=v=>{ if(k==="arms") return (v==="None"&&ph.arms)||(v==="Twin"&&ph.arms===2)?` class="hid"`:"";
+      return ORDER[k]&&shows.indexOf(v)<0?` class="hid"`:""; };
+    return `<tr><td>${l}</td><td${hid(a)}>${chip(k,a)}</td><td${hid(b)}>${chip(k,b)}</td><td>${esc(showOf(k,ph))}</td></tr>`;
   }).join("");
   const mom=S.plantimals.find(x=>x.id===p.parent2)||{}, dad=S.plantimals.find(x=>x.id===p.parent1)||{};
   return `<div class="gcard"><div class="gname">${esc(p.name)} <span class="mono">gen ${int(p.generation)}</span></div>
@@ -4709,11 +4766,10 @@ function geneCard(p){
 function pairOdds(a,b){
   const out=[];
   for(const [k,l] of GENE_ROWS){
-    const A=(a.geno||{})[k]||[], B=(b.geno||{})[k]||[], tally={};
+    const A=fillGeno(a.geno,a.id)[k]||[], B=fillGeno(b.geno,b.id)[k]||[], tally={};
     for(const x of A) for(const y of B){
-      let lab;
-      if(k==="count") lab=String(Math.max(0,Math.min(5,int(x)+int(y))));
-      else { const g2=JSON.parse(JSON.stringify(a.geno)); g2[k]=[x,y]; lab=String(resolveDominance(g2)[k]).replace("-"," & "); }
+      const g2=JSON.parse(JSON.stringify(fillGeno(a.geno,a.id))); g2[k]=[x,y]; g2.arms=k==="arms"?[x,y]:["None","None"]; g2.wing=k==="wing"?[x,y]:["None","None"];
+      const ph2=resolveDominance(g2), lab=k==="tendril"?(Math.min(6,int(x)+int(y))||"none")+"":showOf(k,ph2);
       tally[lab]=(tally[lab]||0)+25;
     }
     out.push([l,Object.entries(tally).sort((m,n)=>n[1]-m[1])]);
@@ -4969,6 +5025,7 @@ function uiMemory(){
 
 /* ══ BOOT ══════════════════════════════════════════════════ */
 function boot(){
+  if(S.genoV!==2){ for(const x of [...S.plantimals,...S.egglingses]){ x.geno=fillGeno(x.geno,x.id); x.pheno=resolveDominance(x.geno); } S.genoV=2; save(); }
   emergePupae();
   if(S.openingV!==1){ S.openingV=1; S.seenIntro=false; }
   if(S.seenIntro&&S.seenStudio===undefined) S.seenStudio=true;
