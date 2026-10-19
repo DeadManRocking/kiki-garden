@@ -8,7 +8,7 @@
 <meta name="color-scheme" content="dark light">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Nunito+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&family=Cinzel:wght@700&family=Spectral:ital,wght@0,500;1,400&family=Oswald:wght@500;700&family=Pinyon+Script&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Nunito+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&family=Cinzel:wght@700&family=Spectral:ital,wght@0,500;1,400&family=Oswald:wght@500;700&family=Pinyon+Script&family=Caveat:wght@500&display=swap" rel="stylesheet">
 <style>
 :root{
   --paper:#DAD3BE;
@@ -648,6 +648,48 @@ html.painted #sheet.k-keeper input[type=text],html.painted #sheet.k-keeper input
 .poof b{position:absolute;left:0;top:-30px;transform:translateX(-50%);white-space:nowrap;font:600 15px 'Fraunces',Georgia,serif;color:#fff3d2;
   text-shadow:0 1px 6px #000,0 0 10px rgba(255,200,120,.8);animation:poofw 1.5s ease-out forwards}
 @keyframes poofw{0%{opacity:0;transform:translate(-50%,8px)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-26px)}}
+
+.fig.newborn{animation:newborn 1.8s ease-in-out infinite}
+@keyframes newborn{0%,100%{filter:drop-shadow(0 0 0 rgba(255,220,140,0))}50%{filter:drop-shadow(0 0 14px rgba(255,220,140,.9))}}
+.cocoon{position:relative;aspect-ratio:2/3}
+.cocoon img{position:absolute;inset:8% 14%;width:72%;height:84%;object-fit:cover;object-position:center top;filter:blur(2.5px) sepia(.5) saturate(.6) brightness(.85);border-radius:45%}
+.cocoon svg{position:absolute;inset:0;width:100%;height:100%}
+html[data-ev="1"] #bgs .bgl{filter:none}
+.gcard{border:1px solid rgba(46,42,38,.22);border-radius:10px;padding:8px 9px;margin:0 0 9px;background:rgba(255,250,235,.25)}
+.gname{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:15px;margin-bottom:4px}
+.gname .mono{font-size:11px;opacity:.6}
+.gtab{width:100%;border-collapse:collapse;font-size:12.5px}
+.gtab th{font:600 10px 'Nunito Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;opacity:.6;text-align:left;padding:2px 3px}
+.gtab td{padding:3px;border-top:1px solid rgba(46,42,38,.1);vertical-align:middle}
+.gtab td:first-child{opacity:.7;width:24%}
+.gtab td.hid{opacity:.42;font-style:italic}
+.gchip{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.gfoot{font-size:11.5px;opacity:.75;margin-top:5px;font-style:italic}
+.gpair{border:1px solid rgba(46,42,38,.22);border-radius:10px;padding:8px 10px;background:rgba(255,250,235,.3);margin-top:8px}
+.godds{display:flex;gap:8px;font-size:12.5px;padding:3px 0;border-top:1px solid rgba(46,42,38,.08)}
+.godds span:first-child{width:24%;flex:none;opacity:.7}
+.godds b{font-family:'IBM Plex Mono',monospace;font-weight:600}
+textarea.notebook{width:100%;min-height:52vh;box-sizing:border-box;border:0;outline:0;resize:vertical;padding:4px 10px 10px 34px;
+  font:500 21px/30px 'Caveat',cursive;color:#2b2a52;background-color:rgba(255,252,240,.55);
+  background-image:linear-gradient(90deg,transparent 26px,rgba(190,70,70,.35) 26px,rgba(190,70,70,.35) 27.5px,transparent 27.5px),
+    repeating-linear-gradient(transparent 0,transparent 29px,rgba(70,90,150,.28) 29px,rgba(70,90,150,.28) 30px);
+  background-attachment:local;border-radius:6px}
+
+.bi{display:inline-flex;vertical-align:-4px;margin-right:7px}
+.bi svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.bi.coinb img{width:22px;height:22px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.nb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.nb .bi{margin:0}
+.nb .bi svg{width:21px;height:21px}
+#nav .nb{min-height:56px;font-size:12px}
+#more .nb{flex-direction:row;gap:8px}
+#more,#purse{background:rgba(14,10,7,.46) !important;-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px)}
+#chatin::placeholder,#cjin::placeholder{color:rgba(46,42,38,.5)}
+#chatin,#cjin{color:#2a1c10}
+.fpres{font-family:'Oswald',sans-serif;font-weight:500;font-size:clamp(18px,5.6vw,24px);color:#8a9c4e;letter-spacing:.08em;text-transform:uppercase;
+  margin-top:14px;opacity:0;transform:translateY(6px)}
+#oc3.on .fpres{animation:fpres 1.1s ease 2.9s forwards}
+@keyframes fpres{to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -659,11 +701,11 @@ html.painted #sheet.k-keeper input[type=text],html.painted #sheet.k-keeper input
   <div class="lbar"><i id="lfill"></i></div></div>
 <div id="open">
   <button id="oskip" onclick="openSkip()">Skip</button>
-  <div class="oc" id="oc1"><div class="brand">M<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>I<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>N<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>D<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>M<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>E<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>R<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>C</div><div class="brand2">Studios presents</div></div>
-  <div class="oc" id="oc2"><div class="assoc">in association with</div><div class="lipr">Lipreader Games</div></div>
-  <div class="oc" id="oc3"><div class="fpl">presents an</div>
+  <div class="oc" id="oc1"><div class="brand">M<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>I<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>N<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>D<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>M<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>E<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>R<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>C</div><div class="brand2">Studios</div></div>
+  <div class="oc" id="oc2"><div class="assoc">In cooperation with</div><div class="lipr">Lipreader Games</div></div>
+  <div class="oc" id="oc3"><div class="fpl">An</div>
     <div class="fmark"><svg viewBox="0 0 160 120"><path class="fring" d="M86 14C48 8 16 26 14 58c-2 30 30 50 66 48 36-2 64-22 62-52C140 30 112 12 70 18"/></svg><span class="fF">F</span><span class="fP">+</span></div>
-    <div class="fpl">in Art production</div></div>
+    <div class="fpl">in Art production</div><div class="fpres">presents</div></div>
   <div class="oc" id="otitle"><div class="motes"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="ttop"><div class="tname">Kiki's Secret Pocket Garden</div><div class="tof">of Quivering Delights and Shocking Mysterios</div>
       <div class="tsub">The Dawn of the Plantimals' Return in the Glow of Sunset in Past's, Perhaps Last, Winter</div><div class="tback" id="tback"></div></div>
@@ -974,6 +1016,7 @@ function openSheet(html,kind){
     sfx(SHEET_SND[k]||"slide");
   } else if(sh.animate) sh.animate([{transform:"translate3d(0,6px,0)",opacity:.7},{transform:"none",opacity:1}],{duration:200,easing:EASE_OUT});
   v.scrollTop=0;
+  decorate(sh);
   requestAnimationFrame(()=>{ shapeCard(sh); placeWear(sh); });
 }
 function finishClose(){
@@ -1098,9 +1141,11 @@ function showIntro(replay){
     if(!on||!(on.classList.contains("story")||on.id==="oded")) return;          /* studio cards ignore taps; only Skip skips */
     if(Date.now()-int(on._shownAt)<1600) return;                                   /* let each line be read first */
     if(openStep) openStep(); };
-  if(!S.seenIntro||replay){
+  o.style.opacity="0";
+  Promise.race([document.fonts?document.fonts.ready:Promise.resolve(),nap(1500)]).then(()=>{ o.style.transition="opacity .6s ease"; o.style.opacity="1"; setTimeout(()=>{ o.style.transition=""; },700); });
+  if(!S.seenStudio||replay){
     o.classList.add("skippable");
-    oShow("oc1"); oNext(()=>{ oShow("oc2"); oNext(()=>{ oShow("oc3"); oNext(openTitle,3400); },2300); },2300);
+    oShow("oc1"); oNext(()=>{ oShow("oc2"); oNext(()=>{ oShow("oc3"); oNext(openTitle,7400); },5600); },5600);
   } else openTitle();
 }
 function openSkip(){
@@ -1110,6 +1155,7 @@ function openSkip(){
 }
 function openTitle(){
   clearTimeout(openTimer); openStep=null;
+  if(!S.seenStudio){ S.seenStudio=true; save(); }
   const o=$("#open"); o.classList.add("clear"); o.classList.remove("skippable");
   const b=$("#tback"); if(b) b.textContent=S.seenIntro?pick(RETURN_LINES):"";
   oShow("otitle");
@@ -1167,9 +1213,10 @@ function bullMarkup(){
     <button id="keekiOld" style="display:none"><svg viewBox="0 0 24 22"><path d="M12 21C5 15.5 1.5 12 1.5 7.2 1.5 4 4 1.5 7 1.5c2.2 0 3.8 1.2 5 3 1.2-1.8 2.8-3 5-3 3 0 5.5 2.5 5.5 5.7 0 4.8-3.5 8.3-10.5 13.8z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="9.2" r="1.9" fill="currentColor"/><path d="M11.1 10.4h1.8l.6 4.2h-3z" fill="currentColor"/></svg></button>`;
 }
 function figMarkup(p){
+  if(p.pupaUntil) return `<div class="fig" data-id="${p.id}" data-sc=".82" onclick="uiPlant('${p.id}')">${pupaPic(p,100).replace('width:100px','width:100%')}<div class="fn i">${esc(p.name)}</div></div>`;
   const a=ART["p:"+p.id], src=a&&a[stageKey(p)];
   const sc=[.78,.9,1][int(p.stage)]||.78;
-  return `<div class="fig" data-id="${p.id}" data-sc="${sc}" onclick="uiPlant('${p.id}')">
+  return `<div class="fig ${p.emerged?"newborn":""}" data-id="${p.id}" data-sc="${sc}" onclick="uiPlant('${p.id}')">
     ${src?`<div class="wpic breathe" style="position:relative;--bd:-${(seeded("bd"+p.id)()*5.6).toFixed(2)}s"><img class="base" alt="" src="${src}">${wearImgs(p)}</div>`:`<div class="fv">${vine(p.stage,false)}</div>`}
     <div class="fn">${esc(p.name)}</div></div>`;
 }
@@ -1219,12 +1266,12 @@ function togglePurse(){ purseOpen=!purseOpen; if(purseOpen) moreOpen=false; sfx(
   const m=$("#more"); if(m) m.classList.toggle("open",moreOpen); }
 function toggleMore(){ moreOpen=!moreOpen; if(moreOpen) purseOpen=false; sfx("slide");
   const m=$("#more"); if(m) m.classList.toggle("open",moreOpen);
-  const b=$("#moreBtn"); if(b) b.firstChild.textContent=moreOpen?"Less":"More";
+  const b=$("#moreBtn"); if(b) (b.querySelector(".ml")||{}).textContent=moreOpen?"Less":"More";
   const p=$("#purse"); if(p) p.classList.toggle("open",purseOpen); }
-function moreGo(fn){ moreOpen=false; const m=$("#more"); if(m) m.classList.remove("open"); const b=$("#moreBtn"); if(b) b.firstChild.textContent="More"; fn(); }
+function moreGo(fn){ moreOpen=false; const m=$("#more"); if(m) m.classList.remove("open"); const b=$("#moreBtn"); if(b) (b.querySelector(".ml")||{}).textContent="More"; fn(); }
 document.addEventListener("pointerdown",e=>{
   if(purseOpen&&!e.target.closest("#purse,#purseBtn")){ purseOpen=false; const p=$("#purse"); if(p) p.classList.remove("open"); const b=$("#purseBtn"); if(b) b.classList.remove("open"); }
-  if(moreOpen&&!e.target.closest("#more,#moreBtn")){ moreOpen=false; const m=$("#more"); if(m) m.classList.remove("open"); const b=$("#moreBtn"); if(b) b.firstChild.textContent="More"; }
+  if(moreOpen&&!e.target.closest("#more,#moreBtn")){ moreOpen=false; const m=$("#more"); if(m) m.classList.remove("open"); const b=$("#moreBtn"); if(b) (b.querySelector(".ml")||{}).textContent="More"; }
 },true);
 function render(){
   if(S.plantimals.length>=2&&!S.foundersDone){ S.foundersDone=true; save(); }
@@ -1255,11 +1302,12 @@ function render(){
       <button class="nb" onclick="uiConvert()">Convert</button>
       <button class="nb" onclick="uiKiss()">Butterfly <span class="ac">Kiss</span></button>
       <button class="nb" onclick="uiShops()">Shops</button>
-      <button class="nb" id="moreBtn" onclick="toggleMore()">${moreOpen?"Less":"More"}${chatUnread()?` <span class="ac">·</span>`:""}</button>
+      <button class="nb" id="moreBtn" onclick="toggleMore()"><span class="ml">${moreOpen?"Less":"More"}</span>${chatUnread()?` <span class="ac">·</span>`:""}</button>
     </nav>
     <div id="ver">${BUILD}</div></div>`;
-  applyEventPalette(); applyWeather(); applyShadow(); applyBreath();
+  applyPaper(); paintEventGround(); applyEventPalette(); applyWeather(); applyShadow(); applyBreath();
   $("#app").innerHTML=h;
+  decorate($("#app"));
   layoutFlock();
   placeWear($("#app"));
   requestAnimationFrame(()=>{ layoutFlock(); placeWear($("#app")); });
@@ -1400,15 +1448,14 @@ function applyCare(p,action,result){
   if(p.mutation==="Split-Root"&&p.stage<2&&p.used.length<3&&Math.random()<0.05){
     const extra=C.ACTIONS.find(x=>p.used.indexOf(x)<0); if(extra) p.used.push(extra); }
 
-  let advanced=false;
-  if(p.used.length>=3 && p.stage<2){
-    p.stage=int(p.stage)+1;
+  let curled=false;
+  if(p.used.length>=3 && p.stage<2 && !p.pupaUntil){
     p.used=[];
-    if(p.stage===2) p.stage2At=Date.now();
-    advanced=true;
+    p.pupaUntil=Date.now()+pupaMs(p);        /* it curls into its Cookuuunml and changes in there */
+    curled=true; setTimeout(paintPupae,50);
   }
   save();
-  return advanced?"ADVANCED":result;
+  return curled?"CURLED":result;
 }
 function maybeGoodQuirk(p){
   p.quirks=p.quirks||[];
@@ -1475,6 +1522,41 @@ function clearFaded(){
     }
   }
 }
+function pupaMs(p){ if(S.noCool) return 20000; return int(p.stage)===0?3*3600000:6*3600000; }
+function pupaPrompt(p){
+  const ph=p.pheno||{};
+  return [MEDIUM,`A single chrysalis, a cocoon made from a strange plant-animal creature's own body: its ${String(ph.surface||"bark").toLowerCase()} covering and its ${String(ph.color||"Twilight").replace("-"," and ").toLowerCase()} colors folded and wound around itself, its ${String(ph.marking||"freckle").replace("-"," and ").toLowerCase()} markings faintly showing through,`,
+    "hanging from a curled stem in a dim overgrown garden at dusk. The curled shape of the creature is just visible inside, one eye showing through a seam. Tender, secret and unsettling. Tall portrait, the chrysalis centered and filling most of the frame. No text, labels or signatures."].join(" ");
+}
+let pupaBusy=false;
+function paintPupae(){
+  if(pupaBusy) return;
+  const todo=S.plantimals.filter(p=>p.pupaUntil&&!ART["pupa:"+p.id]); if(!todo.length) return;
+  pupaBusy=true;
+  (async()=>{ for(const p of todo){ try{ await ArtDB.put("pupa:"+p.id,await shrink(await genImage(pupaPrompt(p),"2:3"),520)); render(); }
+      catch(err){ const m=String((err&&err.message)||err); if(/ 401 | 403 |credit|quota|billing|could not reach|no key/i.test(m)) break; } } })()
+    .finally(()=>{ pupaBusy=false; });
+}
+function pupaPic(p,w){
+  const a=ART["pupa:"+p.id];
+  if(a) return `<div class="wpic breathe" style="position:relative;width:${w}px;margin:0 auto;--bd:-${(seeded("bd"+p.id)()*5.6).toFixed(2)}s"><img class="base" alt="" src="${a}" style="width:100%;display:block;border-radius:8px"></div>`;
+  const pa=ART["p:"+p.id], src=pa&&pa[stageKey(p)];
+  return `<div class="cocoon breathe" style="width:${w}px;margin:0 auto">${src?`<img alt="" src="${src}">`:""}<svg viewBox="0 0 60 90" preserveAspectRatio="none"><path d="M30 4C14 12 8 34 10 56c2 18 10 30 20 30s18-12 20-30C52 34 46 12 30 4z" fill="rgba(222,206,170,.55)"/>
+    <path d="M14 30c10 4 22 4 32-2M11 44c12 6 26 6 38-2M12 58c12 6 25 6 36-1M16 72c9 4 19 4 28-1M22 16c6 3 11 3 16-1" stroke="rgba(120,96,60,.55)" stroke-width="1.1" fill="none"/></svg></div>`;
+}
+function emergePupae(){
+  let any=false;
+  for(const p of S.plantimals){
+    if(p.pupaUntil&&Date.now()>=p.pupaUntil){
+      p.stage=Math.min(2,int(p.stage)+1); delete p.pupaUntil; p.emerged=true;
+      if(p.stage===2) p.stage2At=Date.now();
+      S.pm=S.pm||[]; S.pm.unshift({from:"System",at:Date.now(),body:"Something has come out of "+p.name+"'s Cookuuunml."});
+      any=true;
+    }
+  }
+  if(any){ save(); if(!document.body.classList.contains("opening")){ render(); sfx("sparkle"); buzz([20,40,20,40,60]); } }
+}
+setInterval(emergePupae,5000);
 function gmorph(p){
   $("#gmt").textContent=C.STAGE1[int(p.stage)]||"";
   const g=$("#gm");
@@ -1510,7 +1592,7 @@ function addEggling(res){
   if(res.variant===undefined) res.variant=variantFor(activeEvent(),false);
   if(S.nextLegendary){ res.mutation="Gilded Vein"; S.nextLegendary=false; }      /* Rare bloodline */
   S.egglingses.push({ id:uid(), geno:res.geno, pheno:res.pheno,
-    mutation:res.mutation, generation:res.generation, at:Date.now(), allergy:res.allergy, variant:res.variant||null });
+    mutation:res.mutation, generation:res.generation, at:Date.now(), allergy:res.allergy, variant:res.variant||null, parent1:res.parent1, parent2:res.parent2, pname1:res.pname1, pname2:res.pname2 });
   save();
 }
 /* ══ GENETICS v3 ═══════════════════════════════════════════
@@ -1575,7 +1657,7 @@ function breed(a,b,opts){
   for(const k of ["color","marking","appendage","count","behavior","surface"])
     g[k]=[slip(k,pick(ga[k])),slip(k,pick(gb[k]))];
   const out={geno:g,pheno:resolveDominance(g),mutation:null,
-    generation:Math.max(int(a.generation),int(b.generation))+1};
+    generation:Math.max(int(a.generation),int(b.generation))+1, parent1:a.id, parent2:b.id, pname1:a.name, pname2:b.name};
   { const r=Math.random(); out.allergy=r<0.3?allergyOf(a):r<0.6?allergyOf(b):r<0.8?null:pick(ALLERGENS); }
   const rate=opts.guaranteed?1:mutationRate([a,b]);
   if(Math.random()<rate) out.mutation=pick(C.MUTATIONS);
@@ -1759,10 +1841,7 @@ function artPrompt(p){
     : `${COLOR_DESC[cols[0]]}, mottled and uneven, never one flat color`;
   const markTxt=marks.map(m=>MARK_DESC[m]).join(" together with ");
   const plural=n===1?"":"s";
-  const appTxt=n===0?"no limbs or appendages at all besides its root-feet: no wings, no tendrils, no arms"
-    :ph.appendage==="Wing"?`exactly ${NUMW[n]} leaf-veined wing${plural} like pressed petals (count: ${n}, no more, no fewer)`
-    :ph.appendage==="Tendril"?`exactly ${NUMW[n]} curling vine tendril${plural} (count: ${n}, no more, no fewer)`
-    :`exactly ${NUMW[n]} knotted root-arm${plural} (count: ${n}, no more, no fewer), besides its root-feet`;
+  const appTxt=appSentence(ph,n);
   const egg=p.artEgg||{n:1,z:0};
   return [
     "One wide image divided into three equal vertical panels side by side, separated by thin dark gutters, on one sheet of antique stained, foxed paper.",
@@ -1803,6 +1882,18 @@ function bullPrompt(kind){
     "Composition: the whole creature, from antler tips to the end of the dangling stinger, is small and centered, fitting entirely inside the middle square of the picture, with wide empty margins of background on the left and right and above the antlers. Nothing touches the edges.",
     "Behind it: a gloomy overgrown garden at dusk, faint golden pollen drifting. Slightly spooky, mystical and absurd.",
     "No text, labels or signatures."].join(" ");
+}
+function eventGroundPrompt(name){
+  return [MEDIUM,EVENT_ART[name]||"A strange night in an overgrown garden.",
+    "A tall vertical scene of the garden itself, seen from inside it, with paths and plants to the edges; the middle is soft and calm with little detail.",
+    "No creatures in the foreground. No text, labels or signatures."].join(" ");
+}
+let evGroundBusy=false;
+function paintEventGround(){
+  const e=activeEvent(); if(!e||evGroundBusy||ART["ui:ev:"+e.name]) return;
+  evGroundBusy=true;
+  genImage(eventGroundPrompt(e.name),"2:3").then(src=>shrink(src,1024)).then(img=>ArtDB.put("ui:ev:"+e.name,img)).then(()=>{ applyPaper(); })
+    .catch(()=>{}).finally(()=>{ evGroundBusy=false; });
 }
 function eventPrompt(name){
   return [MEDIUM,EVENT_ART[name]||"A strange night in an overgrown garden.",
@@ -1998,11 +2089,12 @@ function paintIcons(){
       catch(e){ const em=String((e&&e.message)||e); S.iconErr=k+": "+em; save();
         if(/ 401 | 403 |credit|quota|billing|could not reach/i.test(em)) break; }
     }
-  })().finally(()=>{ iconBusy=false; });
+  })().finally(()=>{ iconBusy=false;
+    if(CURRENCIES.some(c=>!ART["cur:"+c[0]])&&!paintIcons._t) paintIcons._t=setTimeout(()=>{ paintIcons._t=0; paintIcons(); },120000); });
 }
 function ensureAmbientArt(force){
   if(!S.bullArtV4){ S.bullArtV4=true; S.bullFace="left"; save(); delete ART.bull; delete ART.bull_pasty; }
-  paintIcons();
+  paintIcons(); paintPupae(); paintEventGround();
   if(!force&&Date.now()<int(S.genCool)) return;
   for(const k of (S.wardrobe||[])) if(!ART["cos:"+k]) auto("cos:"+k,async()=>{ await paintCostume(k); render(); });
   for(const p of S.plantimals) if(!ART["p:"+p.id])
@@ -2177,7 +2269,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.1.2";
+const VERSION="1.3.1";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2187,15 +2279,28 @@ function applyPaper(){
   root.style.setProperty("--bgimg",ART["ui:bg"]?`url("${ART["ui:bg"]}")`:"none");
   root.style.setProperty("--woodimg",ART["ui:wood"]?`url("${ART["ui:wood"]}")`
     :"repeating-linear-gradient(90deg,rgba(0,0,0,.18) 0 2px,transparent 2px 64px),repeating-linear-gradient(92deg,#3b2618 0 7px,#4a3020 7px 15px,#352214 15px 24px)");
-  const L=[["bg1","ui:bg"],["bg2","ui:bg2"],["bg3","ui:bg3"]];
+  const ev=(S.event&&Date.now()<S.event.ends)?S.event.name:null;
+  const evArt=ev&&(ART["ui:ev:"+ev]||ART["ev:"+ev]);
+  document.documentElement.dataset.ev=evArt?"1":"";
+  const L=[["bg1",evArt?null:"ui:bg"],["bg2","ui:bg2"],["bg3","ui:bg3"]];
   for(const [id,k] of L){ const el=document.getElementById(id); if(!el) continue;
-    el.style.backgroundImage=ART[k]?`url("${ART[k]}")`:"none"; el.classList.toggle("on",!!ART[k]); }
+    const src=id==="bg1"&&evArt?evArt:ART[k];
+    el.style.backgroundImage=src?`url("${src}")`:"none"; el.classList.toggle("on",!!src&&!(evArt&&id!=="bg1")); }
 }
 let repaintArmed=0;
 function repaintPaper(el){
   if(Date.now()-repaintArmed>4000){ repaintArmed=Date.now(); if(el) el.textContent="Tap again to repaint the paper and garden"; return; }
   repaintArmed=0;
   delete ART["ui:paper2"]; delete ART["ui:bg"]; delete ART["ui:bg2"]; delete ART["ui:bg3"]; applyPaper(); closeSheet(); render(); ensureAmbientArt(true); }
+/* one rule for every painting: it stands on roots, never legs; its only appendages are the counted ones */
+function appSentence(ph,n){
+  const base="it has no legs and no arms of its own: it stands on a tangle of roots";
+  if(!n) return base+", and it has no wings, no tendrils and no limbs at all";
+  const one=n===1, num=NUMW[n];
+  const kind=ph.appendage==="Wing"?(one?"leaf-veined wing like a pressed petal":"leaf-veined wings like pressed petals")
+    :ph.appendage==="Tendril"?(one?"curling vine tendril":"curling vine tendrils"):(one?"knotted root-arm":"knotted root-arms");
+  return `${base}; its ONLY appendages are exactly ${num} ${kind}, each one separate, clearly countable and not joined to another (count: ${n}, no more, no fewer); the roots it stands on are not appendages`;
+}
 function stageKey(p){ return ["baby","teen","adult"][int(p.stage)]||"baby"; }
 function artThumb(p){
   const a=ART["p:"+p.id];
@@ -2226,7 +2331,7 @@ function hatch(eid){
   if(!e||e.status==="hatching") return;
   e.status="hatching"; save();
   const p={id:uid(),name:"Unnamed",geno:fillGeno(e.geno,e.id),pheno:resolveDominance(fillGeno(e.geno,e.id)),
-    mutation:e.mutation,generation:int(e.generation),stage:0,used:[],mood:C.MOOD.start,quirks:[],
+    mutation:e.mutation,generation:int(e.generation),parent1:e.parent1,parent2:e.parent2,pname1:e.pname1,pname2:e.pname2,stage:0,used:[],mood:C.MOOD.start,quirks:[],
     hatched:Date.now(),lastCare:null,decayApplied:0,stage2At:null,allergy:e.allergy,variant:e.variant||null};
   const tick=waitSheet("Hatching…",eggPic(e,140));
   const job=enqueue("p:"+p.id,()=>paintPlantimal(p));
@@ -2387,6 +2492,7 @@ document.addEventListener("click",ev=>{ if(ev.target.closest&&ev.target.closest(
 function coax(id){
   const p=S.plantimals.find(x=>x.id===id);
   if(!p||p.stage>=2||!spendStuff("growth")) return;
+  delete p.pupaUntil; p.emerged=false;
   p.stage=int(p.stage)+1; p.used=[];
   if(p.stage===2) p.stage2At=Date.now();
   save(); closeSheet(); sfx("gmorph"); gmorph(p);
@@ -2882,6 +2988,7 @@ function advanceTests(){
   let n=0;
   S.plantimals.forEach(p=>{
     if(int(p.stage)<2){
+      delete p.pupaUntil; p.emerged=false;
       p.stage=int(p.stage)+1; p.used=[];
       if(p.stage===2) p.stage2At=Date.now();
       n++;
@@ -2956,8 +3063,7 @@ function stagePrompt(p,k){
   const cols=colorsOf(p), marks=String(ph.marking).split("-");
   const colorTxt=cols.length>1?`two colors mottled together, ${COLOR_DESC[cols[0]]}, and ${COLOR_DESC[cols[1]]}`
     :`${COLOR_DESC[cols[0]]}, mottled, never flat`;
-  const appTxt=n===0?"no limbs or appendages, a bare trunk-like body"
-    :`exactly ${NUMW[n]} ${APP_NOUN[ph.appendage][n===1?0:1]}`;
+  const appTxt=appSentence(ph,n);
   const egg=p.artEgg||{n:1,z:0};
   let t=[MEDIUM_F,STAGE_F[k],
     `Half plant, half animal: ${L.p1}, ${L.p2}, ${appTxt}. Coloring: ${colorTxt}. Markings: ${marks.map(m=>MARK_DESC[m]).join(" with ")}. Covered in ${SURF_DESC[ph.surface]}. A vivid spot of ${L.accent} on ${L.spot}. It has ${L.eyes}; subtly wrong: ${L.wrong}.`,
@@ -3181,7 +3287,7 @@ function shadowOwned(){ return int((S.owned||{}).shadowSkin)>0; }
 function midnightNow(){ const h=new Date().getHours(); return int((S.owned||{}).nightMode)>0?(h>=21||h<5):(h>=23||h<3); }
 function nightKey(){ const d=new Date(Date.now()-5*3600000); return d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate(); }
 function applyShadow(){
-  const on=shadowOwned()&&S.shadowOn;
+  const on=shadowOwned()&&S.shadowOn&&!(S.event&&Date.now()<S.event.ends);
   document.documentElement.dataset.shadow=on?"1":"";
   document.documentElement.dataset.night=int((S.owned||{}).nightMode)>0?"1":"";
   const b1=document.getElementById("bg1");
@@ -3262,6 +3368,12 @@ function doCreate(){
 function uiPlant(id){
   const p=S.plantimals.find(x=>x.id===id);
   if(!p) return;
+  if(p.emerged){ p.emerged=false; save(); closeSheet(); sfx("gmorph"); gmorph(p); setTimeout(()=>uiPlant(id),5200); return; }
+  if(p.pupaUntil){ openSheet(`<h2>${esc(p.name)}</h2>${pupaPic(p,190)}
+      <div class="lbl" style="text-align:center">Cookuuunml</div>
+      <div style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:15px;line-height:1.5;text-align:center">${pick(["Something is happening in there.","It shifts a little, then goes still.","It is warm to the touch.","You can almost hear it."])}</div>
+      ${int(S.stuff)>=C.STUFF.growth?`<div style="height:10px"></div><button class="btn" data-seed="cxp${p.id}" onclick="coax('${p.id}')">Coax · <span class="ac">1 STUFF</span></button>`:""}
+      <div style="height:12px"></div><button class="btn" data-seed="pub" onclick="closeSheet()">Back</button>`,"card"); return; }
   logGenetics(p);
   const done=a=>p.used.indexOf(a)>=0;
   const grown=p.stage>=2;
@@ -3322,7 +3434,10 @@ function finishCare(id,action,score){
   const result=gradeOf(score);
   const r=applyCare(p,action,result);
   closeSheet();
-  if(r==="ADVANCED"){ gmorph(p); return; }
+  if(r==="CURLED"){ render(); sfx("whoosh"); buzz([30,60,30]);
+    openSheet(`<h2>Cookuuunml</h2>${pupaPic(p,180)}
+      <div style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:15.5px;line-height:1.5;margin-top:8px;text-align:center">${esc(p.name)} has wrapped itself up tight. Something is happening in there.</div>
+      <div style="height:14px"></div><button class="btn" data-seed="cur" onclick="closeSheet()">Let it be</button>`,"drift"); return; }
   render();
   openSheet(`<h2>${result}</h2>
     <div class="note">${careWords(action,result)}</div>
@@ -3770,6 +3885,48 @@ function doCraft(){
   $("#vmsg").textContent="A Purple Puff, made."; $("#vbal").textContent=`You have ${int(S.polllen)} Polllen, ${int(S.nector)} Nector.`;
 }
 /* a little burst of pollen with words in it */
+const BI_GIFT='<path d="M4 9h16v4H4zM5 13h14v8H5zM12 9v12M12 9c-2-4-6-4-6-1 0 1 2 1 6 1zM12 9c2-4 6-4 6-1 0 1-2 1-6 1z"/>';
+const BI={
+  "Convert":'<path d="M12 4v15M7 19h10M5 8h14M5 8l-2.5 6a3 3 0 0 0 5 0zM19 8l-2.5 6a3 3 0 0 0 5 0z"/>',
+  "Butterfly":'<path d="M12 7v11M12 9c-2-4-7-5-8-2s2 6 8 4M12 9c2-4 7-5 8-2s-2 6-8 4M12 12c-2 1-6 3-5 6s4 0 5-3M12 12c2 1 6 3 5 6s-4 0-5-3M11 6l-1.5-2.5M13 6l1.5-2.5"/>',
+  "Shops":'<path d="M3 4h14M5 4v2M15 4v2M4 7h12v8H4zM7 10h6M7 12.5h4M19 3v18"/>',
+  "More":'<path d="M12 20V9M12 13c-4 0-6-3-6-6 3 0 6 2 6 6zM12 11c4 0 6-3 6-6-3 0-6 2-6 6zM12 17c-3 0-5-2-5-4 2 0 5 1 5 4z"/>',
+  "Less":'<path d="M12 20V9M12 13c-4 0-6-3-6-6 3 0 6 2 6 6zM12 11c4 0 6-3 6-6-3 0-6 2-6 6z"/>',
+  "Journal":'<path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2zM5 18a2 2 0 0 1 2-2h11M9 8h6M9 11h4"/>',
+  "Collection":'<path d="M4 10h16v9H4zM7 10V6h10v4M9 6V4h6v2M12 14v2"/>',
+  "Messages":'<path d="M3 6h18v12H3zM3 6l9 7 9-7M12 13v3"/><circle cx="12" cy="16.5" r="1.6"/>',
+  "Kept":'<path d="M5 3h14v18H5zM12 17V10M12 10c-2-1-3-3-2-5 2 0 3 2 2 5zM12 12c2-1 3-2 4-1-1 2-3 2-4 1z"/>',
+  "Settings":'<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>',
+  "Hidrayshn":'<path d="M5 10h9v8H5zM14 12l6-4M19 6l2 3M5 12c-3 0-3 4 0 4M7 7l3 3"/><path d="M20 12v1.5M21 15v1.5"/>',
+  "Coppertanrr":'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+  "Fylth":'<path d="M14 3l-3 9 3 1 3-9zM11 12l-2 4c-1 2 2 4 4 3l2-5M4 20c3-2 7-2 10 0"/>',
+  "Gift":'<path d="M4 9h16v4H4zM5 13h14v8H5zM12 9v12M12 9c-2-4-6-4-6-1 0 1 2 1 6 1zM12 9c2-4 6-4 6-1 0 1-2 1-6 1z"/>',
+  "Genetics":'<path d="M8 3c0 6 8 6 8 9s-8 3-8 9M16 3c0 6-8 6-8 9s8 3 8 9M9 6h6M9 18h6M10 12h4"/>',
+  "Rename":'<path d="M20 4c-6 1-11 6-13 12l-2 4 4-2c6-2 11-7 11-14zM9 15l-2-2"/>',
+  "Dress":'<path d="M3 10c0-2 4-3 9-3s9 1 9 3c0 4-3 6-5 6-2 0-2-2-4-2s-2 2-4 2c-2 0-5-2-5-6z"/><circle cx="8.5" cy="10.5" r="1.4"/><circle cx="15.5" cy="10.5" r="1.4"/>',
+  "Cuddle":'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>',
+  "Back":'<path d="M10 6L4 12l6 6M4 12h11c3 0 5 2 5 5"/>',
+  "Done":'<path d="M5 12l5 5 9-10"/>',"Close":'<path d="M6 6l12 12M18 6L6 18"/>',
+  "Create":'<path d="M12 21v-8M12 13c-3 0-5-2-5-5 3 0 5 2 5 5zM12 15c3 0 5-2 5-5-3 0-5 2-5 5z"/><ellipse cx="12" cy="20" rx="5" ry="1.5"/>',
+  "Pollinate":'<ellipse cx="13" cy="13" rx="6" ry="4"/><path d="M9 11v4M12 10v6M15 10v6M7 13H3M14 9c-1-3 1-5 3-5"/>',
+  "Send":'<path d="M3 11l18-7-6 17-3-7zM12 14l9-10"/>',
+  "What becomes":'<path d="M6 3h12M6 21h12M7 3c0 6 10 6 10 9s-10 3-10 9M17 3c0 6-10 6-10 9s10 3 10 9"/>',
+  "Coax":'<path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/><path d="M5 19l3-3M19 19l-3-3"/>',
+  "Paint":'<path d="M14 4l6 6-7 7-6-6zM7 11l-3 3c-1 1-1 4 2 5 2 0 3-1 4-2l1-2"/>',
+"Sparkle Pulse":BI_GIFT,"Little Shield":BI_GIFT,"Warm Nuzzle":BI_GIFT,"Seed Sneeze":BI_GIFT,"Night Light":BI_GIFT,"Murmur":BI_GIFT,"Hidden Path":BI_GIFT,"Changeling":BI_GIFT,"Echo":BI_GIFT,"Hollow Song":BI_GIFT,"Bloom Lure":BI_GIFT,
+  "Let it be":'<path d="M5 12l5 5 9-10"/>',"Go on":'<path d="M5 12h12M12 6l6 6-6 6"/>'
+};
+function decorate(root){
+  (root||document).querySelectorAll(".btn,.nb").forEach(b=>{
+    if(b.querySelector(".bi")) return;
+    const t=b.textContent.trim(); let svg=null;
+    for(const [lab] of CURRENCIES.map(c=>[c[1],c[0]])){ }
+    const cur=CURRENCIES.find(c=>t.startsWith(c[1])&&ART["cur:"+c[0]]);
+    if(cur){ b.insertAdjacentHTML("afterbegin",`<span class="bi coinb"><img alt="" src="${ART["cur:"+cur[0]]}"></span>`); return; }
+    for(const k in BI) if(t.startsWith(k)){ svg=BI[k]; break; }
+    if(svg) b.insertAdjacentHTML("afterbegin",`<span class="bi"><svg viewBox="0 0 24 24">${svg}</svg></span>`);
+  });
+}
 function poof(el,txt){
   const r=el?el.getBoundingClientRect():{left:innerWidth/2-40,top:innerHeight/2,width:80,height:20};
   const d=document.createElement("div"); d.className="poof";
@@ -4499,29 +4656,79 @@ function uiJournal(tab){
   else if(tab==="triv") body=triv.length
       ? triv.map(t=>`<div class="jr">${esc(t)}</div>`).join("")
       : `<div class="note">Nothing yet.</div>`;
-  else if(tab==="gen") body=gens.length
-      ? gens.map(g=>`<div class="jr">${esc(g)}</div>`).join("")
-      : `<div class="note">Nothing yet.</div>`;
+  else if(tab==="gen") body=geneJournal(gens);
   else if(tab==="rec") body=recs.length
       ? recs.map(g=>`<div class="jr">${esc(g)}</div>`).join("")
       : `<div class="note">Nothing yet.</div>`;
   else if(tab==="lore") body=lore.length
       ? lore.map(g=>`<div class="jr">${esc(g)}</div>`).join("")
       : `<div class="note">Nothing yet.</div>`;
-  else body=`<textarea id="nt" style="width:100%;min-height:130px;background:transparent;
-      border:1.2px solid rgba(46,42,38,.28);font-family:'Nunito Sans';font-size:14px;
-      padding:9px;color:var(--ink)" oninput="saveNotes(this.value)">${esc(S.notes||"")}</textarea>`;
+  else body=`<textarea id="nt" class="notebook" data-noswipe placeholder="Write anything here." oninput="saveNotes(this.value)">${esc(S.notes||"")}</textarea>`;
   if(tab==="chart") body=`<div id="chartbox" data-noswipe><img id="chartimg" alt="Plantimal Genetics, a breeding chart" src="${CHART_IMG}" onclick="this.classList.toggle('zoom')"></div>
       <div class="note" style="text-align:center;margin-top:6px">Tap it to look closer.</div>`;
   openSheet(`<h2>Journal</h2>
     <div class="opts" style="margin-bottom:6px">${tabs.map(t=>
       `<button class="opt ${t[0]===tab?"sel":""}" onclick="uiJournal('${t[0]}')">${t[1]}${
-        t[3]?` <span class="mono" style="font-size:11px">${t[2]}/${t[3]}</span>`:""}</button>`).join("")}</div>
+        t[3]?` <span class="mono" style="font-size:11px;white-space:nowrap">${int(t[2]).toLocaleString("en-US")} of ${int(t[3]).toLocaleString("en-US")}</span>`:""}</button>`).join("")}</div>
     <div style="max-height:56vh;overflow-y:auto">${body}</div>
     <div style="height:12px"></div>
     <button class="btn" data-seed="jb" onclick="closeSheet()">Back</button>`);
 }
 function saveNotes(v){ S.notes=v; save(); }
+/* ── the Genetics page: who carries what, and what two of them could make ── */
+const GENE_ROWS=[["color","Color"],["marking","Markings"],["appendage","Appendages"],["count","How many"],["behavior","Behavior"],["surface","Covering"]];
+const ORDER={appendage:GENE.apps,behavior:GENE.behs,surface:GENE.surfs};
+let genA=null, genB=null;
+function chip(k,v){
+  if(k==="color") return `<span class="gchip" style="background:${CH[v]||"#888"}"></span>${esc(v)}`;
+  return esc(String(v));
+}
+function geneCard(p){
+  const g=p.geno||{}, ph=p.pheno||{};
+  const rows=GENE_ROWS.map(([k,l])=>{
+    const c=g[k]||[]; let a=c[0], b=c[1];
+    if(k==="count") return `<tr><td>${l}</td><td>${int(a)}</td><td>${int(b)}</td><td>${int(a)+int(b)}</td></tr>`;
+    const shows=String(ph[k]||"");
+    const hid=v=>ORDER[k]&&shows.indexOf(v)<0?` class="hid"`:"";
+    return `<tr><td>${l}</td><td${hid(a)}>${chip(k,a)}</td><td${hid(b)}>${chip(k,b)}</td><td>${esc(shows.replace("-"," & "))}</td></tr>`;
+  }).join("");
+  const mom=S.plantimals.find(x=>x.id===p.parent2)||{}, dad=S.plantimals.find(x=>x.id===p.parent1)||{};
+  return `<div class="gcard"><div class="gname">${esc(p.name)} <span class="mono">gen ${int(p.generation)}</span></div>
+    <table class="gtab"><tr><th></th><th>From Daddy</th><th>From Mommy</th><th>Shows</th></tr>${rows}</table>
+    <div class="gfoot">${p.mutation?"✦ "+esc(p.mutation)+" · ":""}${p.variant?"✧ "+esc(p.variant)+" · ":""}${p.allergyKnown&&p.allergy?"cannot abide anything "+esc(p.allergy.toLowerCase())+" · ":""}${(dad.name||p.pname1)?"child of "+esc(dad.name||p.pname1)+" and "+esc(mom.name||p.pname2||"?"):"a founder"}</div></div>`;
+}
+function pairOdds(a,b){
+  const out=[];
+  for(const [k,l] of GENE_ROWS){
+    const A=(a.geno||{})[k]||[], B=(b.geno||{})[k]||[], tally={};
+    for(const x of A) for(const y of B){
+      let lab;
+      if(k==="count") lab=String(Math.max(0,Math.min(5,int(x)+int(y))));
+      else { const g2=JSON.parse(JSON.stringify(a.geno)); g2[k]=[x,y]; lab=String(resolveDominance(g2)[k]).replace("-"," & "); }
+      tally[lab]=(tally[lab]||0)+25;
+    }
+    out.push([l,Object.entries(tally).sort((m,n)=>n[1]-m[1])]);
+  }
+  return out;
+}
+function geneJournal(gens){
+  const all=S.plantimals;
+  if(!all.length) return `<div class="note">Nothing yet.</div>`;
+  if(!genA||!all.find(x=>x.id===genA)) genA=all[0].id;
+  if(!genB||!all.find(x=>x.id===genB)||genB===genA) genB=(all[1]||all[0]).id;
+  const pa=all.find(x=>x.id===genA), pb=all.find(x=>x.id===genB);
+  const pickRow=(cur,which)=>`<div class="opts">${all.map(p=>`<button class="opt ${p.id===cur?"sel":""}" onclick="${which}='${p.id}';uiJournal('gen')">${esc(p.name)}</button>`).join("")}</div>`;
+  const odds=all.length>1&&pa.id!==pb.id?pairOdds(pa,pb).map(([l,list])=>`<div class="godds"><span>${l}</span><span>${list.map(([v,pc])=>`<b>${pc}%</b> ${esc(v)}`).join(" · ")}</span></div>`).join(""):"";
+  return `<div class="lbl">What two of them could make</div>
+    <div class="note" style="margin:0 0 4px">First</div>${pickRow(genA,"genA")}
+    <div class="note" style="margin:6px 0 4px">Second</div>${pickRow(genB,"genB")}
+    ${odds?`<div class="gpair">${odds}<div class="note" style="margin-top:6px">Mutations and slips are not counted. They simply happen.</div></div>`:`<div class="note">Choose two different ones.</div>`}
+    <div class="lbl" style="margin-top:14px">What each one carries</div>
+    <div class="note" style="margin:0 0 6px">Faded copies are hidden: they do not show, but can be handed on.</div>
+    ${all.map(geneCard).join("")}
+    <div class="lbl" style="margin-top:14px">Looks seen · ${gens.length.toLocaleString("en-US")} of ${GENE_SPACE.toLocaleString("en-US")}</div>
+    ${gens.map(g=>`<div class="jr">${esc(g)}</div>`).join("")}`;
+}
 function logGenetics(p){
   S.genSeen=S.genSeen||[];
   const k=phenoLine(p.pheno);
@@ -4597,7 +4804,7 @@ function buy(k,i){
   const before=int(S[k]); buyCore(k,i);
   if(int(S[k])<before){ const it=SHOPS[k].items[i];
     const b=$("#sheet").querySelectorAll(".shelf .btn")[i]; poof(b,it[0]); buzz([12,30,12]);
-    const m=$("#shmsg"); if(m) m.textContent=it[0]+". "+(WHERE[it[2]]||"Yours."); }
+    const m=$("#shmsg"); if(m) m.textContent=""; }
 }
 function buyCore(k,i){
   const it=SHOPS[k].items[i];
@@ -4753,7 +4960,9 @@ function uiMemory(){
 
 /* ══ BOOT ══════════════════════════════════════════════════ */
 function boot(){
+  emergePupae();
   if(S.openingV!==1){ S.openingV=1; S.seenIntro=false; }
+  if(S.seenIntro&&S.seenStudio===undefined) S.seenStudio=true;
   applyPaper();
   activeEvent();
   sweepEggs();
