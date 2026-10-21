@@ -721,6 +721,31 @@ textarea.notebook{width:100%;min-height:52vh;box-sizing:border-box;border:0;outl
 .tname{font-family:'Berkshire Swash','Fraunces',serif !important;font-weight:400 !important}
 .tof,.tsub{font-family:'Kalam',cursive !important;font-style:normal !important}
 .tof{font-weight:700}
+
+/* ══ garden-themed controls ══ */
+input[type=range]{-webkit-appearance:none;appearance:none;height:34px;background:transparent !important;border:0 !important;box-shadow:none !important;padding:0 !important;outline:none}
+input[type=range]::-webkit-slider-runnable-track{height:16px;border-radius:8px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='16' viewBox='0 0 44 16'%3E%3Cpath d='M0 8c6-5 10-5 16 0s10 5 16 0 8-4 12-2' fill='none' stroke='%236f8a45' stroke-width='2'/%3E%3Cpath d='M14 6c-2-4-6-5-8-3 2 2 5 3 8 3zM32 9c2 4 6 5 8 3-2-2-5-3-8-3z' fill='%23839d55'/%3E%3C/svg%3E") repeat-x center/44px 16px}
+input[type=range]::-moz-range-track{height:16px;border-radius:8px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='16' viewBox='0 0 44 16'%3E%3Cpath d='M0 8c6-5 10-5 16 0s10 5 16 0 8-4 12-2' fill='none' stroke='%236f8a45' stroke-width='2'/%3E%3Cpath d='M14 6c-2-4-6-5-8-3 2 2 5 3 8 3zM32 9c2 4 6 5 8 3-2-2-5-3-8-3z' fill='%23839d55'/%3E%3C/svg%3E") repeat-x center/44px 16px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:32px;height:32px;margin-top:-8px;border:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath d='M15 2C6 8 4 18 9 26c2 2 10 2 12 0 5-8 3-18-6-24z' fill='%237a9a4a' stroke='%233f5527' stroke-width='1.3'/%3E%3Cpath d='M15 4v23M15 11l-4-3M15 15l5-3M15 19l-5-3M15 23l4-3' stroke='%23d9e6b8' stroke-width='1' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));transform:rotate(-20deg)}
+input[type=range]::-moz-range-thumb{width:32px;height:32px;border:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath d='M15 2C6 8 4 18 9 26c2 2 10 2 12 0 5-8 3-18-6-24z' fill='%237a9a4a' stroke='%233f5527' stroke-width='1.3'/%3E%3Cpath d='M15 4v23M15 11l-4-3M15 15l5-3M15 19l-5-3M15 23l4-3' stroke='%23d9e6b8' stroke-width='1' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;transform:rotate(-20deg)}
+html.painted #sheet .btn{border-radius:22px 6px 22px 6px !important}
+.nb{border-radius:20px 6px 20px 6px !important}
+.opt{border-radius:14px 4px 14px 4px !important}
+html.painted #sheet .btn:active,.nb:active{transform:rotate(-1.2deg) scale(.98)}
+.btn.isoff,.nb.isoff{opacity:.62;border-style:dashed !important}
+.btn.ison{box-shadow:inset 0 0 0 1px rgba(120,150,80,.55)}
+/* the shop list: wooden signs hanging from little chains */
+html.painted #sheet.k-wood .btn.sign{position:relative;margin:26px 8px 8px !important;border-radius:6px !important;
+  background:linear-gradient(180deg,#7a5434,#5a3b22 60%,#4a2f1b) !important;border:1px solid #2a1a0c !important;
+  box-shadow:inset 0 1px 0 rgba(255,220,170,.25),inset 0 -2px 0 rgba(0,0,0,.35),0 6px 10px rgba(0,0,0,.45) !important;
+  color:#f4e2bd !important;transform-origin:50% -24px;animation:signsway 5s ease-in-out infinite}
+html.painted #sheet.k-wood .btn.sign:nth-child(2n){animation-delay:-2.2s}
+html.painted #sheet.k-wood .btn.sign::before{content:"" !important;display:block !important;position:absolute;top:-24px;left:18%;right:18%;height:24px;
+  border-left:2px dotted #c4ad84;border-right:2px dotted #c4ad84;background:none !important;pointer-events:none}
+@keyframes signsway{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg)}}
+.fig.bloom .fn::before{content:"✿ ";color:#f1b6c4}
+.bloomline{text-align:center;font-family:'Fraunces',Georgia,serif;font-style:italic;color:#a3405c;margin:-4px 0 8px}
 </style>
 </head>
 <body>
@@ -733,7 +758,7 @@ textarea.notebook{width:100%;min-height:52vh;box-sizing:border-box;border:0;outl
 <div id="open">
   <button id="oskip" onclick="openSkip()">Skip</button>
   <div class="oc" id="oc1"><div class="brand">M<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>I<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>N<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>D<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>M<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>E<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>R<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>C</div><div class="brand2">Studios</div></div>
-  <div class="oc" id="oc2"><div class="assoc">in cooperation with</div><div class="lipr">Lipreader Games</div></div>
+  <div class="oc" id="oc2"><div class="assoc">in cooperation with</div><div class="lipr">Lipreader Games</div><div class="assoc" style="margin-top:12px">and</div></div>
   <div class="oc" id="oc0"><div class="tgate"><svg viewBox="0 0 24 24" width="30" height="30"><path d="M12 21v-9M12 12c-3 0-5-2-5-5 3 0 5 2 5 5zM12 14c3 0 5-2 5-5-3 0-5 2-5 5z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><div>touch to begin</div></div></div>
   <div class="oc" id="oc4"><div class="brand iso">I.S.O.C.A.N.-5</div></div>
   <div class="oc" id="oc5"><div class="fpres solo">presents</div></div>
@@ -1272,6 +1297,7 @@ function bullMarkup(){
     <button id="keekiOld" style="display:none"><svg viewBox="0 0 24 22"><path d="M12 21C5 15.5 1.5 12 1.5 7.2 1.5 4 4 1.5 7 1.5c2.2 0 3.8 1.2 5 3 1.2-1.8 2.8-3 5-3 3 0 5.5 2.5 5.5 5.7 0 4.8-3.5 8.3-10.5 13.8z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="9.2" r="1.9" fill="currentColor"/><path d="M11.1 10.4h1.8l.6 4.2h-3z" fill="currentColor"/></svg></button>`;
 }
 function figMarkup(p){
+  if(bloomingNow(p)&&ART["bloom:"+p.id]) return `<div class="fig bloom ${p.emerged?"newborn":""}" data-id="${p.id}" data-sc="1" onclick="uiPlant('${p.id}')"><div class="wpic breathe" style="position:relative;--bd:-${(seeded("bd"+p.id)()*5.6).toFixed(2)}s"><img class="base" alt="" src="${ART["bloom:"+p.id]}">${wearImgs(p)}</div><div class="fn">${esc(p.name)}</div></div>`;
   if(p.pupaUntil) return `<div class="fig" data-id="${p.id}" data-sc=".82" onclick="uiPlant('${p.id}')">${pupaPic(p,100).replace('width:100px','width:100%')}<div class="fn i">${esc(p.name)}</div></div>`;
   const a=ART["p:"+p.id], src=a&&a[stageKey(p)];
   const sc=[.78,.9,1][int(p.stage)]||.78;
@@ -1603,6 +1629,46 @@ function pupaPic(p,w){
   return `<div class="cocoon breathe" style="width:${w}px;margin:0 auto">${src?`<img alt="" src="${src}">`:""}<svg viewBox="0 0 60 90" preserveAspectRatio="none"><path d="M30 4C14 12 8 34 10 56c2 18 10 30 20 30s18-12 20-30C52 34 46 12 30 4z" fill="rgba(222,206,170,.55)"/>
     <path d="M14 30c10 4 22 4 32-2M11 44c12 6 26 6 38-2M12 58c12 6 25 6 36-1M16 72c9 4 19 4 28-1M22 16c6 3 11 3 16-1" stroke="rgba(120,96,60,.55)" stroke-width="1.1" fill="none"/></svg></div>`;
 }
+/* each grown one blooms in the season of its color; Twilight blooms at night, all year */
+const BLOOM_SEASON={Verdant:"Spring",Solar:"Summer",Crimson:"Autumn",Azure:"Winter",Twilight:"Night"};
+function bloomingNow(p){
+  if(int(p.stage)<2||p.pupaUntil) return false;
+  const h=new Date().getHours(), se=season();
+  return String((p.pheno||{}).color||"").split("-").some(c=>BLOOM_SEASON[c]==="Night"?(h>=21||h<5):BLOOM_SEASON[c]===se);
+}
+function bloomKey(p){ const cols=String(p.pheno.color).split("-"); return cols.some(c=>BLOOM_SEASON[c]===season())?season()+new Date().getFullYear():"night"+nightKey(); }
+function bloomPrompt(p){ return stagePrompt(p,"adult")+" It is in full bloom: flowers of its own colors have opened all over its body and head, petals unfurled, pollen glowing faintly, a few petals drifting down. Its face, body and limbs are exactly as before."; }
+async function openaiEdit(src,prompt){
+  const blob=await (await fetch(src)).blob();
+  const fd=new FormData(); fd.append("model",OAI_MODEL); fd.append("prompt",prompt); fd.append("size","1024x1536");
+  fd.append("quality",S.imgQuality==="high"?"high":"medium"); fd.append("image",blob,"creature."+(blob.type.indexOf("png")>=0?"png":"jpg"));
+  const r=await fetch("https://api.openai.com/v1/images/edits",{method:"POST",headers:{"Authorization":"Bearer "+oaiKey()},body:fd});
+  const j=await r.json().catch(()=>({})); const b=j.data&&j.data[0]&&j.data[0].b64_json;
+  if(!r.ok||!b) throw new Error("OpenAI "+r.status+" edit: "+String((j.error&&j.error.message)||"no image").slice(0,200));
+  return "data:image/png;base64,"+b;
+}
+let bloomBusy=false;
+function paintBlooms(){
+  if(bloomBusy||!oaiKey()) return;
+  const todo=S.plantimals.filter(p=>bloomingNow(p)&&!ART["bloom:"+p.id]); if(!todo.length) return;
+  bloomBusy=true;
+  (async()=>{ for(const p of todo){
+      try{
+        const a=ART["p:"+p.id], base=a&&a.adult; let img;
+        try{ if(!base) throw 0; img=await openaiEdit(base,"Keep this exact creature, its pose, face, colors, limbs and the whole painting the same. Only change this: it is now in full bloom, flowers of its own colors opened all over its body and head, petals unfurled, pollen glowing faintly, a few petals drifting down."); }
+        catch(e){ img=await genImage(bloomPrompt(p),"2:3"); }
+        await ArtDB.put("bloom:"+p.id,await shrink(img,640)); render();
+      }catch(err){ const m=String((err&&err.message)||err); if(/ 401 | 403 |credit|quota|billing|could not reach/i.test(m)) break; }
+    } })().finally(()=>{ bloomBusy=false; });
+}
+function bloomCheck(){
+  let news=false;
+  for(const p of S.plantimals){ if(!bloomingNow(p)) continue; const k=bloomKey(p);
+    if(p.bloomSeen!==k){ p.bloomSeen=k; news=true; S.pm=S.pm||[]; S.pm.unshift({from:"System",at:Date.now(),body:p.name+" is in bloom."}); } }
+  if(news){ save(); if(!document.body.classList.contains("opening")){ render(); sfx("sparkle"); } }
+  paintBlooms();
+}
+setInterval(bloomCheck,60000);
 function emergePupae(){
   let any=false;
   for(const p of S.plantimals){
@@ -1750,7 +1816,7 @@ function makePlantimal(name,d){
   const r=Math.random();
   const geno={color:[d.color,d.color],marking:[d.marking,d.marking],
     legs:[Math.floor(L/2),L-Math.floor(L/2)],
-    arms:int(d.arms)>=2?["Pair",r<.3?"Twin":r<.7?"None":"Pair"]:["None","None"],
+    arms:int(d.arms)>=4?["Twin","Twin"]:int(d.arms)>=2?["Pair",r<.3?"Twin":r<.7?"None":"Pair"]:["None","None"],
     tendril:[Math.floor(T/2),T-Math.floor(T/2)],
     wing:[d.wing||"None",carrier(d.wing||"None",GENE.wings)],
     behavior:[d.behavior,carrier(d.behavior,GENE.behs)],surface:[d.surface,carrier(d.surface,GENE.surfs)]};
@@ -2352,7 +2418,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.4.2";
+const VERSION="1.5.0";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2405,7 +2471,9 @@ function artBig(p){
   if(!a||!a[stageKey(p)]) return artThumb(p);
   const egg=p.artEgg, found=(S.foundEggs||[]).indexOf(egg&&egg.n)>=0;
   const zone=(egg&&!found)?`<div onclick="event.stopPropagation();findEgg(${egg.n})" class="${int(S.nightUntil)>Date.now()?"shimmer":""}" style="position:absolute;${EGG_ZONES[egg.z][1]};width:38%;height:40%;border-radius:40%"></div>`:"";
-  return `<div class="wpic breathe" style="position:relative;margin:4px 0 10px;--bd:-${(seeded("bd"+p.id)()*5.6).toFixed(2)}s"><img class="artbig base" alt="" src="${a[stageKey(p)]}"/>${wearImgs(p)}${zone}</div>`;
+  const src=bloomingNow(p)&&ART["bloom:"+p.id]?ART["bloom:"+p.id]:a[stageKey(p)];
+  return `<div class="wpic breathe" style="position:relative;margin:4px 0 10px;--bd:-${(seeded("bd"+p.id)()*5.6).toFixed(2)}s"><img class="artbig base" alt="" src="${src}"/>${wearImgs(p)}${zone}</div>
+    ${bloomingNow(p)?`<div class="bloomline">✿ In bloom</div>`:""}`;
 }
 function waitSheet(title,visual){
   openSheet(`<h2>${title}</h2><div style="text-align:center;padding:8px 0">${visual||""}</div>
@@ -3433,7 +3501,7 @@ function uiCreate(){
     arr.map(v=>`<button class="opt" data-cat="${cat}" data-v="${v}" onclick="pickOpt(this)">${v}</button>`).join("")+`</div>`;
   openSheet(`<h2>${S.plantimals.length?"Your second":"Your first"}</h2>
     ${grp("Color","color",GENE.colors)}${grp("Markings","marking",GENE.marks)}
-    ${grp("Root-legs","legs",["0","1","2","3"])}${grp("Arms","arms",["0","2"])}${grp("Tendrils","tendrils",["0","1","2","3","4","5","6"])}${grp("Wings","wing",["None","Bat","Bird","Bee","Moth","Dragonfly"])}
+    ${grp("Root-legs","legs",["0","1","2","3"])}${grp("Arms","arms",["0","2","4"])}${grp("Tendrils","tendrils",["0","1","2","3","4","5","6"])}${grp("Wings","wing",["None","Bat","Bird","Bee","Moth","Dragonfly"])}
     ${grp("Behavior","behavior",["Playful","Contemplative","Mischievous"])}${grp("Covering","surface",["Smooth","Bark","Fur","Feather","Scale"])}
     <div class="lbl">Name</div>
     <input id="pname" type="text" maxlength="40" placeholder="">
@@ -4035,6 +4103,7 @@ function decorate(root){
   (root||document).querySelectorAll(".btn,.nb").forEach(b=>{
     if(b.querySelector(".bi")) return;
     const t=b.textContent.trim(); if(!t||t==="·") return;
+    if(/·\s*(off|OFF)/.test(t)||/: OFF/.test(t)) b.classList.add("isoff"); else if(/·\s*on$/.test(t)) b.classList.add("ison");
     const inShop=!!b.closest("#sheet.k-wood");
     const cur=(inShop||/^\d/.test(t))&&CURRENCIES.find(c=>t.indexOf(c[1])>=0&&ART["cur:"+c[0]]);
     if(cur){ b.insertAdjacentHTML("afterbegin",`<span class="bi coinb"><img alt="" src="${ART["cur:"+cur[0]]}"></span>`); return; }
@@ -4922,7 +4991,7 @@ function uiShops(){
   const keys=Object.keys(SHOPS).filter(k=>k!=="chocolate"||int(S.chocolate)>0);
   openSheet(`<h2>Trade</h2>
     ${masqOn()?`<button class="btn" data-seed="shw" style="margin:6px 0" onclick="uiWardrobe()">Masquerade Wardrobe · <span class="mono">${int(S.hunneee)}</span></button>`:""}
-    ${keys.map(k=>`<button class="btn" data-seed="sh${k}" style="margin:6px 0"
+    ${keys.map(k=>`<button class="btn sign" data-seed="sh${k}" style="margin:6px 0"
       onclick="uiShop('${k}')">${SHOPS[k].label} · <span class="mono">${int(S[k])}</span></button>`).join("")}
     <div style="height:10px"></div>
     <button class="btn" data-seed="sb2" onclick="closeSheet()">Back</button>`);
@@ -5106,6 +5175,7 @@ function uiMemory(){
 
 /* ══ BOOT ══════════════════════════════════════════════════ */
 function boot(){
+  setTimeout(bloomCheck,3000);
   if(S.genoV!==2){ for(const x of [...S.plantimals,...S.egglingses]){ x.geno=fillGeno(x.geno,x.id); x.pheno=resolveDominance(x.geno); } S.genoV=2; save(); }
   emergePupae();
   if(S.openingV!==1){ S.openingV=1; S.seenIntro=false; }
