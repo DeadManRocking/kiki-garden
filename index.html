@@ -12,7 +12,7 @@
 <meta name="theme-color" content="#191d3a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Nunito+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&family=Cinzel:wght@700&family=Spectral:ital,wght@0,500;1,400&family=Oswald:wght@500;700&family=Pinyon+Script&family=Caveat:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Nunito+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&family=Cinzel:wght@700&family=Spectral:ital,wght@0,500;1,400&family=Oswald:wght@500;700&family=Pinyon+Script&family=Caveat:wght@500&family=Berkshire+Swash&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --paper:#DAD3BE;
@@ -615,7 +615,7 @@ body.pollinating #app{opacity:0;pointer-events:none}
 /* ══ the C-Keeki and the Keeper ══ */
 #keeki{width:30px;height:30px;padding:6px;border:0;background:none;color:rgba(240,226,196,.4);cursor:pointer;flex:none}
 #sheet.k-keeper .kk-lock{cursor:pointer;padding:6px}
-#sheet.k-keeper .btn.kk-on{background:rgba(160,60,60,.45) !important;border-color:#e08a8a !important}
+html.painted #sheet.k-keeper .btn.kk-on{background:rgba(160,60,60,.55) !important;border-color:#e08a8a !important}
 #keeki svg{width:18px;height:17px;display:block}
 html.painted #sheet.k-keeper{background:linear-gradient(180deg,#141733,#0e1024) !important;color:#e4e1d6;border-radius:16px !important;
   outline:1px solid rgba(110,118,220,.35) !important;outline-offset:-6px !important;box-shadow:0 18px 40px rgba(0,0,0,.7),inset 0 0 0 1px rgba(25,25,112,.9) !important}
@@ -702,6 +702,25 @@ textarea.notebook{width:100%;min-height:52vh;box-sizing:border-box;border:0;outl
 #oc3.on .fF{animation:fF .4s ease 1.2s forwards}
 #oc3.on .fring{animation:fring .9s cubic-bezier(.5,.1,.3,1) 1.3s forwards}
 #oc3.on .fP{animation:fP .6s cubic-bezier(.3,1.6,.5,1) 3.3s forwards}
+
+.oc{transition:opacity 1.6s ease,transform 1.8s ease}
+.tgate{display:flex;flex-direction:column;align-items:center;gap:10px;color:#cdbf9a;font:400 18px 'Kalam',cursive;animation:tgate 2.8s ease-in-out infinite}
+@keyframes tgate{0%,100%{opacity:.45}50%{opacity:1}}
+.fpres.solo{margin:0;opacity:1;transform:none;font-size:clamp(24px,7.5vw,32px);animation:none !important}
+#oc3 .anrow{display:flex;align-items:center;justify-content:center;gap:10px}
+#oc3 .anrow .fmark{margin:0}
+#oc6{transition:none;transform:none}
+#oc6.on .tpop{animation:tpop .42s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes tpop{0%{transform:scale(1.35);opacity:0}25%{opacity:1}100%{transform:none;opacity:1}}
+#oc6.fadeaway{opacity:0;transition:opacity 2.2s ease}
+.tpop{padding:0 10px}
+.tp1{font-family:'Berkshire Swash','Fraunces',serif;font-size:clamp(40px,12.5vw,58px);line-height:1.04;color:#f3e3bf;
+  text-shadow:0 2px 18px rgba(0,0,0,.85),0 0 32px rgba(255,214,140,.25)}
+.tp2{font-family:'Kalam',cursive;font-weight:700;font-size:clamp(19px,5.6vw,24px);color:#efe0bf;margin-top:12px;text-shadow:0 1px 8px #000}
+.tp3{font-family:'Kalam',cursive;font-weight:400;font-size:clamp(15px,4.4vw,18px);line-height:1.4;color:#d8c69c;margin-top:12px;text-shadow:0 1px 6px #000}
+.tname{font-family:'Berkshire Swash','Fraunces',serif !important;font-weight:400 !important}
+.tof,.tsub{font-family:'Kalam',cursive !important;font-style:normal !important}
+.tof{font-weight:700}
 </style>
 </head>
 <body>
@@ -715,10 +734,13 @@ textarea.notebook{width:100%;min-height:52vh;box-sizing:border-box;border:0;outl
   <button id="oskip" onclick="openSkip()">Skip</button>
   <div class="oc" id="oc1"><div class="brand">M<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>I<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>N<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>D<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>M<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>E<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>R<svg class="st" viewBox="0 0 10 10"><path d="M5 .6l1.3 3h3.2L6.9 5.5l1 3.2L5 6.9 2.1 8.7l1-3.2L.5 3.6h3.2z"/></svg>C</div><div class="brand2">Studios</div></div>
   <div class="oc" id="oc2"><div class="assoc">in cooperation with</div><div class="lipr">Lipreader Games</div></div>
+  <div class="oc" id="oc0"><div class="tgate"><svg viewBox="0 0 24 24" width="30" height="30"><path d="M12 21v-9M12 12c-3 0-5-2-5-5 3 0 5 2 5 5zM12 14c3 0 5-2 5-5-3 0-5 2-5 5z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><div>touch to begin</div></div></div>
   <div class="oc" id="oc4"><div class="brand iso">I.S.O.C.A.N.-5</div></div>
-  <div class="oc" id="oc3"><div class="fpres">presents</div><div class="fpl lc">an</div>
-    <div class="fmark"><svg viewBox="0 0 160 120"><path class="fring" d="M86 14C48 8 16 26 14 58c-2 30 30 50 66 48 36-2 64-22 62-52C140 30 112 12 70 18"/></svg><span class="fF">F</span><span class="fP">+</span></div>
-    <div class="fpl lc">in Art production</div></div>
+  <div class="oc" id="oc5"><div class="fpres solo">presents</div></div>
+  <div class="oc" id="oc6"><div class="tpop"><div class="tp1">Kiki's Secret Pocket Garden</div><div class="tp2">of Quivering Delights and Shocking Mysterios</div>
+    <div class="tp3">The Dawn of the Plantimals' Return in the Glow of Sunset in Past's, Perhaps Last, Winter</div></div></div>
+  <div class="oc" id="oc3"><div class="anrow"><div class="fpl lc">an</div><div class="fmark"><svg viewBox="0 0 160 120"><path class="fring" d="M86 14C48 8 16 26 14 58c-2 30 30 50 66 48 36-2 64-22 62-52C140 30 112 12 70 18"/></svg><span class="fF">F</span><span class="fP">+</span></div>
+    </div><div class="fpl lc">in Art</div><div class="fpl lc">production</div></div>
   <div class="oc" id="otitle"><div class="motes"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="ttop"><div class="tname">Kiki's Secret Pocket Garden</div><div class="tof">of Quivering Delights and Shocking Mysterios</div>
       <div class="tsub">The Dawn of the Plantimals' Return in the Glow of Sunset in Past's, Perhaps Last, Winter</div><div class="tback" id="tback"></div></div>
@@ -1145,26 +1167,52 @@ let openingOn=false, openTimer=null, openStep=null;
 const RETURN_LINES=["The garden kept your place.","Something moved while you were gone.","They heard you coming.","Everything is just where you left it. Almost."];
 function oShow(id){ document.querySelectorAll("#open .oc").forEach(c=>{ const on=c.id===id; if(on&&!c.classList.contains("on")) c._shownAt=Date.now(); c.classList.toggle("on",on); }); }
 function oNext(fn,ms){ clearTimeout(openTimer); openStep=fn; openTimer=setTimeout(fn,ms); }
+let holdMusic=false;
 function showIntro(replay){
   const o=$("#open"); if(!o) return;
   introUp=true; openingOn=true; document.body.classList.add("opening");
   o.classList.add("on"); o.classList.remove("clear");
   o.onclick=e=>{ if(e.target.closest("button")) return;
     const on=document.querySelector("#open .oc.on");
-    if(!on||!(on.classList.contains("story")||on.id==="oded")) return;          /* studio cards ignore taps; only Skip skips */
-    if(Date.now()-int(on._shownAt)<1600) return;                                   /* let each line be read first */
+    if(on&&on.id==="oc0"){ openGate(); return; }
+    if(!on||!(on.classList.contains("story")||on.id==="oded")) return;
+    if(Date.now()-int(on._shownAt)<1600) return;
     if(openStep) openStep(); };
   o.style.opacity="0";
   Promise.race([document.fonts?document.fonts.ready:Promise.resolve(),nap(1500)]).then(()=>{ o.style.transition="opacity .6s ease"; o.style.opacity="1"; setTimeout(()=>{ o.style.transition=""; },700); });
-  if(!S.seenStudio||replay){
-    o.classList.add("skippable");
-    oShow("oc1"); oNext(()=>{ oShow("oc2"); oNext(()=>{ oShow("oc4"); oNext(()=>{ oShow("oc3"); oNext(openTitle,5600); },3600); },3600); },3600);
-  } else openTitle();
+  if(!S.seenStudio||replay){ holdMusic=true; oShow("oc0"); }
+  else openTitle();
+}
+const STUDIO_MS=7200;
+function openGate(){
+  au(); sfx("tap"); const o=$("#open"); o.classList.add("skippable");
+  oShow("oc1");
+  oNext(()=>{ oShow("oc2"); oNext(()=>{ oShow("oc4"); oNext(()=>{ oShow("oc5"); oNext(()=>{ oShow("oc3"); oNext(titlePop,STUDIO_MS); },STUDIO_MS); },STUDIO_MS); },STUDIO_MS); },STUDIO_MS);
+}
+function titlePop(){
+  oShow("");                                             /* let the last card go fully dark first */
+  oNext(titlePopNow,1800);
+}
+function titlePopNow(){
+  const o=$("#open"); o.classList.add("clear");
+  if(!S.seenStudio){ S.seenStudio=true; save(); }
+  oShow("oc6"); loud("boom",3); buzz([60,40,120]);
+  oNext(()=>{ holdMusic=false; musicStart(); ambStart();
+    const c=$("#oc6"); c.classList.add("fadeaway");
+    oNext(()=>{ c.classList.remove("fadeaway"); storyStart(); },2400); },6600);
+}
+function storyStart(){
+  const o=$("#open"); o.classList.add("skippable","clear");
+  const end=()=>{ oShow("oded"); oNext(openDone,3600); };
+  oShow("os1"); oNext(()=>{ oShow("os2"); oNext(()=>{ oShow("os3"); oNext(end,3800); },4400); },5600);
 }
 function openSkip(){
   clearTimeout(openTimer);
-  if($("#otitle").classList.contains("on")||!document.querySelector("#open .oc.story.on, #oded.on")) { if(!$("#otitle").classList.contains("on")) openTitle(); else openDone(); }
-  else openDone();
+  const on=document.querySelector("#open .oc.on");
+  holdMusic=false; musicStart();
+  if(on&&(on.classList.contains("story")||on.id==="oded")) { openDone(); return; }
+  if(!S.seenStudio){ S.seenStudio=true; save(); }
+  if(S.seenIntro&&!openReplay) openDone(); else storyStart();
 }
 function openTitle(){
   clearTimeout(openTimer); openStep=null;
@@ -1177,9 +1225,7 @@ function openEnter(){
   au(); musicStart(); ambStart();
   try{ if(screen.orientation&&screen.orientation.lock) screen.orientation.lock("portrait").catch(()=>{}); }catch(e){}
   if(S.seenIntro&&!openReplay){ openDone(); return; }
-  const o=$("#open"); o.classList.add("skippable");
-  const end=()=>{ oShow("oded"); oNext(openDone,3600); };
-  oShow("os1"); oNext(()=>{ oShow("os2"); oNext(()=>{ oShow("os3"); oNext(end,3800); },4400); },5600);
+  storyStart();
 }
 let openReplay=false;
 function openDone(){
@@ -2306,7 +2352,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.4.1";
+const VERSION="1.4.2";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2604,8 +2650,8 @@ function keeperPanel(){
       <div class="kk-row"><button class="btn" data-seed="kt1" onclick="makeTestCreatures(1)">1</button><button class="btn" data-seed="kt2" onclick="makeTestCreatures(2)">2</button><button class="btn" data-seed="kt3" onclick="makeTestCreatures(3)">3</button></div>
       <button class="btn" data-seed="kadv" onclick="advanceTests()">Move every creature on one stage</button>
       <div class="kk-row"><button class="btn ${S.noCool?"kk-on":""}" data-seed="knc" onclick="S.noCool=!S.noCool;save();render();keeperPanel()">Rests and lock-outs: ${S.noCool?"OFF (testing)":"on"}</button></div>`)}
-    ${sec("Breathing",`<div class="kk-kv"><span>Strength</span><span id="kbv" class="mono">${int(S.breathLvl==null?6:S.breathLvl)} of 12</span></div>
-      <input type="range" min="0" max="12" step="1" value="${int(S.breathLvl==null?6:S.breathLvl)}" style="width:100%" oninput="setBreath(this.value)">
+    ${sec("Breathing",`<div class="kk-kv"><span>Strength</span><span id="kbv" class="mono">${int(S.breathLvl==null?10:S.breathLvl)} of 20</span></div>
+      <input type="range" min="0" max="20" step="1" value="${int(S.breathLvl==null?10:S.breathLvl)}" style="width:100%" oninput="setBreath(this.value)">
       <div class="opts">${[["S","Expand-contract"],["Y","Up-down"],["C","Circle"]].map(([k,l])=>`<button class="opt ${(S.breathMode||"S")===k?"sel":""}" data-bm="${k}" onclick="setBreath(null,'${k}')">${l}</button>`).join("")}</div>`)}
     ${sec("Events",`<div class="kk-row wrap">${Object.keys(EVENTS).map((n,i)=>`<button class="btn" data-seed="ke${i}" onclick="startEvent('${n}');closeSheet();render()">${esc(n)}</button>`).join("")}</div>`)}
     <button class="btn" data-seed="kx" onclick="closeSheet()">Close</button>`,"keeper");
@@ -2797,6 +2843,9 @@ const SFX_V={
   thunk:[t=>{ voice(t,90,55,.16,"sine",.07); hiss(t,.05,600,200,.08,3); }],
   sparkle:[t=>{ for(let i=0;i<7;i++) note(1600+Math.random()*1600,t+i*.05,.5,"sine",.018); }],
   zzz:[t=>{ voice(t,180,150,.5,"sawtooth",.008,6); voice(t+.6,170,140,.5,"sawtooth",.007,6); }],
+  boom:[t=>{ voice(t,72,34,2.2,"sine",.26); voice(t,144,70,1.4,"triangle",.09); hiss(t,.12,2400,500,.3,1.2);
+      [130.8,164.8,196,261.6,329.6].forEach((f,i)=>{ note(f,t+.02,3.2,"sawtooth",.022); note(f*2,t+.04,2.6,"triangle",.012); });
+      hiss(t+.1,2.8,900,4200,.07,.7); voice(t+.05,98,96,3,"sine",.06,2); }],
   tick:[t=>note(2200,t,.03,"triangle",.012), t=>note(2050,t,.03,"triangle",.011), t=>{ hiss(t,.02,4000,3000,.03,4); }],
   pulse:[t=>{ hiss(t,.5,320,120,.12,6); voice(t,92,70,.45,"sine",.05); },
     t=>{ hiss(t,.35,420,140,.1,5); voice(t+.05,110,80,.35,"sine",.045); voice(t+.4,100,76,.3,"sine",.03); },
@@ -2873,7 +2922,7 @@ function playIdx(){
   const pr=MP.el.play(); if(pr&&pr.catch) pr.catch(()=>{});
 }
 function musicStart(){
-  if(S.musicOn===false) return;
+  if(S.musicOn===false||holdMusic) return;
   if(AU.musicTimer) return;
   if(MP.el&&!MP.el.paused&&MP.key) return;
   if(!filePlay()) synthMusicStart();
@@ -3653,14 +3702,15 @@ function fmtMins(m){ m=int(m); const h=Math.floor(m/60), r=m%60; return h?h+" h 
 let wxKey="", boltT=null;
 /* breathing: level 0 (next to nothing) .. 12 (just past slightly obvious); median sits under the old movement */
 function applyBreath(){
-  const L=Math.max(0,Math.min(12,S.breathLvl==null?6:int(S.breathLvl))), m=S.breathMode||"S";
+  if(S.breathScale!==20){ if(S.breathLvl!=null) S.breathLvl=Math.round(int(S.breathLvl)*20/12); S.breathScale=20; }
+  const L=Math.max(0,Math.min(20,S.breathLvl==null?10:int(S.breathLvl))), m=S.breathMode||"S";
   const r=document.documentElement;
-  r.style.setProperty("--bamp",(0.0015+L/12*(0.017-0.0015)).toFixed(4));       /* scale: 0.15% .. 1.7% (old was 1.4%) */
-  r.style.setProperty("--bmov",(0.1+L/12*(1.1-0.1)).toFixed(3));               /* move: 0.1% .. 1.1% of its height */
+  r.style.setProperty("--bamp",(0.0015+L/20*(0.017-0.0015)).toFixed(4));       /* scale: 0.15% .. 1.7% (old was 1.4%) */
+  r.style.setProperty("--bmov",(0.1+L/20*(1.1-0.1)).toFixed(3));               /* move: 0.1% .. 1.1% of its height */
   r.dataset.breathe=m;
 }
 function setBreath(l,m){ if(l!=null) S.breathLvl=int(l); if(m) S.breathMode=m; save(); applyBreath();
-  const v=$("#kbv"); if(v) v.textContent=int(S.breathLvl==null?6:S.breathLvl)+" of 12";
+  const v=$("#kbv"); if(v) v.textContent=int(S.breathLvl==null?10:S.breathLvl)+" of 20";
   document.querySelectorAll(".opt[data-bm]").forEach(o=>o.classList.toggle("sel",o.dataset.bm===(S.breathMode||"S"))); }
 function applyWeather(){
   const w=weather(), se=season(), k=w+se;
@@ -3948,17 +3998,49 @@ const BI={
   "Coax":'<path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/><path d="M5 19l3-3M19 19l-3-3"/>',
   "Paint":'<path d="M14 4l6 6-7 7-6-6zM7 11l-3 3c-1 1-1 4 2 5 2 0 3-1 4-2l1-2"/>',
 "Sparkle Pulse":BI_GIFT,"Little Shield":BI_GIFT,"Warm Nuzzle":BI_GIFT,"Seed Sneeze":BI_GIFT,"Night Light":BI_GIFT,"Murmur":BI_GIFT,"Hidden Path":BI_GIFT,"Changeling":BI_GIFT,"Echo":BI_GIFT,"Hollow Song":BI_GIFT,"Bloom Lure":BI_GIFT,
+  "Let it go dark":'<path d="M19 15A8 8 0 0 1 9 5a8 8 0 1 0 10 10z"/>',"Let the light back in":'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
+  "Chocolate Eclipse":'<circle cx="12" cy="12" r="8"/><path d="M15 5.5a8 8 0 0 1 0 13 8 8 0 0 0 0-13z" fill="currentColor"/>',
+  "Masquerade Garden":'<path d="M3 10c0-2 4-3 9-3s9 1 9 3c0 4-3 6-5 6-2 0-2-2-4-2s-2 2-4 2c-2 0-5-2-5-6z"/><circle cx="8.5" cy="10.5" r="1.4"/><circle cx="15.5" cy="10.5" r="1.4"/>',
+  "Anniversary Garden":'<path d="M9 21h6M10 21V11h4v10M12 11V8M12 8c-1.5-1.5-1-4 0-5 1 1 1.5 3.5 0 5z"/>',
+  "Scary Fun Night":'<path d="M6 21V10a6 6 0 0 1 12 0v11l-2-2-2 2-2-2-2 2-2-2z"/><circle cx="9.5" cy="10" r="1"/><circle cx="14.5" cy="10" r="1"/>',
+  "Paste":'<path d="M8 4h8v3H8zM6 6H5v15h14V6h-1M9 12h6M9 15h4"/>',"Save":'<circle cx="12" cy="13" r="6"/><path d="M12 3v4M9 13l2 2 4-4"/>',
+  "Test":'<path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/>',"Set":'<circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M21 12v2"/>',
+  "Move every":'<path d="M12 20V6M6 11l6-6 6 6M5 21h14"/>',"Rests and lock-outs":'<path d="M6 3h12M6 21h12M7 3c0 6 10 6 10 9s-10 3-10 9M17 3c0 6-10 6-10 9s10 3 10 9"/>',
+  "Quality":'<path d="M6 4h12l3 5-9 11L3 9zM3 9h18M9 4l3 16M15 4l-3 16"/>',"Bull's head":'<ellipse cx="13" cy="13" rx="6" ry="4"/><path d="M9 11v4M12 10v6M15 10v6M7 13H3M14 9c-1-3 1-5 3-5"/>',
+  "Repaint":'<path d="M14 4l6 6-7 7-6-6zM7 11l-3 3c-1 1-1 4 2 5 2 0 3-1 4-2l1-2"/>',
+  "1":'<path d="M12 20v-7M12 13c-3 0-4-2-4-4 3 0 4 2 4 4z"/>',"2":'<path d="M9 20v-7M9 13c-3 0-4-2-4-4 3 0 4 2 4 4zM15 20v-7M15 13c3 0 4-2 4-4-3 0-4 2-4 4z"/>',
+  "3":'<path d="M6 20v-6M12 20v-8M18 20v-6M12 12c-2 0-3-2-3-4 2 0 3 2 3 4zM6 14c-2 0-3-1-3-3 2 0 3 1 3 3zM18 14c2 0 3-1 3-3-2 0-3 1-3 3z"/>',
+  "Ascend":'<path d="M12 21V8M7 12l5-5 5 5M8 4c2-2 6-2 8 0"/>',"Ask for":'<path d="M12 7v11M12 9c-2-4-7-5-8-2s2 6 8 4M12 9c2-4 7-5 8-2s-2 6-8 4"/>',
+  "Bring it back":'<path d="M5 21V8a7 7 0 0 1 14 0v13zM14 14H8M11 11l-3 3 3 3"/>',"Take it to":'<path d="M5 21V8a7 7 0 0 1 14 0v13zM9 14h7M13 11l3 3-3 3"/>',
+  "Confirm":'<circle cx="12" cy="12" r="8"/><path d="M8 12l3 3 5-6"/>',"Craft":'<path d="M5 10h14l-2 9H7zM8 10c0-3 2-5 4-5s4 2 4 5M12 5V3"/>',
+  "Up":'<path d="M12 19V5M6 11l6-6 6 6"/>',"Down":'<path d="M12 5v14M6 13l6 6 6-6"/>',"Open":'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  "Effects":'<path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6zM18 16l.8 2.2L21 19l-2.2.8L18 22l-.8-2.2L15 19l2.2-.8z"/>',
+  "Music":'<path d="M9 18V6l10-2v12M9 18a3 3 0 1 1-3-3 3 3 0 0 1 3 3zM19 16a3 3 0 1 1-3-3 3 3 0 0 1 3 3z"/>',
+  "Garden sounds":'<path d="M4 15c3-6 5-6 8 0s5 6 8 0M12 15V9M12 9c-2 0-3-2-3-4 2 0 3 2 3 4z"/>',"Touch feel":'<path d="M9 11V5a2 2 0 0 1 4 0v6M13 10a2 2 0 0 1 4 0v4c0 4-3 7-6 7s-5-2-6-5l-1-3a2 2 0 0 1 3-1l2 2"/>',
+  "Play the opening":'<path d="M4 4h16v16H4zM4 4l4 6M20 4l-4 6M10 10l5 3-5 3z"/>',"Start over":'<path d="M4 12a8 8 0 1 0 3-6.2M4 4v4h4"/>',"Erase":'<path d="M6 6l12 12M18 6L6 18"/>',
+  "Enough":'<path d="M12 3c-4 6-6 9-6 12a6 6 0 0 0 12 0c0-3-2-6-6-12z"/>',"Hold":'<path d="M12 3c-4 6-6 9-6 12a6 6 0 0 0 12 0c0-3-2-6-6-12z"/>',
+  "Feed it":'<path d="M4 12h16a8 8 0 0 1-16 0zM9 8c0-2 1-3 2-4M13 8c0-2 1-3 2-4"/>',"Go and see":'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  "Keep":'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>',"Preserve":'<path d="M5 3h14v18H5zM12 17V10M12 10c-2-1-3-3-2-5 2 0 3 2 2 5z"/>',
+  "Release":'<path d="M3 14c4-1 7-4 9-9 1 5 4 8 9 9-5 1-8 3-9 7-1-4-4-6-9-7z"/>',"Leave it":'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+  "Listen":'<path d="M8 15c0-6 2-11 6-11a4 4 0 0 1 4 4c0 3-3 3-3 6s-2 6-5 6-2-3-2-5z"/>',"Masquerade Wardrobe":'<path d="M3 10c0-2 4-3 9-3s9 1 9 3c0 4-3 6-5 6-2 0-2-2-4-2s-2 2-4 2c-2 0-5-2-5-6z"/>',
+  "Not yet":'<path d="M6 3h12M6 21h12M7 3c0 6 10 6 10 9s-10 3-10 9M17 3c0 6-10 6-10 9s10 3 10 9"/>',"Oh":'<path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/>',
+  "Something extra":'<path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/>',"Try again":'<path d="M4 12a8 8 0 1 0 3-6.2M4 4v4h4"/>',
+  "Work it in":'<path d="M14 3l-3 9 3 1 3-9zM11 12l-2 4c-1 2 2 4 4 3l2-5M4 20c3-2 7-2 10 0"/>',
   "Let it be":'<path d="M5 12l5 5 9-10"/>',"Go on":'<path d="M5 12h12M12 6l6 6-6 6"/>'
 };
+const BI_SPRIG='<path d="M12 20V10M12 14c-3 0-5-2-5-5 3 0 5 2 5 5zM12 12c3 0 5-2 5-5-3 0-5 2-5 5z"/>';
+let BI_KEYS=null;
 function decorate(root){
+  if(!BI_KEYS) BI_KEYS=Object.keys(BI).sort((a,b)=>b.length-a.length);
   (root||document).querySelectorAll(".btn,.nb").forEach(b=>{
     if(b.querySelector(".bi")) return;
-    const t=b.textContent.trim(); let svg=null;
-    for(const [lab] of CURRENCIES.map(c=>[c[1],c[0]])){ }
-    const cur=CURRENCIES.find(c=>t.startsWith(c[1])&&ART["cur:"+c[0]]);
+    const t=b.textContent.trim(); if(!t||t==="·") return;
+    const inShop=!!b.closest("#sheet.k-wood");
+    const cur=(inShop||/^\d/.test(t))&&CURRENCIES.find(c=>t.indexOf(c[1])>=0&&ART["cur:"+c[0]]);
     if(cur){ b.insertAdjacentHTML("afterbegin",`<span class="bi coinb"><img alt="" src="${ART["cur:"+cur[0]]}"></span>`); return; }
-    for(const k in BI) if(t.startsWith(k)){ svg=BI[k]; break; }
-    if(svg) b.insertAdjacentHTML("afterbegin",`<span class="bi"><svg viewBox="0 0 24 24">${svg}</svg></span>`);
+    let svg=null;
+    for(const k of BI_KEYS){ if(k.length<=1?t===k:t.startsWith(k)){ svg=BI[k]; break; } }
+    b.insertAdjacentHTML("afterbegin",`<span class="bi"><svg viewBox="0 0 24 24">${svg||BI_SPRIG}</svg></span>`);
   });
 }
 function poof(el,txt){
@@ -4708,9 +4790,8 @@ function uiJournal(tab){
               ["note","Notes",0,0]];
   if(S.chartFound) tabs.splice(1,0,["chart","Chart",0,0]);
   let body="";
-  if(tab==="eggs") body=EGGS.map(e=>found.indexOf(e.n)>=0
-      ? `<div class="jr">${esc(e.w)}</div>`
-      : `<div class="jr blank"></div>`).join("");
+  if(tab==="eggs") body=found.map(n=>EGGS.find(e=>e.n===n)).filter(Boolean).map(e=>`<div class="jr">${esc(e.w)}</div>`).join("")
+      +EGGS.slice(found.length).map(()=>`<div class="jr blank"></div>`).join("");
   else if(tab==="triv") body=triv.length
       ? triv.map(t=>`<div class="jr">${esc(t)}</div>`).join("")
       : `<div class="note">Nothing yet.</div>`;
