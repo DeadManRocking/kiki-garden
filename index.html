@@ -6,9 +6,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Kiki's Secret Pocket Garden of Quivering Delights and Shocking Mysterios: The Dawn of the Plantimals' Return in the Glow of Sunset in Past's, Perhaps Last, Winter</title>
 <meta name="color-scheme" content="dark light">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest2.webmanifest">
+<link rel="apple-touch-icon" href="peeker-192.png">
+<link rel="icon" href="peeker-192.png">
 <meta name="theme-color" content="#191d3a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -783,6 +783,11 @@ html.painted #sheet.k-wood .btn.sign::before{content:"" !important;display:block
 .pgc{font-size:13px;opacity:.75}
 #sheet .pg .wpic{width:min(100%,calc((100dvh - 210px) * .5));margin-left:auto !important;margin-right:auto !important}
 #sheet .pg img:not(.wpic img):not(.oi img){max-height:calc(100dvh - 210px);object-fit:contain}
+
+.bi img{width:24px;height:24px;object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.nb .bi img{width:30px;height:30px}
+.oi img{width:20px;height:20px;object-fit:contain}
+.oi.th img{border-radius:50%;object-fit:cover}
 </style>
 </head>
 <body>
@@ -2330,7 +2335,7 @@ function paintIcons(){
 }
 function ensureAmbientArt(force){
   if(!S.bullArtV4){ S.bullArtV4=true; S.bullFace="left"; save(); delete ART.bull; delete ART.bull_pasty; }
-  paintIcons(); paintPupae(); paintEggs(); paintEventGround(); paintApples();
+  paintIcons(); paintPupae(); paintEggs(); paintEventGround(); paintApples(); paintButtonIcons();
   if(!force&&Date.now()<int(S.genCool)) return;
   for(const k of (S.wardrobe||[])) if(!ART["cos:"+k]) auto("cos:"+k,async()=>{ await paintCostume(k); render(); });
   for(const p of S.plantimals) if(!ART["p:"+p.id])
@@ -2505,7 +2510,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.7.1";
+const VERSION="1.8.0";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2790,7 +2795,7 @@ function keeperPanel(){
   const kv=(k,v)=>`<div class="kk-kv"><span>${k}</span><span class="mono">${v}</span></div>`;
   openSheet(`<div class="kk-title">C-Keeki</div>
     ${sec("Pictures",kv("Painted",int(g.ok)+" of "+int(g.calls)+" sent")+kv("Currency icons",CURRENCIES.filter(c=>ART["cur:"+c[0]]).length+" of 9")
-      +kv("Portraits waiting",missing)+kv("Eggs waiting",eggsMissing)+kv("Cocoons waiting",S.plantimals.filter(p=>p.pupaUntil&&!ART["pupa:"+p.id]).length)
+      +kv("Portraits waiting",missing)+kv("Eggs waiting",eggsMissing)+kv("Button pictures waiting",Object.keys(BI_WHO).filter(h=>!ART["bi:"+h]).length)+kv("Cocoons waiting",S.plantimals.filter(p=>p.pupaUntil&&!ART["pupa:"+p.id]).length)
       +`<div class="kk-err mono">${esc(g.err||S.iconErr||"No problems.")}</div>
       <div class="kk-row"><button class="btn" data-seed="k1" onclick="ensureAmbientArt(true);paintEggs();keeperPanel()">Paint what's missing</button>
       <button class="btn" data-seed="kpp" onclick="repaintPaper(this)">Repaint backgrounds</button></div>
@@ -4243,9 +4248,10 @@ function decorate(root){
     const inShop=!!b.closest("#sheet.k-wood");
     const cur=(inShop||/^\d/.test(t))&&CURRENCIES.find(c=>t.indexOf(c[1])>=0&&ART["cur:"+c[0]]);
     if(cur){ b.insertAdjacentHTML("afterbegin",`<span class="bi coinb"><img alt="" src="${ART["cur:"+cur[0]]}"></span>`); return; }
-    let svg=null;
-    for(const k of BI_KEYS){ if(k.length<=1?t===k:t.startsWith(k)){ svg=BI[k]; break; } }
-    b.insertAdjacentHTML("afterbegin",`<span class="bi"><svg viewBox="0 0 24 24">${svg||BI_SPRIG}</svg></span>`);
+    let svg=null, lab=null;
+    for(const k of BI_KEYS){ if(k.length<=1?t===k:t.startsWith(k)){ svg=BI[k]; lab=BI[k]===BI_GIFT?"gift":k; break; } }
+    if(!svg&&t==="Ask") lab="Ask";
+    b.insertAdjacentHTML("afterbegin",iconSpan("bi",svg||BI_SPRIG,lab||"sprig"));
   });
 }
 const OPT_ICON={
@@ -4270,7 +4276,9 @@ function decorateOpts(root){
     if(o.querySelector(".oi")) return;
     const t=o.textContent.trim(), cat=o.dataset.cat||"";
     let h="";
-    if(CH[t]) h=`<span class="oi sw" style="background:${CH[t]}"></span>`;
+    const curO=CURRENCIES.find(c=>t.indexOf(c[1])===0&&ART["cur:"+c[0]]);
+    if(curO) h=`<span class="oi th"><img alt="" src="${ART["cur:"+curO[0]]}"></span>`;
+    else if(CH[t]) h=`<span class="oi sw" style="background:${CH[t]}"></span>`;
     else if(/water$|fall$/i.test(t)) h=OPT_ICON.water;
     else if(OPT_ICON[t]) h=OPT_ICON[t];
     else if(o.dataset.z||/Hollow|Ridge|Thicket|Clearing/.test(t)) h=OPT_ICON.zone;
@@ -4283,9 +4291,58 @@ function decorateOpts(root){
     else if(/^(Music box|Rock|Film)$/.test(t)) h=OPT_ICON.music;
     if(!h){ const pl=S.plantimals.find(x=>x.name&&t.indexOf(x.name)===0), a=pl&&ART["p:"+pl.id], src=a&&(a[stageKey(pl)]||a.adult);
       h=src?`<span class="oi th"><img alt="" src="${src}"></span>`:OPT_ICON.leafy; }
-    o.insertAdjacentHTML("afterbegin",h.indexOf("<span")===0?h:`<span class="oi"><svg viewBox="0 0 24 24">${h}</svg></span>`);
+    o.insertAdjacentHTML("afterbegin",h.indexOf("<span")===0?h:iconSpan("oi",h,Object.keys(OPT_ICON).find(k=>OPT_ICON[k]===h)||"sprig"));
     o.classList.add("decor");
   });
+}
+/* every button picture is painted once in the game's style, then kept */
+const BI_DESC={Convert:"an antique brass balance scale",Butterfly:"a pale butterfly with dusty wings",Shops:"a small wooden shop sign hanging from an iron bracket",
+  More:"a sprig of three leaves",Less:"a single folded leaf",Journal:"a small worn leather journal",Collection:"a little wooden card-file box",
+  Messages:"a folded letter sealed with red wax",Kept:"a pressed flower under a tiny glass frame",Settings:"an old brass sundial",
+  Hidrayshn:"a small copper watering can",Coppertanrr:"a warm glowing sun with copper rays",Fylth:"a small garden trowel with dark crumbly soil",
+  Gift:"a small bundle tied with ribbon",Genetics:"two green vines twisted into a double helix",Rename:"a feather quill pen",Dress:"a small masquerade mask",
+  Cuddle:"a soft heart made of moss",Back:"a curled fern frond",Done:"a sprig with one dewdrop",Close:"two crossed twigs",Create:"a seed sprouting two leaves",
+  Pollinate:"a fuzzy little bee",Send:"a folded paper bird",Ask:"a glowing seed",Coax:"a tiny glowing spark",Paint:"a small paintbrush",
+  "What becomes":"an old hourglass","Let it be":"a sprig with one dewdrop","Go on":"a fern frond curling forward","Let it go dark":"a crescent moon",
+  "Let the light back in":"a small sun","Chocolate Eclipse":"a chocolate-brown eclipsed sun","Masquerade Garden":"an ornate masquerade mask",
+  "Anniversary Garden":"a lit candle","Scary Fun Night":"a small friendly ghost",Paste:"a small clipboard",Save:"a red wax seal",Test:"a tiny star spark",
+  Set:"an old iron key","Move every":"a sprout growing upward","Rests and lock-outs":"an hourglass",Quality:"a small cut gemstone","Bull's head":"a fuzzy bee",
+  Repaint:"a paintbrush","1":"one sprout","2":"two sprouts","3":"three sprouts",Ascend:"a feather rising upward","Ask for":"a pale butterfly",
+  "Bring it back":"a small arched wooden door","Take it to":"a small arched wooden door standing ajar",Confirm:"a red wax seal",Craft:"a glowing purple puff in a small bowl",
+  Up:"a leaf pointing up",Down:"a leaf pointing down",Open:"an eye",Effects:"a cluster of sparkles",Music:"a little music box","Garden sounds":"a seashell",
+  "Touch feel":"a hand print pressed in moss","Play the opening":"a small theatre curtain","Start over":"a coiled fern",Erase:"two crossed twigs",
+  Enough:"a single water drop",Hold:"a single water drop","Feed it":"a small bowl of berries","Go and see":"an eye",Keep:"a heart",Preserve:"a pressed flower in a frame",
+  Release:"a feather drifting on the wind","Leave it":"a small sun",Listen:"an ear-shaped shell","Masquerade Wardrobe":"a masquerade mask","Not yet":"an hourglass",
+  Oh:"a spark","Something extra":"a spark","Try again":"a coiled fern","Work it in":"a garden trowel",
+  water:"a single water drop",Sprinkle:"scattered water droplets",Tip:"a tipped copper watering can",Pack:"a little mound of soil",Drench:"rippling water",
+  zone:"a small sun",Moonside:"a crescent moon",Fogbank:"wisps of fog",wingT:"a pair of delicate wings",arm:"a twiggy branch arm with a little twig hand",
+  tendril:"a curling vine tendril",leg:"a thick taproot",beh:"a little round face",cover:"overlapping scales",mark:"a speckled leaf",kiss:"a pale butterfly",
+  Eggs:"a speckled egg",Recipes:"a small bowl",Trivia:"a star",Lore:"a rolled scroll",Notes:"a feather quill",Chart:"a small chart on parchment",
+  music:"a little music box",leafy:"a sprig of leaves",gift:"a small bundle tied with ribbon",sprig:"a sprig of leaves"};
+const svgHash=t=>{ let h=5381; for(let i=0;i<t.length;i++) h=((h<<5)+h+t.charCodeAt(i))|0; return (h>>>0).toString(36); };
+const BI_WHO={};                                         /* painting key -> what to paint */
+function iconSpan(cls,svg,label){
+  const h=svgHash(svg); if(!BI_WHO[h]) BI_WHO[h]=BI_DESC[label]||(label==="gift"?BI_DESC.gift:BI_DESC.sprig);
+  const a=ART["bi:"+h];
+  return `<span class="${cls}" data-h="${h}">${a?`<img alt="" src="${a}">`:`<svg viewBox="0 0 24 24">${svg}</svg>`}</span>`;
+}
+let biBusy=false;
+const BI_FIRST=["Convert","Butterfly","Shops","More","Less","Journal","Collection","Messages","Kept","Settings","Hidrayshn","Coppertanrr","Fylth","Genetics","Rename","Back","Done","Ask","Confirm"];
+function paintButtonIcons(){
+  if(biBusy||!oaiKey()) return;
+  for(const k of BI_FIRST){ const sv=BI[k]||(k==="Ask"?BI_SPRIG:null); if(sv) iconSpan("x",sv,k); }
+  const todo=Object.keys(BI_WHO).filter(h=>!ART["bi:"+h]);
+  if(!todo.length) return;
+  const first=BI_FIRST.map(k=>svgHash(BI[k]||BI_SPRIG));
+  todo.sort((a,b)=>(first.indexOf(a)<0?99:first.indexOf(a))-(first.indexOf(b)<0?99:first.indexOf(b)));
+  biBusy=true;
+  (async()=>{ for(const h of todo){
+      try{
+        const src=await genImage(MEDIUM+" A tiny painted icon: "+BI_WHO[h]+". One single small object, centered, a strong clear silhouette that reads at a very small size, soft watercolor and ink, isolated alone on a fully transparent background, no frame, no shadow, no text.","1:1",0,{background:"transparent",output_format:"png"});
+        await ArtDB.put("bi:"+h,await shrinkPng(src,128));
+        document.querySelectorAll(`[data-h="${h}"]`).forEach(sp=>{ sp.innerHTML=`<img alt="" src="${ART["bi:"+h]}">`; });
+      }catch(err){ const m=String((err&&err.message)||err); if(/ 401 | 403 |credit|quota|billing|could not reach/i.test(m)) break; }
+    } })().finally(()=>{ biBusy=false; if(Object.keys(BI_WHO).some(h=>!ART["bi:"+h])) setTimeout(paintButtonIcons,60000); });
 }
 let decoPending=false;
 new MutationObserver(()=>{ if(decoPending) return; decoPending=true;
