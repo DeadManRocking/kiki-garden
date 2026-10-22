@@ -788,6 +788,29 @@ html.painted #sheet.k-wood .btn.sign::before{content:"" !important;display:block
 .nb .bi img{width:30px;height:30px}
 .oi img{width:20px;height:20px;object-fit:contain}
 .oi.th img{border-radius:50%;object-fit:cover}
+
+#wxrain{display:none !important}
+#wxfx{position:fixed;inset:0;z-index:70;pointer-events:none}
+#snail{position:absolute;left:0;bottom:122px;width:44px;height:44px;z-index:3;pointer-events:none;opacity:.92}
+#snail img{width:44px;height:44px;display:block;animation:snailstretch 3.4s ease-in-out infinite;transform-origin:75% 100%}
+#snail .trail{position:absolute;left:36px;bottom:3px;width:150px;height:2px;border-radius:2px;background:linear-gradient(90deg,rgba(235,240,230,.24),transparent)}
+@keyframes snailstretch{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.08) translateX(-1px)}}
+.pgi img{width:30px;height:30px;object-fit:contain}
+.hq img{width:22px;height:22px;object-fit:contain}.hq svg{width:20px;height:20px;fill:currentColor}
+html.hand h2,html.hand .btn,html.hand .nb,html.hand .lbl,html.hand .opt,html.hand .snm,html.hand .sds{font-family:'Kalam','Caveat',cursive !important;letter-spacing:0 !important;font-weight:700}
+html.hand .fn,html.hand .rnm{font-family:'Caveat','Kalam',cursive !important;font-size:1.22em;letter-spacing:.2px}
+.rnote{font-family:'Caveat','Kalam',cursive;font-size:15.5px;color:#7a2530;margin-top:4px;line-height:1.15;max-height:2.4em;overflow:hidden}
+#rnote{width:100%;box-sizing:border-box;margin-top:8px;font:500 17px/26px 'Caveat','Kalam',cursive;background:repeating-linear-gradient(transparent 0 25px,rgba(120,90,60,.25) 25px 26px);border:1px solid rgba(46,42,38,.3);border-radius:10px;padding:2px 10px;color:#2a1c10;resize:none}
+#sheet.k-wood .shrow{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin:14px 0 6px;align-items:end}
+#sheet.k-wood .plank{display:block;grid-column:1 / -1;height:11px;margin:-2px -6px 0;border-radius:3px;background:linear-gradient(#94693f,#5b3c20 70%,#40280f);box-shadow:0 7px 9px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,225,170,.3)}
+#sheet.k-wood .shitem{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px}
+#sheet.k-wood .sobj{height:96px;display:grid;place-items:end center}
+#sheet.k-wood .sobj img{max-width:96px;max-height:96px;object-fit:contain;filter:drop-shadow(0 7px 5px rgba(0,0,0,.55))}
+#sheet.k-wood .sobj svg{width:46px;height:46px;fill:none;stroke:#cdbd98;stroke-width:1.4;opacity:.45}
+#sheet.k-wood .snm{font:600 14.5px 'Fraunces',Georgia,serif;color:#f3e2bf;margin-top:6px}
+#sheet.k-wood .sds{font-size:12px;line-height:1.3;color:#d6c6a2;opacity:.9;min-height:3.9em}
+#sheet.k-wood .shitem .btn{padding:7px 10px !important;margin:4px 0 14px !important;min-width:74px}
+#pzbk{position:fixed;inset:0;z-index:860;background:rgba(6,5,4,.9);opacity:0;transition:opacity .8s ease;pointer-events:none}#pzbk.on{opacity:1}
 </style>
 </head>
 <body>
@@ -1150,7 +1173,7 @@ function paginateNow(sh){
   const anchor=foot[0]||null;
   pages.forEach((grp,i)=>{ const pg=document.createElement("div"); pg.className="pg"+(i?" off":""); sh.insertBefore(pg,anchor); grp.forEach(e=>pg.appendChild(e)); });
   const nav=document.createElement("div"); nav.className="pgnav";
-  nav.innerHTML=`<button class="pgb" onclick="turnPage(-1)" aria-label="Previous page"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="mono pgc">1 / ${pages.length}</span><button class="pgb" onclick="turnPage(1)" aria-label="Next page"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>`;
+  nav.innerHTML=`<button class="pgb" onclick="turnPage(-1)" aria-label="Previous page">${iconSpan("pgi",'<path d="M15 5l-7 7 7 7"/>',"pgprev")}</button><span class="mono pgc">1 / ${pages.length}</span><button class="pgb" onclick="turnPage(1)" aria-label="Next page">${iconSpan("pgi",'<path d="M9 5l7 7-7 7"/>',"pgnext")}</button>`;
   sh.insertBefore(nav,anchor);
   pgN=pages.length;
 }
@@ -1296,8 +1319,11 @@ function showIntro(replay){
   else openTitle();
 }
 const STUDIO_MS=7200;
+function fadeA(a){ if(!a) return; const iv=setInterval(()=>{ try{ a.volume=Math.max(0,a.volume-.1); if(a.volume<=0.01){ a.pause(); clearInterval(iv); } }catch(e){ clearInterval(iv); } },140); }
 function openGate(){
   au(); sfx("tap"); const o=$("#open"); o.classList.add("skippable");
+  try{ const st=new Audio("music/studio.mp3"); st.volume=.55; st.play().catch(()=>{}); window.__studioA=st; }catch(e){}     /* optional: a quiet drone under the studio cards */
+  try{ const ti=new Audio("music/title.mp3"); ti.preload="auto"; window.__titleA=ti; }catch(e){}                                  /* optional: the big title hit */
   oShow("oc1");
   oNext(()=>{ oShow("oc2"); oNext(()=>{ oShow("oc4"); oNext(()=>{ oShow("oc5"); oNext(()=>{ oShow("oc3"); oNext(titlePop,STUDIO_MS); },STUDIO_MS); },STUDIO_MS); },STUDIO_MS); },STUDIO_MS);
 }
@@ -1308,7 +1334,11 @@ function titlePop(){
 function titlePopNow(){
   const o=$("#open"); o.classList.add("clear");
   if(!S.seenStudio){ S.seenStudio=true; save(); }
-  oShow("oc6"); loud("boom",3); buzz([60,40,120]);
+  oShow("oc6"); buzz([60,40,120]);
+  fadeA(window.__studioA);
+  const ta=window.__titleA; let played=false;
+  if(ta&&ta.readyState>=3){ try{ ta.volume=1; const pr=ta.play(); played=true; if(pr&&pr.catch) pr.catch(()=>loud("boom",3)); }catch(e){ played=false; } }
+  if(!played) loud("boom",3);
   oNext(()=>{ holdMusic=false; musicStart(); ambStart();
     const c=$("#oc6"); c.classList.add("fadeaway");
     oNext(()=>{ c.classList.remove("fadeaway"); storyStart(); },2400); },6600);
@@ -1617,6 +1647,7 @@ function applyCare(p,action,result){
   } else { p.streak=0; }
 
   if(p.used.indexOf(action)<0 && p.stage<2) p.used.push(action);
+  if(p.stage<2&&p.used.length>=2) setTimeout(paintPupae,50);          /* its cocoon painting starts early, so it is ready */
   if(p.mutation==="Split-Root"&&p.stage<2&&p.used.length<3&&Math.random()<0.05){
     const extra=C.ACTIONS.find(x=>p.used.indexOf(x)<0); if(extra) p.used.push(extra); }
 
@@ -1694,7 +1725,18 @@ function clearFaded(){
     }
   }
 }
-function pupaMs(p){ if(S.noCool) return 20000; return int(p.stage)===0?3*3600000:6*3600000; }
+function pupaMs(p){
+  if(S.fastPupa) return 20000;                                   /* testing only, from the Keeper */
+  const base=int(p.stage)===0?8:20;                              /* hours, before anything else weighs in */
+  const log=(S.careLog||[]).filter(x=>x.id===p.id&&x.result!=="Failed").slice(0,3);
+  const G={Perfect:.7,Good:1,Poor:1.5};
+  let f=log.length?log.reduce((a,x)=>a+(G[x.result]||1),0)/log.length:1;
+  const m=int(p.mood); f*=m>=70?.85:m<30?1.35:1;
+  const se=season(); f*=se==="Summer"?.9:se==="Winter"?1.25:1;
+  const w=weather(); f*=w==="Storm"?1.2:w==="Clear"?.95:1;
+  if(activeEvent()) f*=.75;
+  return Math.round(base*Math.max(.45,Math.min(2.4,f))*3600000);
+}
 function pupaPrompt(p){
   const ph=p.pheno||{};
   return [MEDIUM,`A single chrysalis, a cocoon made from a strange plant-animal creature's own body: its ${String(ph.surface||"bark").toLowerCase()} covering and its ${String(ph.color||"Twilight").replace("-"," and ").toLowerCase()} colors folded and wound around itself, its ${String(ph.marking||"freckle").replace("-"," and ").toLowerCase()} markings faintly showing through,`,
@@ -1703,7 +1745,7 @@ function pupaPrompt(p){
 let pupaBusy=false;
 function paintPupae(){
   if(pupaBusy) return;
-  const todo=S.plantimals.filter(p=>p.pupaUntil&&!ART["pupa:"+p.id]); if(!todo.length) return;
+  const todo=S.plantimals.filter(p=>(p.pupaUntil||(int(p.stage)<2&&(p.used||[]).length>=2))&&!ART["pupa:"+p.id]); if(!todo.length) return;
   pupaBusy=true;
   (async()=>{ for(const p of todo){ try{ await ArtDB.put("pupa:"+p.id,await shrink(await genImage(pupaPrompt(p),"2:3"),520)); render(); }
       catch(err){ const m=String((err&&err.message)||err); if(/ 401 | 403 |credit|quota|billing|could not reach|no key/i.test(m)) break; } } })()
@@ -1713,13 +1755,28 @@ function pupaPic(p,w){
   const a=ART["pupa:"+p.id];
   if(a) return `<div class="wpic breathe" style="position:relative;width:${w}px;margin:0 auto;--bd:-${(seeded("bd"+p.id)()*5.6).toFixed(2)}s"><img class="base" alt="" src="${a}" style="width:100%;display:block;border-radius:8px"></div>`;
   const cols=String((p.pheno||{}).color||"Twilight").split("-").map(x=>CH[x]||"#7a6a5a"), c1=cols[0], c2=cols[1]||cols[0];
-  const id="pc"+p.id.replace(/[^a-z0-9]/gi,"");
-  return `<div class="cocoon breathe" style="width:${w}px;margin:0 auto"><svg viewBox="0 0 60 92" width="100%"><defs>
-    <filter id="wf${id}"><feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="3" seed="7"/><feDisplacementMap in="SourceGraphic" scale="3.5"/></filter>
-    <radialGradient id="g${id}" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#f2e2c0"/><stop offset=".45" stop-color="${c1}"/><stop offset=".85" stop-color="${c2}"/><stop offset="1" stop-color="#1c120a"/></radialGradient></defs>
-    <path d="M30 2v8" stroke="#5a4a2a" stroke-width="1.6"/><path d="M30 10C15 18 10 38 12 58c2 18 9 30 18 30s16-12 18-30C50 38 45 18 30 10z" fill="url(#g${id})" filter="url(#wf${id})"/>
-    <path d="M14 34c10 4 22 4 32-2M12 48c12 6 24 6 36-2M13 62c12 6 23 6 34-1M17 76c9 4 18 4 26-1" stroke="rgba(250,236,210,.35)" stroke-width="1.2" fill="none"/>
-    <path d="M27 50c-4-5-1-12 5-11s7 9 2 12" stroke="rgba(20,12,6,.3)" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="33" cy="44" r="1.3" fill="rgba(20,12,6,.45)"/></svg></div>`;
+  const id="pc"+p.id.replace(/[^a-z0-9]/gi,""), r=seeded("cc"+p.id);
+  let st="";
+  for(let i=0;i<22;i++){ const y=16+i*3.4, x1=11+r()*5, x2=49-r()*5, bend=(r()-.5)*14, w2=.4+r()*1.1, al=.16+r()*.34;
+    st+=`<path d="M${x1} ${y+r()*4}Q30 ${y+bend} ${x2} ${y+r()*4}" stroke="rgba(252,240,218,${al.toFixed(2)})" stroke-width="${w2.toFixed(2)}" fill="none" stroke-linecap="round"/>`; }
+  for(let i=0;i<9;i++){ const x=15+i*3.8; st+=`<path d="M${x} 14Q${x+(r()-.5)*10} 52 ${x+(r()-.5)*6} 90" stroke="rgba(40,26,14,${(.10+r()*.14).toFixed(2)})" stroke-width=".7" fill="none"/>`; }
+  const body="M30 12C20 14 12 30 12 52C12 72 20 88 30 91C42 88 49 70 48 50C47 30 40 14 30 12Z";
+  return `<div class="cocoon breathe" style="width:${w}px;margin:0 auto"><svg viewBox="0 0 60 98" width="100%"><defs>
+    <filter id="e${id}" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".06" numOctaves="3" seed="4"/><feDisplacementMap in="SourceGraphic" scale="2.6"/></filter>
+    <filter id="n${id}"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="9"/><feColorMatrix values="0 0 0 0 .16  0 0 0 0 .1  0 0 0 0 .06  0 0 0 .75 -.22"/></filter>
+    <filter id="b${id}"><feGaussianBlur stdDeviation="4"/></filter>
+    <clipPath id="c${id}"><path d="${body}"/></clipPath>
+    <radialGradient id="g${id}" cx="38%" cy="30%" r="80%"><stop offset="0" stop-color="#f0e1c2"/><stop offset=".4" stop-color="${c1}"/><stop offset=".8" stop-color="${c2}"/><stop offset="1" stop-color="#1a110a"/></radialGradient>
+    <radialGradient id="i${id}" cx="50%" cy="42%" r="45%"><stop offset="0" stop-color="rgba(255,226,150,.55)"/><stop offset="1" stop-color="rgba(255,226,150,0)"/></radialGradient></defs>
+    <ellipse cx="30" cy="54" rx="24" ry="38" fill="${c1}" opacity=".3" filter="url(#b${id})"><animate attributeName="opacity" values=".18;.4;.18" dur="4.6s" repeatCount="indefinite"/></ellipse>
+    <path d="M30 14V3" stroke="#4a3a20" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M30 4C24 0 17 2 15 7C22 9 28 8 30 4Z" fill="#7a9a4a" stroke="#3f5527" stroke-width=".6"/><path d="M30 4C36 1 42 3 44 7C38 9 32 8 30 4Z" fill="#6f8c43" stroke="#3f5527" stroke-width=".6"/>
+    <g filter="url(#e${id})"><path d="${body}" fill="url(#g${id})"/>
+      <g clip-path="url(#c${id})"><rect width="60" height="98" filter="url(#n${id})" opacity=".55"/>
+        <ellipse cx="30" cy="46" rx="14" ry="22" fill="url(#i${id})"><animate attributeName="opacity" values=".45;1;.45" dur="3.8s" repeatCount="indefinite"/></ellipse>
+        <path d="M24 38c-3 5-2 12 3 15 5 2 9-1 10-6" stroke="rgba(30,18,10,.28)" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+        <circle cx="32" cy="40" r="1.5" fill="rgba(255,236,170,.75)"/>${st}</g>
+      <path d="${body}" fill="none" stroke="rgba(26,16,8,.55)" stroke-width="1"/></g></svg></div>`;
 }
 /* each grown one blooms in the season of its color; Twilight blooms at night, all year */
 const BLOOM_SEASON={Verdant:"Spring",Solar:"Summer",Crimson:"Autumn",Azure:"Winter",Twilight:"Night"};
@@ -2335,7 +2392,7 @@ function paintIcons(){
 }
 function ensureAmbientArt(force){
   if(!S.bullArtV4){ S.bullArtV4=true; S.bullFace="left"; save(); delete ART.bull; delete ART.bull_pasty; }
-  paintIcons(); paintPupae(); paintEggs(); paintEventGround(); paintApples(); paintButtonIcons();
+  paintIcons(); paintPupae(); paintEggs(); paintEventGround(); paintApples(); paintButtonIcons(); paintSnail(); paintAllShopObjects();
   if(!force&&Date.now()<int(S.genCool)) return;
   for(const k of (S.wardrobe||[])) if(!ART["cos:"+k]) auto("cos:"+k,async()=>{ await paintCostume(k); render(); });
   for(const p of S.plantimals) if(!ART["p:"+p.id])
@@ -2510,7 +2567,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.8.0";
+const VERSION="1.9.2";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2795,7 +2852,7 @@ function keeperPanel(){
   const kv=(k,v)=>`<div class="kk-kv"><span>${k}</span><span class="mono">${v}</span></div>`;
   openSheet(`<div class="kk-title">C-Keeki</div>
     ${sec("Pictures",kv("Painted",int(g.ok)+" of "+int(g.calls)+" sent")+kv("Currency icons",CURRENCIES.filter(c=>ART["cur:"+c[0]]).length+" of 9")
-      +kv("Portraits waiting",missing)+kv("Eggs waiting",eggsMissing)+kv("Button pictures waiting",Object.keys(BI_WHO).filter(h=>!ART["bi:"+h]).length)+kv("Cocoons waiting",S.plantimals.filter(p=>p.pupaUntil&&!ART["pupa:"+p.id]).length)
+      +kv("Portraits waiting",missing)+kv("Eggs waiting",eggsMissing)+kv("Button pictures waiting",Object.keys(BI_WHO).filter(h=>!ART["bi:"+h]).length)+kv("Shop pictures waiting",Object.keys(SHOPS).reduce((a,k)=>a+SHOPS[k].items.filter((it,i)=>!ART[shopObjKey(k,i)]).length,0))+kv("Cocoons waiting",S.plantimals.filter(p=>p.pupaUntil&&!ART["pupa:"+p.id]).length)
       +`<div class="kk-err mono">${esc(g.err||S.iconErr||"No problems.")}</div>
       <div class="kk-row"><button class="btn" data-seed="k1" onclick="ensureAmbientArt(true);paintEggs();keeperPanel()">Paint what's missing</button>
       <button class="btn" data-seed="kpp" onclick="repaintPaper(this)">Repaint backgrounds</button></div>
@@ -2810,6 +2867,8 @@ function keeperPanel(){
       <div class="kk-row"><button class="btn" data-seed="kt1" onclick="makeTestCreatures(1)">1</button><button class="btn" data-seed="kt2" onclick="makeTestCreatures(2)">2</button><button class="btn" data-seed="kt3" onclick="makeTestCreatures(3)">3</button></div>
       <button class="btn" data-seed="kadv" onclick="advanceTests()">Move every creature on one stage</button>
       <div class="kk-row"><button class="btn ${S.noCool?"kk-on":""}" data-seed="knc" onclick="S.noCool=!S.noCool;save();render();keeperPanel()">Rests and lock-outs: ${S.noCool?"OFF (testing)":"on"}</button></div>`)}
+    ${sec("Preview",`<div class="kk-row"><button class="btn ${S.fastPupa?"kk-on":""}" data-seed="kfp" onclick="S.fastPupa=!S.fastPupa;save();keeperPanel()">Cocoons: ${S.fastPupa?"FAST, 20 s (testing)":"real time"}</button></div>
+      <div class="kk-row"><button class="btn" data-seed="khq" onclick="S.helpChosen=false;save();closeSheet();setTimeout(uiHelpGate,350)">Show the ? warning again</button></div>`)}
     ${sec("Breathing",`<div class="kk-kv"><span>Strength</span><span id="kbv" class="mono">${int(S.breathLvl==null?10:S.breathLvl)} of 20</span></div>
       <input type="range" min="0" max="20" step="1" value="${int(S.breathLvl==null?10:S.breathLvl)}" style="width:100%" oninput="setBreath(this.value)">
       <div class="opts">${[["S","Expand-contract"],["Y","Up-down"],["C","Circle"]].map(([k,l])=>`<button class="opt ${(S.breathMode||"S")===k?"sel":""}" data-bm="${k}" onclick="setBreath(null,'${k}')">${l}</button>`).join("")}</div>`)}
@@ -3121,6 +3180,10 @@ function uiSound(){
     <button class="btn" data-seed="sf" onclick="S.sfxOff=!S.sfxOff;save();uiSound()">Effects · ${S.sfxOff?"off":"on"}</button>
     <div style="height:7px"></div>
     <button class="btn" data-seed="sbz" onclick="S.buzzOff=!S.buzzOff;save();uiSound();buzz(20)">Touch feel · ${S.buzzOff?"off":"on"}</button>
+    <div style="height:7px"></div>
+    <button class="btn" data-seed="shw" onclick="S.hand=!S.hand;save();applyHand();uiSound()">Handwriting · ${S.hand?"on":"off"}</button>
+    <div style="height:7px"></div>
+    <button class="btn" data-seed="swf" onclick="S.wxfxOff=!S.wxfxOff;save();fxSet();uiSound()">Rain and snow · ${S.wxfxOff?"off":"on"}</button>
     <div style="height:14px"></div>
     <button class="btn" data-seed="sop" onclick="replayOpening()">Play the opening again</button>
     <div style="height:7px"></div>
@@ -3576,6 +3639,19 @@ function moonListen(){
 }
 /* ── Kiki's guide: a choice first, then hints, never spoilers ── */
 const APPLE_PROMPT=["A single ripe red apple, whole and unbitten, a short stem with one leaf, glossy with a soft highlight","A single apple core eaten down to the middle, browned bite edges, dark seeds showing, a short stem"];
+function paintSnail(){
+  if(ART["ui:snail"]) return;
+  auto("ui:snail",async()=>{ const src=await genImage(MEDIUM+" A single small garden snail seen from the side, crawling toward the left, spiral shell, glistening body, tiny eye-stalks. Isolated alone on a fully transparent background, centered, no ground, no shadow. No text.","1:1",0,{background:"transparent",output_format:"png"});
+    await ArtDB.put("ui:snail",await shrinkPng(src,256)); snailStart(); });
+}
+function snailStart(){
+  let el=document.getElementById("snail");
+  if(!ART["ui:snail"]){ if(el) el.remove(); return; }
+  if(!el){ el=document.createElement("div"); el.id="snail"; el.innerHTML='<i class="trail"></i><img alt="">'; document.getElementById("bgs").appendChild(el); }
+  el.querySelector("img").src=ART["ui:snail"];
+  const tick=()=>{ const W=innerWidth, per=7*60000, f=((Date.now()+int(S.bornAt))%per)/per; el.style.transform=`translate3d(${(W+60-f*(W+170)).toFixed(1)}px,0,0)`; };
+  tick(); clearInterval(snailStart.t); snailStart.t=setInterval(tick,1000);
+}
 function paintApples(){
   ["ui:apple","ui:core"].forEach((k,i)=>{ if(!ART[k]) auto(k,async()=>{
     const src=await genImage(MEDIUM+" "+APPLE_PROMPT[i]+". Isolated alone on a fully transparent background, no table, no shadow, centered with a small margin. No text.","1:1",0,{background:"transparent",output_format:"png"});
@@ -3742,7 +3818,7 @@ function finishCare(id,action,score){
   closeSheet();
   if(r==="CURLED"){ render(); sfx("whoosh"); buzz([30,60,30]);
     openSheet(`<h2>Cookuuunml</h2>${pupaPic(p,180)}
-      <div style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:15.5px;line-height:1.5;margin-top:8px;text-align:center">${esc(p.name)} has wrapped itself up tight. Something is happening in there.</div>
+      <div style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:15.5px;line-height:1.5;margin-top:8px;text-align:center">${esc(p.name)} has wrapped itself up tight. Something is happening in there. It will be a while.</div>
       <div style="height:14px"></div><button class="btn" data-seed="cur" onclick="closeSheet()">Let it be</button>`,"drift"); return; }
   render();
   openSheet(`<h2>${result}</h2>
@@ -3921,7 +3997,68 @@ function applyBreath(){
 function setBreath(l,m){ if(l!=null) S.breathLvl=int(l); if(m) S.breathMode=m; save(); applyBreath();
   const v=$("#kbv"); if(v) v.textContent=int(S.breathLvl==null?10:S.breathLvl)+" of 20";
   document.querySelectorAll(".opt[data-bm]").forEach(o=>o.classList.toggle("sel",o.dataset.bm===(S.breathMode||"S"))); }
+const FX={cv:null,cx:null,mode:"",ps:[],drops:[],splash:[],raf:0,last:0,W:0,H:0,force:""};
+function fxMode(){
+  if(FX.force) return FX.force;
+  if(S.wxfxOff||document.body.classList.contains("opening")) return "";
+  const w=weather(), se=season();
+  if(se==="Winter"){ if(w==="Storm") return "blizzard"; if(w==="Clear"||w==="Hazy") return "flurry"; return "snow"; }   /* December is winter: Christmas snows too */
+  if(w==="Storm") return "storm"; if(w==="Drizzle") return "rain";
+  return "";
+}
+function fxSize(){ const c=FX.cv, d=Math.min(1.5,devicePixelRatio||1); FX.W=innerWidth; FX.H=innerHeight; c.width=Math.round(FX.W*d); c.height=Math.round(FX.H*d); c.style.width=FX.W+"px"; c.style.height=FX.H+"px"; FX.cx.setTransform(d,0,0,d,0,0); }
+function fxNew(init){
+  const W=FX.W,H=FX.H,m=FX.mode;
+  if(m==="storm"||m==="rain"){ const sp=(m==="storm"?1500:1000)*(.8+Math.random()*.5); return {x:Math.random()*(W+240)-60,y:init?Math.random()*H:-30,v:sp,len:(m==="storm"?24:16)*(.7+Math.random()*.7),a:.16+Math.random()*.24,gy:H*(.55+Math.random()*.45)}; }
+  const big=Math.random()<.18, bl=m==="blizzard";
+  return {x:Math.random()*(W+240)-120,y:init?Math.random()*H:-10,r:big?2.6+Math.random()*1.8:.9+Math.random()*1.7,v:(bl?170:m==="flurry"?24:40)*(.6+Math.random()*.9)*(big?1.25:1),sw:Math.random()*6.28,sf:.5+Math.random()*1.1,wind:bl?-130-Math.random()*80:-8,a:big?.55:.8};
+}
+function fxDrop(init){ return {x:20+Math.random()*(FX.W-40),y:init?Math.random()*FX.H*.8:-10,r:2.5+Math.random()*3.5,pause:Math.random()*4,run:0,trail:[]}; }
+function fxSeed(){
+  const m=FX.mode; FX.ps=[]; FX.drops=[]; FX.splash=[];
+  const n=m==="storm"?260:m==="rain"?120:m==="blizzard"?260:m==="snow"?110:m==="flurry"?34:0;
+  for(let i=0;i<n;i++) FX.ps.push(fxNew(true));
+  const nd=m==="storm"?9:m==="rain"?6:0; for(let i=0;i<nd;i++) FX.drops.push(fxDrop(true));
+}
+function fxFrame(t){
+  FX.raf=requestAnimationFrame(fxFrame);
+  if(document.hidden) return;
+  const dt=Math.min(.05,((t-FX.last)/1000)||.016); FX.last=t;
+  const cx=FX.cx,W=FX.W,H=FX.H,m=FX.mode; cx.clearRect(0,0,W,H);
+  if(m==="storm"||m==="rain"){
+    const wind=m==="storm"?.28:.14; cx.lineCap="round"; cx.lineWidth=m==="storm"?1.4:1;
+    for(const p of FX.ps){
+      p.y+=p.v*dt; p.x-=p.v*dt*wind;
+      cx.strokeStyle=`rgba(205,220,240,${p.a})`; cx.beginPath(); cx.moveTo(p.x,p.y); cx.lineTo(p.x+p.len*wind,p.y-p.len); cx.stroke();
+      if(p.y>p.gy){ if(Math.random()<.45&&FX.splash.length<140) FX.splash.push({x:p.x,y:p.gy,r:1,a:.4}); Object.assign(p,fxNew(false)); }
+    }
+    for(let i=FX.splash.length-1;i>=0;i--){ const s=FX.splash[i]; s.r+=28*dt; s.a-=1.5*dt;
+      if(s.a<=0){ FX.splash.splice(i,1); continue; }
+      cx.strokeStyle=`rgba(210,225,240,${s.a})`; cx.lineWidth=.8; cx.beginPath(); cx.ellipse(s.x,s.y,s.r,s.r*.35,0,0,6.283); cx.stroke(); }
+    for(const d of FX.drops){                         /* drops that gather and run down the glass */
+      if(d.run>0){ d.run-=dt; d.y+=(40+Math.random()*50)*dt; d.x+=(Math.random()-.5)*8*dt; d.trail.push([d.x,d.y]); if(d.trail.length>26) d.trail.shift();
+        if(d.run<=0){ d.pause=1+Math.random()*5; } }
+      else { d.pause-=dt; if(d.pause<=0){ d.run=.4+Math.random()*1.1; } if(d.trail.length>0&&Math.random()<.25) d.trail.shift(); }
+      if(d.y>H+12){ Object.assign(d,fxDrop(false)); }
+      if(d.trail.length>1){ cx.strokeStyle="rgba(225,235,248,.09)"; cx.lineWidth=d.r*.5; cx.beginPath(); cx.moveTo(d.trail[0][0],d.trail[0][1]); for(const q of d.trail) cx.lineTo(q[0],q[1]); cx.stroke(); }
+      const g=cx.createRadialGradient(d.x-d.r*.3,d.y-d.r*.3,.5,d.x,d.y,d.r*1.3); g.addColorStop(0,"rgba(255,255,255,.4)"); g.addColorStop(.6,"rgba(200,218,238,.14)"); g.addColorStop(1,"rgba(200,218,238,.04)");
+      cx.fillStyle=g; cx.beginPath(); cx.ellipse(d.x,d.y,d.r,d.r*1.25,0,0,6.283); cx.fill();
+      cx.strokeStyle="rgba(240,246,255,.22)"; cx.lineWidth=.7; cx.stroke(); }
+  } else if(m){
+    for(const p of FX.ps){ p.y+=p.v*dt; p.sw+=p.sf*dt; p.x+=(Math.sin(p.sw)*18+p.wind)*dt;
+      if(p.y>H+10||p.x<-140||p.x>W+140){ Object.assign(p,fxNew(false)); if(m==="blizzard") p.x=Math.random()*(W+320); }
+      cx.fillStyle=`rgba(244,246,252,${p.a})`; cx.beginPath(); cx.arc(p.x,p.y,p.r,0,6.283); cx.fill(); }
+  }
+}
+function fxSet(){
+  const m=fxMode(); if(m===FX.mode) return;
+  FX.mode=m;
+  if(!m){ cancelAnimationFrame(FX.raf); FX.raf=0; if(FX.cx) FX.cx.clearRect(0,0,FX.W,FX.H); return; }
+  if(!FX.cv){ const c=document.createElement("canvas"); c.id="wxfx"; document.body.appendChild(c); FX.cv=c; FX.cx=c.getContext("2d"); window.addEventListener("resize",()=>{ if(FX.cv){ fxSize(); fxSeed(); } }); }
+  fxSize(); fxSeed(); if(!FX.raf) FX.raf=requestAnimationFrame(fxFrame);
+}
 function applyWeather(){
+  try{ fxSet(); }catch(e){}
   const w=weather(), se=season(), k=w+se;
   document.documentElement.dataset.wx=w; document.documentElement.dataset.season=se;
   if(k===wxKey) return; wxKey=k;
@@ -4321,28 +4458,37 @@ const BI_DESC={Convert:"an antique brass balance scale",Butterfly:"a pale butter
   music:"a little music box",leafy:"a sprig of leaves",gift:"a small bundle tied with ribbon",sprig:"a sprig of leaves"};
 const svgHash=t=>{ let h=5381; for(let i=0;i<t.length;i++) h=((h<<5)+h+t.charCodeAt(i))|0; return (h>>>0).toString(36); };
 const BI_WHO={};                                         /* painting key -> what to paint */
+Object.assign(BI,{"Handwriting":'<path d="M20 4c-6 1-11 6-13 12l-2 4 4-2c6-2 11-7 11-14z"/>',"Rain and snow":'<path d="M6 15a4 4 0 0 1 1-8 5 5 0 0 1 10 1 3.5 3.5 0 0 1 0 7zM8 18v2M12 18v3M16 18v2"/>',"Show the":'<path d="M9 9a3 3 0 1 1 4 3c-1 1-1 1.5-1 3M12 19v.5"/>',"Cocoons":'<path d="M12 3v3M12 6c-4 2-5 6-5 9s2 6 5 6 5-3 5-6-1-7-5-9z"/>'});
+Object.assign(BI_DESC,{"Handwriting":"a feather quill and a small inkwell","Rain and snow":"a small rain cloud with a snowflake","Show the":"a brass question mark charm","Cocoons":"a silk chrysalis",
+  pgprev:"a small curled fern frond pointing left",pgnext:"a small curled fern frond pointing right",qmark:"a small brass question mark charm"});
+let biTimer=0;
 function iconSpan(cls,svg,label){
-  const h=svgHash(svg); if(!BI_WHO[h]) BI_WHO[h]=BI_DESC[label]||(label==="gift"?BI_DESC.gift:BI_DESC.sprig);
+  const h=svgHash(svg);
+  if(!BI_WHO[h]){ BI_WHO[h]=BI_DESC[label]||(label==="gift"?BI_DESC.gift:BI_DESC.sprig);
+    if(!ART["bi:"+h]){ clearTimeout(biTimer); biTimer=setTimeout(paintButtonIcons,1200); } }
   const a=ART["bi:"+h];
   return `<span class="${cls}" data-h="${h}">${a?`<img alt="" src="${a}">`:`<svg viewBox="0 0 24 24">${svg}</svg>`}</span>`;
 }
 let biBusy=false;
 const BI_FIRST=["Convert","Butterfly","Shops","More","Less","Journal","Collection","Messages","Kept","Settings","Hidrayshn","Coppertanrr","Fylth","Genetics","Rename","Back","Done","Ask","Confirm"];
+const BI_FAIL={};
 function paintButtonIcons(){
   if(biBusy||!oaiKey()) return;
   for(const k of BI_FIRST){ const sv=BI[k]||(k==="Ask"?BI_SPRIG:null); if(sv) iconSpan("x",sv,k); }
-  const todo=Object.keys(BI_WHO).filter(h=>!ART["bi:"+h]);
-  if(!todo.length) return;
-  const first=BI_FIRST.map(k=>svgHash(BI[k]||BI_SPRIG));
-  todo.sort((a,b)=>(first.indexOf(a)<0?99:first.indexOf(a))-(first.indexOf(b)<0?99:first.indexOf(b)));
   biBusy=true;
-  (async()=>{ for(const h of todo){
-      try{
-        const src=await genImage(MEDIUM+" A tiny painted icon: "+BI_WHO[h]+". One single small object, centered, a strong clear silhouette that reads at a very small size, soft watercolor and ink, isolated alone on a fully transparent background, no frame, no shadow, no text.","1:1",0,{background:"transparent",output_format:"png"});
-        await ArtDB.put("bi:"+h,await shrinkPng(src,128));
-        document.querySelectorAll(`[data-h="${h}"]`).forEach(sp=>{ sp.innerHTML=`<img alt="" src="${ART["bi:"+h]}">`; });
-      }catch(err){ const m=String((err&&err.message)||err); if(/ 401 | 403 |credit|quota|billing|could not reach/i.test(m)) break; }
-    } })().finally(()=>{ biBusy=false; if(Object.keys(BI_WHO).some(h=>!ART["bi:"+h])) setTimeout(paintButtonIcons,60000); });
+  (async()=>{
+    for(let round=0;round<8;round++){
+      const todo=Object.keys(BI_WHO).filter(h=>!ART["bi:"+h]&&!(BI_FAIL[h]>=3)); if(!todo.length) break;
+      const first=BI_FIRST.map(k=>svgHash(BI[k]||BI_SPRIG));
+      todo.sort((a,b)=>(first.indexOf(a)<0?99:first.indexOf(a))-(first.indexOf(b)<0?99:first.indexOf(b)));
+      for(const h of todo){
+        try{
+          const src=await genImage(MEDIUM+" A tiny painted icon: "+BI_WHO[h]+". One single small object, centered, a strong clear silhouette that reads at a very small size, soft watercolor and ink, isolated alone on a fully transparent background, no frame, no shadow, no text.","1:1",0,{background:"transparent",output_format:"png"});
+          await ArtDB.put("bi:"+h,await shrinkPng(src,128));
+          document.querySelectorAll(`[data-h="${h}"]`).forEach(sp=>{ sp.innerHTML=`<img alt="" src="${ART["bi:"+h]}">`; });
+        }catch(err){ BI_FAIL[h]=(BI_FAIL[h]||0)+1; const m=String((err&&err.message)||err); if(/ 401 | 403 |credit|quota|billing|could not reach/i.test(m)) return; }
+      }
+    } })().finally(()=>{ biBusy=false; if(Object.keys(BI_WHO).some(h=>!ART["bi:"+h]&&!(BI_FAIL[h]>=3))) setTimeout(paintButtonIcons,60000); });
 }
 let decoPending=false;
 new MutationObserver(()=>{ if(decoPending) return; decoPending=true;
@@ -4495,10 +4641,10 @@ function pollScene(){
   if(chartNew){ S.chartFound=true; S.pm=S.pm||[]; S.pm.unshift({from:"System",at:Date.now(),body:"A loose page has slipped into the Journal."}); }
   save();
 
-  const W=innerWidth, H=innerHeight;
-  const pw=Math.min(W*.33,150), ph=pw*1.36, base=H*.71, Dx=W*.06, Mx=W-W*.06-pw, Py=base-ph;
+  const W0=innerWidth, H=innerHeight, wide=W0>=900, W=wide?Math.min(W0,860):W0;     /* on a wide screen the scene is a centered stage */
+  const pw=Math.min(W*.33,wide?240:150), ph=pw*1.36, base=H*.71, Dx=W*.06, Mx=W-W*.06-pw, Py=base-ph;
   const fD={x:Dx+pw*.5,y:Py+ph*.22}, fM={x:Mx+pw*.5,y:Py+ph*.22};
-  const bw=Math.min(W*.27,112), NF=S.bullFace||"left";
+  const bw=Math.min(W*.27,wide?180:112), NF=S.bullFace||"left";
   const pic=p=>{ const a=ART["p:"+p.id]; const src=a&&(a.adult||a[stageKey(p)]);
     return src?`<img alt="" src="${src}">`:`<div class="pv">${vine(2,false)}</div>`; };
   const bullArt=(S.pastyUnlocked&&ART.bull_pasty)||ART.bull;
@@ -4511,6 +4657,7 @@ function pollScene(){
     <div id="zB" style="width:${bw}px;height:${bw}px"><div class="zbw"><div class="zbi">${bullArt?`<img alt="" class="${cut?"cut":"soft"}" src="${bullArt}">`:`<div class="bblur"></div>`}</div></div></div>
     <div id="zfx"></div><div id="zcap"></div>`;
   document.body.appendChild(ov); document.body.classList.add("pollinating");
+  let bk=null; if(wide){ ov.style.left=((W0-W)/2)+"px"; ov.style.right=((W0-W)/2)+"px"; bk=document.createElement("div"); bk.id="pzbk"; document.body.insertBefore(bk,ov); requestAnimationFrame(()=>bk.classList.add("on")); }
   requestAnimationFrame(()=>ov.classList.add("on"));
   const q=x=>ov.querySelector(x);
   const D=q("#zD"), M=q("#zM"), B=q("#zB"), BI=q(".zbi"), BW=q(".zbw"), cap=q("#zcap"), path=q("#zpath"), fx=q("#zfx"), cv=q("#zc"), cx=cv.getContext("2d");
@@ -4610,7 +4757,7 @@ function pollScene(){
       say("An Eggling.");
       await wait(3600);
     ended=true; ov.classList.remove("on"); document.body.classList.remove("pollinating");
-    setTimeout(()=>{ ov.remove(); render();
+    setTimeout(()=>{ (ov.remove(),bk&&bk.remove()); render();
       if(chartNew) openSheet(`<h2>…</h2><div style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:15.5px;line-height:1.5">A loose page fluttered down from somewhere and settled in the Journal.</div>
         <div style="height:14px"></div><button class="btn" data-seed="chn" onclick="closeSheet()">Go on</button>`,"drift"); },700);
   })();
@@ -4781,7 +4928,7 @@ function chatUnread(){
   return !!(last&&last.at>int(S.chatSeen));
 }
 /* messages to and from Cj's phone, through a free notification service (ntfy) on one secret channel */
-const KIKI_GUIDE="THE GARDEN, for a helper who only gives hints.\\nPlantimals: half plant, half animal. Stages: Babie (0/2), Smitterpleet (1/2), Bleeglyl (2/2). Each stage needs the three care actions once each: Hidrayshn (water), Coppertanrr (light), Fylth (feeding). After all three the creature wraps itself in a Cookuuunml (a cocoon) for some hours and comes out at the next stage. Grades: Perfect, Good, Poor, Failed. Failed locks that action for a while. Perfect gives a little Polllen and mood. A run of Perfects brings good quirks and, after seven in a row, Nector.\\nHidrayshn: five water sources (Meltwater, Rainwater, Dewfall, Springwater, Wellwater); each COLOR prefers one, two-color creatures accept either. Three ways to give it: Hold, Sprinkle, Tip; each COVERING prefers one way (the creature says afterwards what it wanted). Stop when the ring is full, not past it. Thirsty creatures (the line at the top hints at it) do better.\\nCoppertanrr: six places (Low Thicket, Open Ridge, Ashen Clearing, Dappled Hollow, Moonside, Fogbank); the right place depends on its limbs and on its behavior. The best length of time changes every week or so, and the weather and season make the light stronger or weaker, so dim days need longer. After a miss it shows whether it wanted more or less.\\nFylth: six of twelve ingredients each day, two or three at a time; ingredients have tags, and opposite tags fight (warm/cool, damp/dry, sweet/bitter, bright/heavy). Fresh in the morning, turning by afternoon, stale at night: sweet, bright and floral things go flat when stale, but rotten, mineral and heavy things get better with age. Drench can be too much. Some creatures can't abide one tag (an allergy): they react, and the card remembers it.\\nMood drops with time. Neglect brings bad quirks; Cuddle Time fixes them: watch what it wants (pressing close = stroke slowly; squirming = quick taps; gone still and listening = hold a finger still) and each quirk has a favorite.\\nGifts: Babies and Smitterpleets have one gift each, which rests after use.\\nBreeding: only two grown ones (Bleeglyls), on Bull's card. Children inherit one copy of each gene from each parent. Two colors can both show. Some traits hide and come back later. Genes: color, markings, root-legs, arms, tendrils, wings, behavior, covering; a creature grows at most two of arms, tendrils and wings. The Journal's Genetics page shows the odds for any pair, and a chart appears in the Journal after the first breeding.\\nEgglings fade if never touched for three days. Hidden things are painted into portraits and tucked into screens; finding them pays Polllen and a trivia fact.\\nCurrencies: Polllen converts into Hunneee (10), Gold (20), Mystrieousness (5). Purple Puff is made from Nector and Polllen. Shadowpuff comes from giving gifts. Chocolate only in the Chocolate Eclipse. Shops sell helpers, upgrades, lore and secret places. Grown happy creatures make a little Polllen every hour. The rest of the Polllen comes from Cj.\\nEvents: Scary Fun Night every Friday; Chocolate Eclipse sometimes; others arrive in their own time. Each changes the garden and the chances of strange babies.\\nGrown ones bloom in the season of their color. After a month grown, she chooses what becomes of them.\\nNEVER EXPLAIN: STUFF (say only that some things are worth asking Cj about), anything about codes or a caretaker panel, how Butterfly Kisses are paid, or exact numbers that would solve a puzzle outright.";
+const KIKI_GUIDE="THE GARDEN, for a helper who only gives hints.\\nPlantimals: half plant, half animal. Stages: Babie (0/2), Smitterpleet (1/2), Bleeglyl (2/2). Each stage needs the three care actions once each: Hidrayshn (water), Coppertanrr (light), Fylth (feeding). After all three the creature wraps itself in a Cookuuunml (a cocoon) for hours, sometimes most of a day or two, and comes out at the next stage; how long depends on how well it was cared for and on its surroundings. Grades: Perfect, Good, Poor, Failed. Failed locks that action for a while. Perfect gives a little Polllen and mood. A run of Perfects brings good quirks and, after seven in a row, Nector.\\nHidrayshn: five water sources (Meltwater, Rainwater, Dewfall, Springwater, Wellwater); each COLOR prefers one, two-color creatures accept either. Three ways to give it: Hold, Sprinkle, Tip; each COVERING prefers one way (the creature says afterwards what it wanted). Stop when the ring is full, not past it. Thirsty creatures (the line at the top hints at it) do better.\\nCoppertanrr: six places (Low Thicket, Open Ridge, Ashen Clearing, Dappled Hollow, Moonside, Fogbank); the right place depends on its limbs and on its behavior. The best length of time changes every week or so, and the weather and season make the light stronger or weaker, so dim days need longer. After a miss it shows whether it wanted more or less.\\nFylth: six of twelve ingredients each day, two or three at a time; ingredients have tags, and opposite tags fight (warm/cool, damp/dry, sweet/bitter, bright/heavy). Fresh in the morning, turning by afternoon, stale at night: sweet, bright and floral things go flat when stale, but rotten, mineral and heavy things get better with age. Drench can be too much. Some creatures can't abide one tag (an allergy): they react, and the card remembers it.\\nMood drops with time. Neglect brings bad quirks; Cuddle Time fixes them: watch what it wants (pressing close = stroke slowly; squirming = quick taps; gone still and listening = hold a finger still) and each quirk has a favorite.\\nGifts: Babies and Smitterpleets have one gift each, which rests after use.\\nBreeding: only two grown ones (Bleeglyls), on Bull's card. Children inherit one copy of each gene from each parent. Two colors can both show. Some traits hide and come back later. Genes: color, markings, root-legs, arms, tendrils, wings, behavior, covering; a creature grows at most two of arms, tendrils and wings. The Journal's Genetics page shows the odds for any pair, and a chart appears in the Journal after the first breeding.\\nEgglings fade if never touched for three days. Hidden things are painted into portraits and tucked into screens; finding them pays Polllen and a trivia fact.\\nCurrencies: Polllen converts into Hunneee (10), Gold (20), Mystrieousness (5). Purple Puff is made from Nector and Polllen. Shadowpuff comes from giving gifts. Chocolate only in the Chocolate Eclipse. Shops sell helpers, upgrades, lore and secret places. Grown happy creatures make a little Polllen every hour. The rest of the Polllen comes from Cj.\\nEvents: Scary Fun Night every Friday; Chocolate Eclipse sometimes; others arrive in their own time. Each changes the garden and the chances of strange babies.\\nGrown ones bloom in the season of their color. After a month grown, she chooses what becomes of them.\\nNEVER EXPLAIN: STUFF (say only that some things are worth asking Cj about), anything about codes or a caretaker panel, how Butterfly Kisses are paid, or exact numbers that would solve a puzzle outright.";
 const NTFY="kpg-kofmudguq14zpcbb3pbunx";
 function ntfySend(text){ try{ if(location.protocol==="file:") return; fetch("https://ntfy.sh/"+NTFY,{method:"POST",body:text,headers:{"Title":"Kiki","Tags":"seedling"}}).catch(()=>{}); }catch(e){} }
 let ntfyBusy=false;
@@ -5233,18 +5380,33 @@ function uiShops(){
     <div style="height:10px"></div>
     <button class="btn" data-seed="sb2" onclick="closeSheet()">Back</button>`);
 }
+function shopObjKey(k,i){ return "shop:"+k+":"+i; }
+let shopBusy=false;
+function paintAllShopObjects(){
+  if(shopBusy||!oaiKey()) return;
+  const todo=[]; for(const k of Object.keys(SHOPS)) SHOPS[k].items.forEach((it,i)=>{ if(!ART[shopObjKey(k,i)]) todo.push([k,i]); });
+  if(!todo.length) return;
+  shopBusy=true;
+  (async()=>{ for(const [k,i] of todo){ const it=SHOPS[k].items[i];
+      try{
+        const src=await genImage(MEDIUM+" A single still-life object for sale in a gloomy antique garden shop: "+it[0]+" ("+it[3]+"). One object or one small cluster, centered, strong clear silhouette, isolated alone on a fully transparent background, no shelf, no shadow, no text.","1:1",0,{background:"transparent",output_format:"png"});
+        await ArtDB.put(shopObjKey(k,i),await shrinkPng(src,320));
+        document.querySelectorAll(`[data-shk="${k}:${i}"]`).forEach(el=>{ el.innerHTML=`<img alt="" src="${ART[shopObjKey(k,i)]}">`; });
+      }catch(err){ const m=String((err&&err.message)||err); if(/ 401 | 403 |credit|quota|billing|could not reach/i.test(m)) return; }
+    } })().finally(()=>{ shopBusy=false; if(Object.keys(SHOPS).some(k=>SHOPS[k].items.some((it,i)=>!ART[shopObjKey(k,i)]))) setTimeout(paintAllShopObjects,90000); });
+}
 function uiShop(k){
-  const sh=SHOPS[k];
+  const sh=SHOPS[k], coin=ART["cur:"+k];
+  const cell=(it,i)=>`<div class="shelf shitem"><div class="sobj" data-shk="${k}:${i}">${ART[shopObjKey(k,i)]?`<img alt="" src="${ART[shopObjKey(k,i)]}">`:`<svg viewBox="0 0 24 24"><path d="M12 20V10M12 14c-3 0-5-2-5-5 3 0 5 2 5 5zM12 12c3 0 5-2 5-5-3 0-5 2-5 5z"/></svg>`}</div>
+    <div class="snm">${esc(it[0])}</div><div class="sds">${esc(it[3])}</div>
+    <button class="btn" data-seed="b${k}${i}" onclick="buy('${k}',${i})">${coin?`<span class="bi coinb"><img alt="" src="${coin}"></span>`:""}${it[1]}${coin?"":" "+esc(sh.label)}</button></div>`;
+  const rows=[]; for(let i=0;i<sh.items.length;i+=2) rows.push(`<div class="shrow">${sh.items.slice(i,i+2).map((it,j)=>cell(it,i+j)).join("")}<i class="plank"></i></div>`);
   openSheet(`<h2>${sh.label}</h2>
     <div class="lbl">You have <span class="mono">${int(S[k])}</span></div>
-    ${sh.items.map((it,i)=>`<div class="shelf">
-      <div style="font-family:'Fraunces',Georgia,serif;font-size:15px">${esc(it[0])}</div>
-      <div class="note" style="margin:3px 0 7px">${esc(it[3])}</div>
-      <button class="btn" data-seed="b${k}${i}" style="padding:9px"
-        onclick="buy('${k}',${i})">${it[1]} ${esc(sh.label)}</button></div>`).join("")}
+    ${rows.join("")}
     <div class="msg" id="shmsg"></div>
-    <div style="height:12px"></div>
-    <button class="btn" data-seed="sb3" onclick="uiShops()">Back</button>`);
+    <button class="btn" data-seed="sb3" onclick="uiShops()">Back</button>`,"wood");
+  paintAllShopObjects();
 }
 const WHERE={fylthBonus:"Kept for her next Fylth.",cuddleBoost:"Kept for the next Cuddle Time.",cosmetic:"In Dress up, on any card.",
   moodTreat:"Everyone feels it now.",passiveUp:"Down in the roots now.",autoWater:"Done. It stays.",weather:"Done. It stays.",
@@ -5329,10 +5491,12 @@ function uiRolodex(d){
         <div style="font-size:12.5px;line-height:1.35;margin-top:4px">${esc(phenoLine(p.pheno))}</div>
         ${p.mutation?`<div style="color:var(--accent);font-size:12.5px;margin-top:3px">✦ ${esc(p.mutation)}</div>`:""}
         ${p.variant?`<div style="font-size:12.5px;margin-top:2px;font-style:italic">✧ ${esc(p.variant)}</div>`:""}
-        <div class="lbl" style="margin:6px 0 0">Generation ${int(p.generation)}</div></div></div>`; };
+        <div class="lbl" style="margin:6px 0 0">Generation ${int(p.generation)}</div>
+        <div class="rnote" data-ri="${i}">${esc(p.note||"")}</div></div></div>`; };
   openSheet(`<h2>Collection</h2>
     <div id="rolo" data-noswipe><div class="rspindle"></div><div id="rring" style="transform:translateZ(${-R}px) rotateX(${rolIdx*STEP}deg)">${all.map(card).join("")}</div></div>
     <div class="lbl" id="rcount" style="text-align:center">${rolIdx+1} of ${all.length}</div>
+    <textarea id="rnote" data-noswipe maxlength="160" rows="2" placeholder="A note on this card…" oninput="rolNote(this.value)">${esc(all[rolIdx].note||"")}</textarea>
     <div class="row" style="margin-top:8px">
       <button class="btn" data-seed="rl" onclick="rolSpin(-1)">Up</button>
       <button class="btn" data-seed="ro" onclick="uiPlant(S.plantimals[rolIdx].id)">Open</button>
@@ -5342,6 +5506,10 @@ function uiRolodex(d){
   rolBind(all.length,STEP,R);
 }
 let rolAng=0, rolVel=0, rolRaf=null, rolN=1, rolStep=36, rolR=270, rolLastI=-1;
+function rolNote(v){
+  const p=S.plantimals[Math.max(0,rolLastI)]; if(!p) return; p.note=String(v).slice(0,160); clearTimeout(rolNote.t); rolNote.t=setTimeout(save,500);
+  const el=document.querySelector('.rnote[data-ri="'+Math.max(0,rolLastI)+'"]'); if(el) el.textContent=p.note;
+}
 function rolApply(){
   const ring=$("#rring"); if(!ring) return;
   ring.style.transform=`translate3d(0,0,${-rolR}px) rotateX(${rolAng.toFixed(2)}deg)`;
@@ -5349,7 +5517,7 @@ function rolApply(){
   const cards=ring.children;
   for(let c=0;c<cards.length;c++){ const el=cards[c]; if(!el.dataset||el.dataset.i==null) continue;
     const d=Math.abs(+el.dataset.i*rolStep-rolAng); el.style.opacity=(d>110?0:1-d/110).toFixed(3); }
-  if(i!==rolLastI){ rolLastI=i; const ct=$("#rcount"); if(ct) ct.textContent=(i+1)+" of "+rolN; sfx("tick");
+  if(i!==rolLastI){ rolLastI=i; const nt=$("#rnote"); if(nt) nt.value=(S.plantimals[i]||{}).note||""; const ct=$("#rcount"); if(ct) ct.textContent=(i+1)+" of "+rolN; sfx("tick");
     for(let c=0;c<cards.length;c++) if(cards[c].dataset) cards[c].classList.toggle("front",+cards[c].dataset.i===i); }
 }
 function rolSettle(){
@@ -5411,7 +5579,10 @@ function uiMemory(){
 }
 
 /* ══ BOOT ══════════════════════════════════════════════════ */
+function applyHand(){ document.documentElement.classList.toggle("hand",!!S.hand); }
 function boot(){
+  applyHand(); setTimeout(()=>{ try{ fxSet(); }catch(e){} },500); snailStart();
+  const hq=$("#helpq"); if(hq) hq.innerHTML=iconSpan("hq",'<text x="12" y="17.5" font-size="17" font-family="serif" text-anchor="middle" fill="currentColor" stroke="none">?</text>',"qmark");
   setTimeout(bloomCheck,3000);
   if(S.genoV!==2){ for(const x of [...S.plantimals,...S.egglingses]){ x.geno=fillGeno(x.geno,x.id); x.pheno=resolveDominance(x.geno); } S.genoV=2; save(); }
   emergePupae();
