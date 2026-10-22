@@ -771,6 +771,18 @@ html.painted #sheet.k-wood .btn.sign::before{content:"" !important;display:block
 }
 .fig .fv.shaping svg{width:100% !important;height:auto;stroke:none}
 .fig .fv.shaping .fn{margin-top:-4px}
+
+.oi.th img{width:18px;height:18px;border-radius:50%;object-fit:cover;object-position:center top;box-shadow:0 0 0 1px rgba(0,0,0,.3)}
+.apple img{width:64px;height:64px;object-fit:contain;filter:drop-shadow(0 3px 4px rgba(0,0,0,.25))}
+#sheet .pg{perspective:900px;transform-origin:50% 50%}
+#sheet .pg.off{display:none}
+.pgnav{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0 4px}
+.pgb{width:44px;height:44px;border-radius:50%;border:1px solid rgba(46,42,38,.35);background:rgba(255,250,235,.35);cursor:pointer;display:grid;place-items:center}
+.pgb svg{width:20px;height:20px;fill:none;stroke:#2a1c10;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#sheet.k-wood .pgb{border-color:rgba(243,226,191,.5);background:rgba(0,0,0,.2)} #sheet.k-wood .pgb svg,#sheet.k-keeper .pgb svg{stroke:#f3e2bf}
+.pgc{font-size:13px;opacity:.75}
+#sheet .pg .wpic{width:min(100%,calc((100dvh - 210px) * .5));margin-left:auto !important;margin-right:auto !important}
+#sheet .pg img:not(.wpic img):not(.oi img){max-height:calc(100dvh - 210px);object-fit:contain}
 </style>
 </head>
 <body>
@@ -1102,7 +1114,51 @@ function openSheet(html,kind){
   } else if(sh.animate) sh.animate([{transform:"translate3d(0,6px,0)",opacity:.7},{transform:"none",opacity:1}],{duration:200,easing:EASE_OUT});
   v.scrollTop=0;
   decorate(sh); decorateOpts(sh);
+  paginate(sh);
   requestAnimationFrame(()=>{ shapeCard(sh); placeWear(sh); });
+}
+/* a screen too tall for the phone becomes pages you turn, instead of scrolling */
+let pgIdx=0, pgN=0, pgToken=0;
+function paginate(sh){
+  pgN=0; pgIdx=0; const tok=++pgToken;
+  if(innerWidth>=900) return;
+  const waiting=[...sh.querySelectorAll("img")].filter(i=>!i.complete);
+  const go=()=>{ if(tok===pgToken&&sh.isConnected&&sheetIsOpen) paginateNow(sh); };
+  if(waiting.length) Promise.race([Promise.all(waiting.map(i=>new Promise(r=>{ i.addEventListener("load",r,{once:true}); i.addEventListener("error",r,{once:true}); }))),nap(900)]).then(go);
+  else go();
+}
+function paginateNow(sh){
+  if(sh.querySelector(":scope > .pg")) return;
+  const maxH=innerHeight-56;
+  if(sh.scrollHeight<=maxH+6) return;  /* sizes below ignore the opening flip */
+  const kids=[...sh.children];
+  const hOf=el=>{ const cs=getComputedStyle(el); return el.offsetHeight+parseFloat(cs.marginTop)+parseFloat(cs.marginBottom); };
+  const head=kids[0]&&kids[0].tagName==="H2"?kids.shift():null;
+  const foot=[]; const isEnd=el=>/^(Back|Done|Close|Leave it|Let it be|Go on)$/.test((el.textContent||"").trim())||(el.classList.contains("row")&&/Back/.test(el.textContent));
+  while(kids.length&&(isEnd(kids[kids.length-1])||(kids[kids.length-1].children.length===0&&!kids[kids.length-1].textContent.trim()&&foot.length))) foot.unshift(kids.pop());
+  const room=maxH-(head?hOf(head):0)-foot.reduce((a,e)=>a+hOf(e),0)-58;
+  if(room<120) return;
+  const pages=[]; let cur=[], used=0;
+  for(const k of kids){ const h=hOf(k); if(cur.length&&used+h>room){ pages.push(cur); cur=[]; used=0; } cur.push(k); used+=h; }
+  if(cur.length) pages.push(cur);
+  if(pages.length<2) return;
+  const anchor=foot[0]||null;
+  pages.forEach((grp,i)=>{ const pg=document.createElement("div"); pg.className="pg"+(i?" off":""); sh.insertBefore(pg,anchor); grp.forEach(e=>pg.appendChild(e)); });
+  const nav=document.createElement("div"); nav.className="pgnav";
+  nav.innerHTML=`<button class="pgb" onclick="turnPage(-1)" aria-label="Previous page"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="mono pgc">1 / ${pages.length}</span><button class="pgb" onclick="turnPage(1)" aria-label="Next page"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>`;
+  sh.insertBefore(nav,anchor);
+  pgN=pages.length;
+}
+function turnPage(d){
+  const sh=$("#sheet"), pages=[...sh.querySelectorAll(":scope > .pg")]; if(!pages.length) return;
+  const n=Math.max(0,Math.min(pages.length-1,pgIdx+d)); if(n===pgIdx) return;
+  const out=pages[pgIdx], inn=pages[n]; pgIdx=n; sfx("flip"); buzz(6);
+  const sign=d>0?1:-1;
+  if(out.animate){ out.animate([{transform:"none",opacity:1},{transform:`rotateY(${-70*sign}deg)`,opacity:0}],{duration:170,easing:"ease-in"}).onfinish=()=>{
+      out.classList.add("off"); inn.classList.remove("off");
+      inn.animate([{transform:`rotateY(${70*sign}deg)`,opacity:0},{transform:"none",opacity:1}],{duration:200,easing:"ease-out"}); }; }
+  else { out.classList.add("off"); inn.classList.remove("off"); }
+  const c=sh.querySelector(".pgc"); if(c) c.textContent=(n+1)+" / "+pages.length;
 }
 function finishClose(){
   const v=$("#veil"), sh=$("#sheet");
@@ -1178,7 +1234,8 @@ function closeSheet(dir,opt){
     for(const s2 of samples) if(now-s2[2]<=90){ a=s2; break; }
     const b=samples[samples.length-1], dt=Math.max(8,b[2]-a[2]);
     const vx=(b[0]-a[0])/dt, vy=(b[1]-a[1])/dt, was=axis; axis=null; ok=false;
-    if(was==="x"&&(Math.abs(dx)>innerWidth*.3||(Math.abs(vx)>.5&&Math.abs(dx)>44&&Math.sign(vx)===Math.sign(dx)))) closeSheet(dx<0?"left":"right",{vx:vx,vy:vy});
+    if(was==="x"&&pgN>1&&(Math.abs(dx)>50||Math.abs(vx)>.4)){ const p0={...sheetPose}; poseSheet({x:0,y:0,rot:0}); sh.classList.remove("moving"); sh.style.transform=""; turnPage(dx<0?1:-1); }
+    else if(was==="x"&&(Math.abs(dx)>innerWidth*.3||(Math.abs(vx)>.5&&Math.abs(dx)>44&&Math.sign(vx)===Math.sign(dx)))) closeSheet(dx<0?"left":"right",{vx:vx,vy:vy});
     else if(was==="y"&&(dy>innerHeight*.2||(vy>.5&&dy>44))) closeSheet("down",{vx:vx,vy:vy});
     else {                                                     /* not far enough: spring home */
       const p0={...sheetPose}, t0=performance.now(), tau=70;
@@ -2273,7 +2330,7 @@ function paintIcons(){
 }
 function ensureAmbientArt(force){
   if(!S.bullArtV4){ S.bullArtV4=true; S.bullFace="left"; save(); delete ART.bull; delete ART.bull_pasty; }
-  paintIcons(); paintPupae(); paintEggs(); paintEventGround();
+  paintIcons(); paintPupae(); paintEggs(); paintEventGround(); paintApples();
   if(!force&&Date.now()<int(S.genCool)) return;
   for(const k of (S.wardrobe||[])) if(!ART["cos:"+k]) auto("cos:"+k,async()=>{ await paintCostume(k); render(); });
   for(const p of S.plantimals) if(!ART["p:"+p.id])
@@ -2448,7 +2505,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.6.1";
+const VERSION="1.7.0";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -3513,14 +3570,21 @@ function moonListen(){
     <div style="height:14px"></div><button class="btn" data-seed="mnd" onclick="closeSheet()">Back</button>`,"drift");
 }
 /* ── Kiki's guide: a choice first, then hints, never spoilers ── */
+const APPLE_PROMPT=["A single ripe red apple, whole and unbitten, a short stem with one leaf, glossy with a soft highlight","A single apple core eaten down to the middle, browned bite edges, dark seeds showing, a short stem"];
+function paintApples(){
+  ["ui:apple","ui:core"].forEach((k,i)=>{ if(!ART[k]) auto(k,async()=>{
+    const src=await genImage(MEDIUM+" "+APPLE_PROMPT[i]+". Isolated alone on a fully transparent background, no table, no shadow, centered with a small margin. No text.","1:1",0,{background:"transparent",output_format:"png"});
+    await ArtDB.put(k,await shrinkPng(src,256)); if(sheetIsOpen&&$(".applerow")) uiHelpGate(); }); });
+}
 function uiHelpGate(){
+  paintApples();
   if(S.helpChosen){ uiHelp(); return; }
   openSheet(`<h2>Before you go on</h2>
     <div style="font-family:'Fraunces',Georgia,serif;font-size:15.5px;line-height:1.55">Cj made this game for you to learn by living in it. Since it is yours alone, no one else has ever played it, so Cj can't know whether everything can be found this way, or whether you might get stuck somewhere.<br><br>
     It seems you're asking for help now. Cj just wanted to give you this little spoiler warning before letting you into your guide. The choice is yours…</div>
     <div class="applerow">
-      <button class="apple" onclick="closeSheet()"><svg viewBox="0 0 48 52"><path d="M24 14c-6-4-18-3-18 12 0 12 8 22 14 22 2 0 3-1 4-1s2 1 4 1c6 0 14-10 14-22 0-15-12-16-18-12z" fill="#b33a3a" stroke="#5a1a1a" stroke-width="1.4"/><path d="M24 14c0-4 1-8 4-11" stroke="#5a3a1a" stroke-width="2" fill="none"/><path d="M27 7c5-3 10-2 12 1-4 3-9 3-12-1z" fill="#6f8a45"/><ellipse cx="15" cy="24" rx="3" ry="6" fill="rgba(255,255,255,.3)" transform="rotate(-20 15 24)"/></svg><span>Turn Back<br><i>Remain in Bliss</i></span></button>
-      <button class="apple" onclick="S.helpChosen=true;save();uiHelp()"><svg viewBox="0 0 48 52"><path d="M24 4c0 4-1 6-3 8" stroke="#5a3a1a" stroke-width="2" fill="none"/><path d="M18 12c-2 0-6 2-6 6 4 1 6 4 6 8s-2 7-6 8c0 5 4 9 8 9h8c4 0 8-4 8-9-4-1-6-4-6-8s2-7 6-8c0-4-4-6-6-6z" fill="#efe2c4" stroke="#7a5a3a" stroke-width="1.4"/><path d="M20 22c2 1 6 1 8 0M20 30c2 1 6 1 8 0" stroke="#7a5a3a" stroke-width="1"/><circle cx="22" cy="26" r="1" fill="#3a2414"/><circle cx="26" cy="26" r="1" fill="#3a2414"/></svg><span>Venture Forth<br><i>into Knowledge</i></span></button>
+      <button class="apple" onclick="closeSheet()">${ART["ui:apple"]?`<img alt="" src="${ART["ui:apple"]}">`:`<svg viewBox="0 0 48 52"><path d="M24 14c-6-4-18-3-18 12 0 12 8 22 14 22 2 0 3-1 4-1s2 1 4 1c6 0 14-10 14-22 0-15-12-16-18-12z" fill="#b33a3a" stroke="#5a1a1a" stroke-width="1.4"/><path d="M24 14c0-4 1-8 4-11" stroke="#5a3a1a" stroke-width="2" fill="none"/><path d="M27 7c5-3 10-2 12 1-4 3-9 3-12-1z" fill="#6f8a45"/><ellipse cx="15" cy="24" rx="3" ry="6" fill="rgba(255,255,255,.3)" transform="rotate(-20 15 24)"/></svg>`}<span>Turn Back<br><i>Remain in Bliss</i></span></button>
+      <button class="apple" onclick="S.helpChosen=true;save();uiHelp()">${ART["ui:core"]?`<img alt="" src="${ART["ui:core"]}">`:`<svg viewBox="0 0 48 52"><path d="M24 4c0 4-1 6-3 8" stroke="#5a3a1a" stroke-width="2" fill="none"/><path d="M18 12c-2 0-6 2-6 6 4 1 6 4 6 8s-2 7-6 8c0 5 4 9 8 9h8c4 0 8-4 8-9-4-1-6-4-6-8s2-7 6-8c0-4-4-6-6-6z" fill="#efe2c4" stroke="#7a5a3a" stroke-width="1.4"/><path d="M20 22c2 1 6 1 8 0M20 30c2 1 6 1 8 0" stroke="#7a5a3a" stroke-width="1"/><circle cx="22" cy="26" r="1" fill="#3a2414"/><circle cx="26" cy="26" r="1" fill="#3a2414"/></svg>`}<span>Venture Forth<br><i>into Knowledge</i></span></button>
     </div>`,"drift");
 }
 let helpHist=[];
@@ -4193,7 +4257,13 @@ const OPT_ICON={
   wingT:'<path d="M12 18V8M12 9c-3-4-8-4-8 0s4 5 8 3M12 9c3-4 8-4 8 0s-4 5-8 3"/>',arm:'<path d="M12 21V12M12 12l-5-4M7 8l-2-3M7 8l-1 3M12 12l5-4M17 8l2-3M17 8l1 3"/>',
   tendril:'<path d="M12 21v-7M12 14c0-4 5-4 5-8 0-2-2-3-3-2"/>',leg:'<path d="M12 4v10M12 14l-4 6M12 14l4 6M12 14v6"/>',
   beh:'<circle cx="12" cy="12" r="8"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><path d="M9 15c2 1.5 4 1.5 6 0"/>',
-  cover:'<path d="M4 16c3-6 5-6 8 0s5 6 8 0M4 10c3-6 5-6 8 0s5 6 8 0"/>',mark:'<circle cx="8" cy="9" r="1.5"/><circle cx="15" cy="7" r="1"/><circle cx="12" cy="14" r="1.6"/><circle cx="17" cy="15" r="1"/><circle cx="7" cy="16" r="1"/>'
+  cover:'<path d="M4 16c3-6 5-6 8 0s5 6 8 0M4 10c3-6 5-6 8 0s5 6 8 0"/>',kiss:'<path d="M12 7v11M12 9c-2-4-7-5-8-2s2 6 8 4M12 9c2-4 7-5 8-2s-2 6-8 4M12 12c-2 1-6 3-5 6s4 0 5-3M12 12c2 1 6 3 5 6s-4 0-5-3"/>',
+  Eggs:'<path d="M12 3c-4 0-7 6-7 11a7 7 0 0 0 14 0c0-5-3-11-7-11z"/>',Genetics:'<path d="M8 3c0 6 8 6 8 9s-8 3-8 9M16 3c0 6-8 6-8 9s8 3 8 9M9 6h6M9 18h6"/>',
+  Recipes:'<path d="M4 11h16a8 8 0 0 1-16 0zM9 7c0-2 1-3 2-4M13 7c0-2 1-3 2-4"/>',Trivia:'<path d="M12 3l2.2 5.6L20 9l-4.5 3.8L17 19l-5-3.2L7 19l1.5-6.2L4 9l5.8-.4z"/>',
+  Lore:'<path d="M6 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V5M8 4a3 3 0 0 0-3 3M10 9h6M10 13h5"/>',Notes:'<path d="M20 4c-6 1-11 6-13 12l-2 4 4-2c6-2 11-7 11-14z"/>',
+  Chart:'<path d="M4 4h16v16H4zM4 10h16M10 4v16"/>',music:'<path d="M9 18V6l10-2v12M9 18a3 3 0 1 1-3-3 3 3 0 0 1 3 3zM19 16a3 3 0 1 1-3-3 3 3 0 0 1 3 3z"/>',
+  leafy:'<path d="M12 20V10M12 14c-3 0-5-2-5-5 3 0 5 2 5 5zM12 12c3 0 5-2 5-5-3 0-5 2-5 5z"/>',
+  mark:'<circle cx="8" cy="9" r="1.5"/><circle cx="15" cy="7" r="1"/><circle cx="12" cy="14" r="1.6"/><circle cx="17" cy="15" r="1"/><circle cx="7" cy="16" r="1"/>'
 };
 function decorateOpts(root){
   (root||document).querySelectorAll(".opt").forEach(o=>{
@@ -4208,10 +4278,19 @@ function decorateOpts(root){
     else if(cat==="arms") h=OPT_ICON.arm; else if(cat==="tendrils") h=OPT_ICON.tendril; else if(cat==="legs") h=OPT_ICON.leg;
     else if(cat==="behavior") h=OPT_ICON.beh; else if(cat==="surface") h=OPT_ICON.cover; else if(cat==="marking") h=OPT_ICON.mark;
     else if(GENE.marks.indexOf(t)>=0) h=OPT_ICON.mark;
-    if(!h) return;
+    else if(o.closest("#sheet")&&/Butterfly Kiss/.test(($("#sheet h2")||{}).textContent||"")) h=OPT_ICON.kiss;
+    else if(OPT_ICON[t.split(" ")[0]]) h=OPT_ICON[t.split(" ")[0]];
+    else if(/^(Music box|Rock|Film)$/.test(t)) h=OPT_ICON.music;
+    if(!h){ const pl=S.plantimals.find(x=>x.name&&t.indexOf(x.name)===0), a=pl&&ART["p:"+pl.id], src=a&&(a[stageKey(pl)]||a.adult);
+      h=src?`<span class="oi th"><img alt="" src="${src}"></span>`:OPT_ICON.leafy; }
     o.insertAdjacentHTML("afterbegin",h.indexOf("<span")===0?h:`<span class="oi"><svg viewBox="0 0 24 24">${h}</svg></span>`);
+    o.classList.add("decor");
   });
 }
+let decoPending=false;
+new MutationObserver(()=>{ if(decoPending) return; decoPending=true;
+  requestAnimationFrame(()=>{ decoPending=false; decorate(document); decorateOpts(document); }); })
+  .observe(document.documentElement,{childList:true,subtree:true});
 function poof(el,txt){
   const r=el?el.getBoundingClientRect():{left:innerWidth/2-40,top:innerHeight/2,width:80,height:20};
   const d=document.createElement("div"); d.className="poof";
