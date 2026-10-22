@@ -1131,7 +1131,7 @@ function paginateNow(sh){
   if(sh.querySelector(":scope > .pg")) return;
   const maxH=innerHeight-56;
   if(sh.scrollHeight<=maxH+6) return;  /* sizes below ignore the opening flip */
-  const kids=[...sh.children];
+  const kids=[...sh.children].filter(el=>{ const p=getComputedStyle(el).position; return p!=="absolute"&&p!=="fixed"; });   /* floating pieces (hidden things) stay put */
   const hOf=el=>{ const cs=getComputedStyle(el); return el.offsetHeight+parseFloat(cs.marginTop)+parseFloat(cs.marginBottom); };
   const head=kids[0]&&kids[0].tagName==="H2"?kids.shift():null;
   const foot=[]; const isEnd=el=>/^(Back|Done|Close|Leave it|Let it be|Go on)$/.test((el.textContent||"").trim())||(el.classList.contains("row")&&/Back/.test(el.textContent));
@@ -2505,7 +2505,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.7.0";
+const VERSION="1.7.1";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
