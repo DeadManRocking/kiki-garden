@@ -811,6 +811,15 @@ html.hand .fn,html.hand .rnm{font-family:'Caveat','Kalam',cursive !important;fon
 #sheet.k-wood .sds{font-size:12px;line-height:1.3;color:#d6c6a2;opacity:.9;min-height:3.9em}
 #sheet.k-wood .shitem .btn{padding:7px 10px !important;margin:4px 0 14px !important;min-width:74px}
 #pzbk{position:fixed;inset:0;z-index:860;background:rgba(6,5,4,.9);opacity:0;transition:opacity .8s ease;pointer-events:none}#pzbk.on{opacity:1}
+
+#gloss{position:fixed;left:50%;bottom:132px;transform:translateX(-50%) translateY(6px);max-width:82%;padding:9px 15px;border-radius:13px;background:rgba(20,14,9,.93);
+  color:#f3e2bf;font:italic 15px/1.35 'Fraunces',Georgia,serif;border:1px solid rgba(243,226,191,.35);opacity:0;pointer-events:none;z-index:990;transition:opacity .25s,transform .25s;text-align:center}
+#gloss.on{opacity:1;transform:translateX(-50%)}
+.fig .fn{font-size:13px !important;white-space:normal !important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.15;
+  max-width:132px;margin-left:auto;margin-right:auto;padding:2px 8px;border-radius:10px;background:rgba(12,8,5,.55);text-shadow:0 1px 3px #000,0 0 6px #000 !important}
+.fig .fn.i{background:none;max-width:none}
+.fig.need .fn::after{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#e2b45c;box-shadow:0 0 7px #e2b45c;margin-left:6px;vertical-align:1px}
+html.calm .breathe,html.calm .fig,html.calm #fog i,html.calm #snail img,html.calm #sheet.k-wood .btn.sign,html.calm .tgate{animation:none !important}
 </style>
 </head>
 <body>
@@ -1418,7 +1427,7 @@ function figMarkup(p){
   if(p.pupaUntil) return `<div class="fig" data-id="${p.id}" data-sc=".82" onclick="uiPlant('${p.id}')">${pupaPic(p,100).replace('width:100px','width:100%')}<div class="fn i">${esc(p.name)}</div></div>`;
   const a=ART["p:"+p.id], src=a&&a[stageKey(p)];
   const sc=[.78,.9,1][int(p.stage)]||.78;
-  return `<div class="fig ${p.emerged?"newborn":""}" data-id="${p.id}" data-sc="${sc}" onclick="uiPlant('${p.id}')">
+  return `<div class="fig ${p.emerged?"newborn":""} ${(int(p.mood)<40||(p.quirks||[]).length)?"need":""}" data-id="${p.id}" data-sc="${sc}" onclick="uiPlant('${p.id}')">
     ${src?`<div class="wpic breathe" style="position:relative;--bd:-${(seeded("bd"+p.id)()*5.6).toFixed(2)}s"><img class="base" alt="" src="${src}">${wearImgs(p)}</div>`:`<div class="fv shaping">${eggVisual({id:p.id,pheno:p.pheno,at:Date.now()},90)}<div class="fn i">Taking shape…</div></div>`}
     <div class="fn">${esc(p.name)}</div></div>`;
 }
@@ -1823,7 +1832,7 @@ function emergePupae(){
   for(const p of S.plantimals){
     if(p.pupaUntil&&Date.now()>=p.pupaUntil){
       p.stage=Math.min(2,int(p.stage)+1); delete p.pupaUntil; p.emerged=true;
-      if(p.stage===2) p.stage2At=Date.now();
+      if(p.stage===2){ p.stage2At=Date.now(); grownUp(p); }
       S.pm=S.pm||[]; S.pm.unshift({from:"System",at:Date.now(),body:"Something has come out of "+p.name+"'s Cookuuunml."});
       any=true;
     }
@@ -2567,7 +2576,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.9.2";
+const VERSION="1.10.0";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2804,7 +2813,7 @@ function coax(id){
   if(!p||p.stage>=2||!spendStuff("growth")) return;
   delete p.pupaUntil; p.emerged=false;
   p.stage=int(p.stage)+1; p.used=[];
-  if(p.stage===2) p.stage2At=Date.now();
+  if(p.stage===2){ p.stage2At=Date.now(); grownUp(p); }
   save(); closeSheet(); sfx("gmorph"); gmorph(p);
 }
 function uiCall(){
@@ -3184,6 +3193,10 @@ function uiSound(){
     <button class="btn" data-seed="shw" onclick="S.hand=!S.hand;save();applyHand();uiSound()">Handwriting · ${S.hand?"on":"off"}</button>
     <div style="height:7px"></div>
     <button class="btn" data-seed="swf" onclick="S.wxfxOff=!S.wxfxOff;save();fxSet();uiSound()">Rain and snow · ${S.wxfxOff?"off":"on"}</button>
+    <div style="height:7px"></div>
+    <button class="btn" data-seed="scm" onclick="S.calm=!document.documentElement.classList.contains('calm');save();applyCalm();uiSound()">Calm motion · ${document.documentElement.classList.contains("calm")?"on":"off"}</button>
+    <div style="height:7px"></div>
+    <button class="btn" data-seed="sgw" onclick="S.gentleOff=!S.gentleOff;save();uiSound()">Gentle while away · ${S.gentleOff?"off":"on"}</button>
     <div style="height:14px"></div>
     <button class="btn" data-seed="sop" onclick="replayOpening()">Play the opening again</button>
     <div style="height:7px"></div>
@@ -3309,7 +3322,7 @@ function advanceTests(){
     if(int(p.stage)<2){
       delete p.pupaUntil; p.emerged=false;
       p.stage=int(p.stage)+1; p.used=[];
-      if(p.stage===2) p.stage2At=Date.now();
+      if(p.stage===2){ p.stage2At=Date.now(); grownUp(p); }
       n++;
     }
   });
@@ -3673,15 +3686,27 @@ function uiHelp(){
   openSheet(`<h2>Your guide</h2>
     <div class="note" style="margin-bottom:8px">Ask about anything in the garden. You'll get a nudge, not the answer.</div>
     <div id="hlog" data-noswipe style="max-height:44vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px">${helpHist.map(m=>`<div class="hm ${m.role==="user"?"me":"it"}">${esc(m.content)}</div>`).join("")}</div>
+    <div class="opts" id="hlev">${["Nudge","Clue","Stronger clue"].map((l,i)=>`<button class="opt ${int(S.helpLevel)===i?"sel":""}" onclick="setHelpLevel(${i})">${l}</button>`).join("")}</div>
     <textarea id="hin" rows="2" maxlength="400" placeholder="What's puzzling you?" style="width:100%;box-sizing:border-box;margin-top:10px;font:inherit;font-size:15px;padding:9px;background:rgba(255,255,255,.55);border:1px solid rgba(46,42,38,.35);border-radius:10px;color:#2a1c10"></textarea>
     <div class="row" style="margin-top:7px"><button class="btn" data-seed="hs" onclick="helpAsk()">Ask</button><button class="btn" data-seed="hb" onclick="closeSheet()">Back</button></div>`,"drift");
   const l=$("#hlog"); if(l) l.scrollTop=l.scrollHeight;
 }
+async function setHelpLevel(i){ const v=($("#hin")||{}).value||""; S.helpLevel=i; save(); uiHelp(); const t=$("#hin"); if(t) t.value=v; }
+const HELP_LOCAL=[
+ [/water|hidray|thirst|pour/i,"Watch what the creature says right after a pour. Does its color remind you of a kind of water? And does its skin ask to be held, scattered or tipped?"],
+ [/light|sun|copper|slider|zone/i,"Read the line about the sky on the light screen, and what the creature says when you miss: more, or less? The best length does not stay the same from week to week."],
+ [/feed|fylth|ingredient|allerg/i,"Look at how fresh the ingredients are: most are best fresh, a few are better rotten. Opposites tend to fight. If a creature reacts badly, it will remember."],
+ [/cocoon|cookuuunml|wait/i,"A cocoon cannot be hurried. How well it was cared for, and the weather outside, change how long it takes."],
+ [/breed|egg|bull|gene|parent|babie|baby/i,"Only the fully grown can be paired. The Journal's Genetics page shows what two creatures could make; some traits hide for generations."],
+ [/mood|quirk|cuddle|grump|shy/i,"A quirk is a creature's way of saying what it needs. In Cuddle Time, watch what it asks for before you try anything."],
+ [/polllen|money|currency|convert|gold|hunnie|mystr|shop/i,"Polllen is where it all starts, and it only ever turns into the others. Touch and hold any strange word to see what it means."],
+ [/kiss|stuff|code/i,"Some things are worth asking Cj about."]];
+function helpLocal(q){ for(const [re,t] of HELP_LOCAL) if(re.test(q)) return t; return "Look closely at what changed after the last thing you tried, and try one thing at a time. If you are truly stuck, ask Cj."; }
 async function helpAsk(){
   const v=($("#hin").value||"").trim(); if(!v) return;
   helpHist.push({role:"user",content:v}); uiHelp();
   const l=$("#hlog"), d=document.createElement("div"); d.className="hm it"; d.textContent="…"; l.appendChild(d); l.scrollTop=l.scrollHeight;
-  const sys="You are a gentle, slightly mysterious guide inside Kiki's Secret Pocket Garden, a private game Cj made for Kiki. Speak to her warmly and briefly (2-4 sentences). GIVE HINTS AND CLUES, NEVER THE ANSWER: point her at what to notice, what to compare, what to try next, or which screen to look at; ask a leading question when useful. Never state exact preferences, numbers, best settings or solutions. If she is truly stuck after hints, suggest she ask Cj. Never explain STUFF, codes, a caretaker panel, or how Butterfly Kisses are paid: say those are worth asking Cj about. Use the game's own names. What you know:\\n"+KIKI_GUIDE;
+  const sys="You are a gentle, slightly mysterious guide inside Kiki's Secret Pocket Garden, a private game Cj made for Kiki. Speak to her warmly and briefly (2-4 sentences). GIVE HINTS AND CLUES, NEVER THE ANSWER: point her at what to notice, what to compare, what to try next, or which screen to look at; ask a leading question when useful. Never state exact preferences, numbers, best settings or solutions. If she is truly stuck after hints, suggest she ask Cj. Never explain STUFF, codes, a caretaker panel, or how Butterfly Kisses are paid: say those are worth asking Cj about. Use the game's own names. What you know:\\n"+KIKI_GUIDE+"\n\nHOW MUCH TO GIVE: "+["Only a NUDGE: say what to look at or compare, never the cause.","A CLUE: name the kind of cause or comparison that matters, without the exact answer.","A STRONGER CLUE: suggest one specific experiment to try. Still never the final answer, exact numbers or best settings."][int(S.helpLevel)];
   const models=S.helpModel?[S.helpModel]:["gpt-5-mini","gpt-4.1-mini","gpt-4o-mini"];
   let txt="";
   for(const m of models){
@@ -3694,7 +3719,7 @@ async function helpAsk(){
       S.genStats=S.genStats||{}; S.genStats.err="Guide "+r.status+" "+m+": "+String((j.error&&j.error.message)||"").slice(0,160);
     }catch(e){ S.genStats=S.genStats||{}; S.genStats.err="Guide: could not reach it"; }
   }
-  if(!txt){ helpHist.pop(); d.textContent="The guide is quiet right now. Try again in a little while, or ask Cj."; return; }
+  if(!txt){ txt=helpLocal(v)+"\n\n(The guide is resting just now. This is an old note instead.)"; }
   helpHist.push({role:"assistant",content:txt}); d.textContent=txt; l.scrollTop=l.scrollHeight;
 }
 function needFounder(){
@@ -4000,7 +4025,7 @@ function setBreath(l,m){ if(l!=null) S.breathLvl=int(l); if(m) S.breathMode=m; s
 const FX={cv:null,cx:null,mode:"",ps:[],drops:[],splash:[],raf:0,last:0,W:0,H:0,force:""};
 function fxMode(){
   if(FX.force) return FX.force;
-  if(S.wxfxOff||document.body.classList.contains("opening")) return "";
+  if(S.wxfxOff||document.documentElement.classList.contains("calm")||document.body.classList.contains("opening")) return "";
   const w=weather(), se=season();
   if(se==="Winter"){ if(w==="Storm") return "blizzard"; if(w==="Clear"||w==="Hazy") return "flurry"; return "snow"; }   /* December is winter: Christmas snows too */
   if(w==="Storm") return "storm"; if(w==="Drizzle") return "rain";
@@ -4458,9 +4483,9 @@ const BI_DESC={Convert:"an antique brass balance scale",Butterfly:"a pale butter
   music:"a little music box",leafy:"a sprig of leaves",gift:"a small bundle tied with ribbon",sprig:"a sprig of leaves"};
 const svgHash=t=>{ let h=5381; for(let i=0;i<t.length;i++) h=((h<<5)+h+t.charCodeAt(i))|0; return (h>>>0).toString(36); };
 const BI_WHO={};                                         /* painting key -> what to paint */
-Object.assign(BI,{"Handwriting":'<path d="M20 4c-6 1-11 6-13 12l-2 4 4-2c6-2 11-7 11-14z"/>',"Rain and snow":'<path d="M6 15a4 4 0 0 1 1-8 5 5 0 0 1 10 1 3.5 3.5 0 0 1 0 7zM8 18v2M12 18v3M16 18v2"/>',"Show the":'<path d="M9 9a3 3 0 1 1 4 3c-1 1-1 1.5-1 3M12 19v.5"/>',"Cocoons":'<path d="M12 3v3M12 6c-4 2-5 6-5 9s2 6 5 6 5-3 5-6-1-7-5-9z"/>'});
+Object.assign(BI,{"Handwriting":'<path d="M20 4c-6 1-11 6-13 12l-2 4 4-2c6-2 11-7 11-14z"/>',"Rain and snow":'<path d="M6 15a4 4 0 0 1 1-8 5 5 0 0 1 10 1 3.5 3.5 0 0 1 0 7zM8 18v2M12 18v3M16 18v2"/>',"Show the":'<path d="M9 9a3 3 0 1 1 4 3c-1 1-1 1.5-1 3M12 19v.5"/>',"Cocoons":'<path d="M12 3v3M12 6c-4 2-5 6-5 9s2 6 5 6 5-3 5-6-1-7-5-9z"/>',"Calm motion":'<path d="M3 12c3-4 6-4 9 0s6 4 9 0"/>',"Gentle while away":'<path d="M12 3v9l5 3M4 12a8 8 0 1 0 2.5-5.8"/>'});
 Object.assign(BI_DESC,{"Handwriting":"a feather quill and a small inkwell","Rain and snow":"a small rain cloud with a snowflake","Show the":"a brass question mark charm","Cocoons":"a silk chrysalis",
-  pgprev:"a small curled fern frond pointing left",pgnext:"a small curled fern frond pointing right",qmark:"a small brass question mark charm"});
+  pgprev:"a small curled fern frond pointing left",pgnext:"a small curled fern frond pointing right",qmark:"a small brass question mark charm","Calm motion":"a still pond with one ripple","Gentle while away":"a small pocket watch with a leaf"});
 let biTimer=0;
 function iconSpan(cls,svg,label){
   const h=svgHash(svg);
@@ -4928,7 +4953,7 @@ function chatUnread(){
   return !!(last&&last.at>int(S.chatSeen));
 }
 /* messages to and from Cj's phone, through a free notification service (ntfy) on one secret channel */
-const KIKI_GUIDE="THE GARDEN, for a helper who only gives hints.\\nPlantimals: half plant, half animal. Stages: Babie (0/2), Smitterpleet (1/2), Bleeglyl (2/2). Each stage needs the three care actions once each: Hidrayshn (water), Coppertanrr (light), Fylth (feeding). After all three the creature wraps itself in a Cookuuunml (a cocoon) for hours, sometimes most of a day or two, and comes out at the next stage; how long depends on how well it was cared for and on its surroundings. Grades: Perfect, Good, Poor, Failed. Failed locks that action for a while. Perfect gives a little Polllen and mood. A run of Perfects brings good quirks and, after seven in a row, Nector.\\nHidrayshn: five water sources (Meltwater, Rainwater, Dewfall, Springwater, Wellwater); each COLOR prefers one, two-color creatures accept either. Three ways to give it: Hold, Sprinkle, Tip; each COVERING prefers one way (the creature says afterwards what it wanted). Stop when the ring is full, not past it. Thirsty creatures (the line at the top hints at it) do better.\\nCoppertanrr: six places (Low Thicket, Open Ridge, Ashen Clearing, Dappled Hollow, Moonside, Fogbank); the right place depends on its limbs and on its behavior. The best length of time changes every week or so, and the weather and season make the light stronger or weaker, so dim days need longer. After a miss it shows whether it wanted more or less.\\nFylth: six of twelve ingredients each day, two or three at a time; ingredients have tags, and opposite tags fight (warm/cool, damp/dry, sweet/bitter, bright/heavy). Fresh in the morning, turning by afternoon, stale at night: sweet, bright and floral things go flat when stale, but rotten, mineral and heavy things get better with age. Drench can be too much. Some creatures can't abide one tag (an allergy): they react, and the card remembers it.\\nMood drops with time. Neglect brings bad quirks; Cuddle Time fixes them: watch what it wants (pressing close = stroke slowly; squirming = quick taps; gone still and listening = hold a finger still) and each quirk has a favorite.\\nGifts: Babies and Smitterpleets have one gift each, which rests after use.\\nBreeding: only two grown ones (Bleeglyls), on Bull's card. Children inherit one copy of each gene from each parent. Two colors can both show. Some traits hide and come back later. Genes: color, markings, root-legs, arms, tendrils, wings, behavior, covering; a creature grows at most two of arms, tendrils and wings. The Journal's Genetics page shows the odds for any pair, and a chart appears in the Journal after the first breeding.\\nEgglings fade if never touched for three days. Hidden things are painted into portraits and tucked into screens; finding them pays Polllen and a trivia fact.\\nCurrencies: Polllen converts into Hunneee (10), Gold (20), Mystrieousness (5). Purple Puff is made from Nector and Polllen. Shadowpuff comes from giving gifts. Chocolate only in the Chocolate Eclipse. Shops sell helpers, upgrades, lore and secret places. Grown happy creatures make a little Polllen every hour. The rest of the Polllen comes from Cj.\\nEvents: Scary Fun Night every Friday; Chocolate Eclipse sometimes; others arrive in their own time. Each changes the garden and the chances of strange babies.\\nGrown ones bloom in the season of their color. After a month grown, she chooses what becomes of them.\\nNEVER EXPLAIN: STUFF (say only that some things are worth asking Cj about), anything about codes or a caretaker panel, how Butterfly Kisses are paid, or exact numbers that would solve a puzzle outright.";
+const KIKI_GUIDE="THE GARDEN, for a helper who only gives hints.\\nPlantimals: half plant, half animal. Stages: Babie (0/2), Smitterpleet (1/2), Bleeglyl (2/2). Each stage needs the three care actions once each: Hidrayshn (water), Coppertanrr (light), Fylth (feeding). After all three the creature wraps itself in a Cookuuunml (a cocoon) for hours, sometimes most of a day or two, and comes out at the next stage; how long depends on how well it was cared for and on its surroundings. Grades: Perfect, Good, Poor, Failed. Failed locks that action for a while. Perfect gives a little Polllen and mood. A run of Perfects brings good quirks and, after seven in a row, Nector.\\nHidrayshn: five water sources (Meltwater, Rainwater, Dewfall, Springwater, Wellwater); each COLOR prefers one, two-color creatures accept either. Three ways to give it: Hold, Sprinkle, Tip; each COVERING prefers one way (the creature says afterwards what it wanted). Stop when the ring is full, not past it. Thirsty creatures (the line at the top hints at it) do better.\\nCoppertanrr: six places (Low Thicket, Open Ridge, Ashen Clearing, Dappled Hollow, Moonside, Fogbank); the right place depends on its limbs and on its behavior. The best length of time changes every week or so, and the weather and season make the light stronger or weaker, so dim days need longer. After a miss it shows whether it wanted more or less.\\nFylth: six of twelve ingredients each day, two or three at a time; ingredients have tags, and opposite tags fight (warm/cool, damp/dry, sweet/bitter, bright/heavy). Fresh in the morning, turning by afternoon, stale at night: sweet, bright and floral things go flat when stale, but rotten, mineral and heavy things get better with age. Drench can be too much. Some creatures can't abide one tag (an allergy): they react, and the card remembers it.\\nMood drops with time. Neglect brings bad quirks; Cuddle Time fixes them: watch what it wants (pressing close = stroke slowly; squirming = quick taps; gone still and listening = hold a finger still) and each quirk has a favorite.\\nGifts: Babies and Smitterpleets have one gift each, which rests after use.\\nBreeding: only two grown ones (Bleeglyls), on Bull's card. Children inherit one copy of each gene from each parent. Two colors can both show. Some traits hide and come back later. Genes: color, markings, root-legs, arms, tendrils, wings, behavior, covering; a creature grows at most two of arms, tendrils and wings. The Journal's Genetics page shows the odds for any pair, and a chart appears in the Journal after the first breeding.\\nEgglings fade if never touched for three days. Hidden things are painted into portraits and tucked into screens; finding them pays Polllen and a trivia fact.\\nCurrencies: Polllen converts into Hunneee (10), Gold (20), Mystrieousness (5). Purple Puff is made from Nector and Polllen. Shadowpuff comes from giving gifts. Chocolate only in the Chocolate Eclipse. Shops sell helpers, upgrades, lore and secret places. Grown happy creatures make a little Polllen every hour. The rest of the Polllen comes from Cj.\\nEvents: Scary Fun Night every Friday; Chocolate Eclipse sometimes; others arrive in their own time. Each changes the garden and the chances of strange babies.\\nGrown ones bloom in the season of their color. After a month grown, she chooses what becomes of them.\\nTouching and holding a strange word shows what it means. While she is away the garden waits: after about half a day, the time away stops wearing on mood and eggs. A little dew of Polllen is left every day, and every third creature she raises to full growth makes the garden wider. NEVER EXPLAIN: STUFF (say only that some things are worth asking Cj about), anything about codes or a caretaker panel, how Butterfly Kisses are paid, or exact numbers that would solve a puzzle outright.";
 const NTFY="kpg-kofmudguq14zpcbb3pbunx";
 function ntfySend(text){ try{ if(location.protocol==="file:") return; fetch("https://ntfy.sh/"+NTFY,{method:"POST",body:text,headers:{"Title":"Kiki","Tags":"seedling"}}).catch(()=>{}); }catch(e){} }
 let ntfyBusy=false;
@@ -5579,8 +5604,55 @@ function uiMemory(){
 }
 
 /* ══ BOOT ══════════════════════════════════════════════════ */
+const GLOSS={Hidrayshn:"Hidrayshn is watering.",Coppertanrr:"Coppertanrr is giving it light.",Fylth:"Fylth is feeding.",Polllen:"Polllen is the garden's pollen: where every other coin begins.",
+  Hunneee:"Hunneee is honey. Polllen turns into it.",Gold:"Gold is made from Polllen. It buys lasting upgrades.",Mystrieousness:"Mystrieousness buys the strange and the secret.",
+  Nector:"Nector is only ever earned.","Purple Puff":"Purple Puff is made from Nector and Polllen.",Shadowpuff:"Shadowpuff comes from giving gifts.",Chocolate:"Chocolate belongs to the Chocolate Eclipse.",
+  Cookuuunml:"The Cookuuunml is the cocoon it changes in.",Babie:"A Babie is the first age.",Smitterpleet:"A Smitterpleet is the middle age.",Bleeglyl:"A Bleeglyl is fully grown, and the only age that can breed.",
+  Eggling:"An Eggling is an egg.",Plantimal:"A Plantimal is half plant, half animal."};
+const GLOSS_KEYS=Object.keys(GLOSS).sort((a,b)=>b.length-a.length);
+let glT=0, glX=0, glY=0, glHit=false;
+document.addEventListener("pointerdown",e=>{
+  glHit=false; clearTimeout(glT); glT=0;
+  const el=e.target.closest&&e.target.closest("button,.nb,h2,.lbl,.mono,.fn,.opt,.snm"); if(!el) return;
+  const t=(el.textContent||"").trim(); if(!t||t.length>44) return;
+  const key=GLOSS_KEYS.find(k=>new RegExp("(^|[^A-Za-z])"+k+"([^A-Za-z]|$)","i").test(t)); if(!key) return;
+  glX=e.clientX; glY=e.clientY;
+  glT=setTimeout(()=>{ glHit=true; showGloss(GLOSS[key]); buzz(8); },620);
+},{passive:true});
+document.addEventListener("pointermove",e=>{ if(glT&&Math.hypot(e.clientX-glX,e.clientY-glY)>10){ clearTimeout(glT); glT=0; } },{passive:true});
+document.addEventListener("pointerup",()=>{ clearTimeout(glT); glT=0; },{passive:true});
+document.addEventListener("click",e=>{ if(glHit){ e.stopPropagation(); e.preventDefault(); glHit=false; } },true);
+function showGloss(t){ let g=document.getElementById("gloss"); if(!g){ g=document.createElement("div"); g.id="gloss"; document.body.appendChild(g); }
+  g.textContent=t; g.classList.add("on"); clearTimeout(showGloss.t); showGloss.t=setTimeout(()=>g.classList.remove("on"),3200); }
 function applyHand(){ document.documentElement.classList.toggle("hand",!!S.hand); }
+/* THE GARDEN WAITS FOR HER: after about half a day away, the time she was gone no longer wears on mood, thirst or eggs */
+function absenceSafe(){
+  const now=Date.now(), last=int(S.lastSeen); S.lastSeen=now;
+  if(S.gentleOff||!last) return;
+  const free=Math.max(0,(now-last)-12*3600000);
+  if(free<6*3600000) return;
+  const mv=(o,k)=>{ if(o&&o[k]) o[k]=Math.min(now,o[k]+free); };
+  for(const p of S.plantimals){ mv(p,"lastCare"); mv(p,"lastWater"); if(!p.lastCare) mv(p,"hatched"); }
+  for(const e of S.egglingses) mv(e,"at");
+  S.pm=S.pm||[]; S.pm.unshift({from:"System",at:now,body:"You were away. The garden kept your place."});
+  save();
+}
+function dewCheck(){
+  if(!S.plantimals.length||document.body.classList.contains("opening")) return;
+  const day=new Date().toDateString(); if(S.dewDay===day) return; S.dewDay=day;
+  S.polllen=int(S.polllen)+8; S.pm=S.pm||[]; S.pm.unshift({from:"System",at:Date.now(),body:"Dew on the leaves: 8 Polllen, left for you."}); save(); render();
+}
+function grownUp(p){ S.grownCount=int(S.grownCount)+1;
+  if(S.grownCount%3===0){ S.capacityBonus=int(S.capacityBonus)+2; S.pm=S.pm||[]; S.pm.unshift({from:"System",at:Date.now(),body:"Three have grown up. The garden has grown wider."}); } }
+document.addEventListener("visibilitychange",()=>{ if(document.hidden){ S.lastSeen=Date.now(); save(); } else { absenceSafe(); decayMood(); render(); } });
+setInterval(()=>{ if(!document.hidden){ S.lastSeen=Date.now(); save(); } },60000);
+setInterval(dewCheck,10*60000);
+function applyCalm(){
+  const c=S.calm===undefined?!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches):!!S.calm;
+  document.documentElement.classList.toggle("calm",c); try{ fxSet(); }catch(e){}
+}
 function boot(){
+  absenceSafe(); setTimeout(dewCheck,5000); applyCalm();
   applyHand(); setTimeout(()=>{ try{ fxSet(); }catch(e){} },500); snailStart();
   const hq=$("#helpq"); if(hq) hq.innerHTML=iconSpan("hq",'<text x="12" y="17.5" font-size="17" font-family="serif" text-anchor="middle" fill="currentColor" stroke="none">?</text>',"qmark");
   setTimeout(bloomCheck,3000);
