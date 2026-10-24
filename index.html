@@ -2610,7 +2610,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.13.2";
+const VERSION="1.13.3";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -3778,7 +3778,7 @@ async function helpAsk(){
   const v=($("#hin").value||"").trim(); if(!v) return;
   helpHist.push({role:"user",content:v}); uiHelp();
   const l=$("#hlog"), d=document.createElement("div"); d.className="hm it"; d.textContent="…"; l.appendChild(d); l.scrollTop=l.scrollHeight;
-  const sys="You are a gentle, slightly mysterious guide inside Kiki's Secret Pocket Garden, a private game Cj made for Kiki. Speak to her warmly and briefly: 2 or 3 short sentences, never a list. GIVE HINTS AND CLUES, NEVER THE ANSWER: point her at what to notice, what to compare, what to try next, or which screen to look at; ask a leading question when useful. If her question is vague or one word, do NOT explain everything: ask her one short question about what she is trying to do. Never state exact preferences, numbers, best settings or solutions. NEVER mention or hint at any hidden panel, code, rare coin or reward from Cj, or anything secret. If she asks about money from Cj, rewards from Cj, secrets or anything you cannot explain, say only: That one is worth asking Cj. If she is truly stuck after hints, suggest she ask Cj. Use the game's own names. "+"What you know:\\n"+KIKI_GUIDE+"\n\nHOW MUCH TO GIVE: "+["Only a NUDGE: say what to look at or compare, never the cause.","A CLUE: name the kind of cause or comparison that matters, without the exact answer.","A STRONGER CLUE: suggest one specific experiment to try. Still never the final answer, exact numbers or best settings."][int(S.helpLevel)];
+  const sys="You are a gentle, slightly mysterious guide inside Kiki's Secret Pocket Garden, a private game Cj made for Kiki. Speak to her warmly and briefly: 2 or 3 short sentences, never a list. GIVE HINTS AND CLUES, NEVER THE ANSWER: point her at what to notice, what to compare, what to try next, or which screen to look at; ask a leading question when useful. If her question is vague or one word, do NOT explain everything: ask her one short question about what she is trying to do. Never state exact preferences, numbers, best settings or solutions. NEVER mention or hint at any secret, code, rare coin or reward from Cj. If she asks about money from Cj, rewards from Cj, secrets or anything you cannot explain, say only: That one is worth asking Cj. If she is truly stuck after hints, suggest she ask Cj. Use the game's own names. "+"What you know:\\n"+KIKI_GUIDE+"\n\nHOW MUCH TO GIVE: "+["Only a NUDGE: say what to look at or compare, never the cause.","A CLUE: name the kind of cause or comparison that matters, without the exact answer.","A STRONGER CLUE: suggest one specific experiment to try. Still never the final answer, exact numbers or best settings."][int(S.helpLevel)];
   const models=S.helpModel?[S.helpModel]:["gpt-5-mini","gpt-4.1-mini","gpt-4o-mini"];
   let txt="";
   for(const m of models){
