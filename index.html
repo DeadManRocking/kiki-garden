@@ -2608,7 +2608,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.13.0";
+const VERSION="1.13.1";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2741,55 +2741,14 @@ function hiss(t0,dur,f1,f2,vol,q){
   g.gain.exponentialRampToValueAtTime(vol,t0+dur*0.3); g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
   s.connect(f); f.connect(g); g.connect(AU.master); s.start(t0);
 }
-/* ══ CREATURE VOICES: a vocal source (a buzzing pitch) shaped by two vowel filters, the way a throat shapes a voice ══ */
-const VOICE_VOL=[.6,1.5,2.8], VOICE_TRIM=1, WHISPER_TRIM=1;
-/* each voice variant levelled by measurement, so a deep coo and a giggle sit at a similar loudness */
-const VAR_TRIM={coo0:[1.1,1.64,1.24,1.36],coo1:[.36,.37,.35,.4],coo2:[.99,.62,.52,1.05],giggle:[2.54,2.43,3.05],whisper:[1.06]};
+/* ══ GARDEN VOICES: the original chirps, coos and whispers; their loudness is set here and in Settings ══ */
+const VOICE_VOL=[.6,1.5,2.8];                      /* Garden voices: soft, medium, loud */
+const VOICE_KEYS={coo0:1,coo1:1,coo2:1,giggle:1,whisper:1};
+/* each voice variant levelled by measurement (the original chirpy recipes, only louder) */
+const VAR_TRIM={coo0:[1.02,1.15,1.27,1.38],coo1:[1.24,1.14,1.55,.89],coo2:[.72,.94,.97,.69],giggle:[3.43,3.13,3.43],whisper:[9.12]};
 function voiceMul(){ return VOICE_VOL[S.ambVol==null?1:Math.max(0,Math.min(2,int(S.ambVol)))]; }
 function ambVolLvl(){ return S.ambVol==null?1:Math.max(0,Math.min(2,int(S.ambVol))); }
 function setAmbVol(i){ S.ambVol=i; save(); uiSound(); const c=au(); if(c) playVar("coo1",c.currentTime+.06); }
-function vowel(t0,fa,fb,dur,F1,F2,vol,vib,pan){
-  const c=au(); if(!c) return;
-  vol=vol*VOICE_TRIM*(AU.gm||1)*voiceMul(); dur*=(AU.ts||1); fa*=(AU.pm||1); fb*=(AU.pm||1);
-  const o=c.createOscillator(); o.type="sawtooth";
-  o.frequency.setValueAtTime(fa,t0); o.frequency.exponentialRampToValueAtTime(fb,t0+dur);
-  const l=c.createOscillator(), lg=c.createGain(); l.frequency.value=vib||5.5; lg.gain.value=fa*0.022; l.connect(lg); lg.connect(o.frequency); l.start(t0); l.stop(t0+dur+.1);
-  const a=c.createBiquadFilter(); a.type="bandpass"; a.frequency.value=F1; a.Q.value=5;
-  const b=c.createBiquadFilter(); b.type="bandpass"; b.frequency.value=F2; b.Q.value=7;
-  const ga=c.createGain(), gb=c.createGain(); ga.gain.value=1; gb.gain.value=.5;
-  const out=c.createGain(), e=out.gain;
-  e.setValueAtTime(.0001,t0); e.exponentialRampToValueAtTime(vol,t0+dur*.2); e.setValueAtTime(vol,t0+dur*.62); e.exponentialRampToValueAtTime(.0001,t0+dur);
-  o.connect(a); o.connect(b); a.connect(ga); b.connect(gb); ga.connect(out); gb.connect(out);
-  const lp=c.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=Math.max(1500,Math.min(3200,F2*1.35)); lp.Q.value=.6;     /* rounds the buzz into a voice */
-  const lp2=c.createBiquadFilter(); lp2.type="lowpass"; lp2.frequency.value=lp.frequency.value; lp2.Q.value=.6;      /* two stages: a steeper roll-off, a rounder vowel */
-  out.connect(lp); lp.connect(lp2);
-  if(pan&&c.createStereoPanner){ const sp=c.createStereoPanner(); sp.pan.value=pan; lp2.connect(sp); sp.connect(AU.master); } else lp2.connect(AU.master);
-  o.start(t0); o.stop(t0+dur+.1);
-}
-function whisperVoice(t0,dur,A1,A2,B1,B2,vol,pan){
-  const c=au(); if(!c) return;
-  vol=vol*WHISPER_TRIM*(AU.gm||1)*voiceMul(); dur*=(AU.ts||1);
-  const n=Math.floor(c.sampleRate*dur), buf=c.createBuffer(1,n,c.sampleRate), d=buf.getChannelData(0);
-  for(let i=0;i<n;i++) d[i]=Math.random()*2-1;
-  const s=c.createBufferSource(); s.buffer=buf;
-  const f1=c.createBiquadFilter(); f1.type="bandpass"; f1.Q.value=3.5; f1.frequency.setValueAtTime(A1,t0); f1.frequency.linearRampToValueAtTime(B1,t0+dur);
-  const f2=c.createBiquadFilter(); f2.type="bandpass"; f2.Q.value=4; f2.frequency.setValueAtTime(A2,t0); f2.frequency.linearRampToValueAtTime(B2,t0+dur);
-  const g1=c.createGain(), g2=c.createGain(); g1.gain.value=1; g2.gain.value=.8;
-  const out=c.createGain(), e=out.gain; e.setValueAtTime(.0001,t0); e.exponentialRampToValueAtTime(vol,t0+dur*.35); e.exponentialRampToValueAtTime(.0001,t0+dur);
-  s.connect(f1); s.connect(f2); f1.connect(g1); f2.connect(g2); g1.connect(out); g2.connect(out);
-  if(pan&&c.createStereoPanner){ const sp=c.createStereoPanner(); sp.pan.value=pan; out.connect(sp); sp.connect(AU.master); } else out.connect(AU.master);
-  s.start(t0);
-}
-const VOW=[[300,870],[400,1900],[700,1200],[500,1500],[350,2200]];
-function whisperPhrase(t){
-  const pan=rpan(), n=2+Math.floor(Math.random()*3); let tt=t;
-  for(let i=0;i<n;i++){ const a=VOW[Math.floor(Math.random()*VOW.length)], b=VOW[Math.floor(Math.random()*VOW.length)];
-    hiss(tt,.1,3800,3000,.05*voiceMul(),1.2); whisperVoice(tt+.05,.4+Math.random()*.35,a[0],a[1],b[0],b[1],.5,pan); tt+=.55+Math.random()*.4; }
-}
-function giggleVoice(t,n,base){
-  const p=rpan(); for(let i=0;i<n;i++){ const f=base*(1+.04*i)*(i%2?1.03:1), tt=t+i*.13;
-    hiss(tt-.02,.05,3500,2500,.04*voiceMul(),1.5); vowel(tt,f,f*1.14,.095,290,2350,.5*(1-i*.07),24,p); }
-}
 const SFX={
   tap:t=>note(880,t,.07,"sine",.025),
   Hidrayshn:t=>{ hiss(t,1.2,400,2400,.1,2); note(523,t+.2,.4,"sine",.03); },
@@ -2813,7 +2772,7 @@ function playVar(k,t){
   const small=(k==="tap");
   AU.pm=Math.pow(2,(Math.random()*2-1)*(small?0.6:1.4)/12);
   AU.ts=0.88+Math.random()*0.26;
-  const g0=AU.gm; AU.gm=(AU.gm||1)*trim;
+  const g0=AU.gm; AU.gm=(AU.gm||1)*trim*(VOICE_KEYS[k]?voiceMul():1);
   try{ fn(t+(small?0:Math.random()*0.04)); }catch(e){}
   AU.gm=g0; AU.pm=1; AU.ts=1;
 }
@@ -3085,12 +3044,15 @@ Object.assign(SFX,{
   buzz:t=>voice(t,118,124,1.6,"sawtooth",.022,18),
   rumble:t=>{ voice(t,72,50,1.5,"sine",.06,5); hiss(t,1.2,180,80,.035,3); },
   ability:t=>[784,988,1175].forEach((f,i)=>note(f,t+i*.08,.7,"sine",.035)),
-  coo0:t=>{ const p=rpan(); vowel(t,430,520,.36,320,900,.55,6.5,p); vowel(t+.44,520,440,.5,300,860,.45,6.5,p); },
-  coo1:t=>{ const p=rpan(); vowel(t,300,380,.55,350,900,.55,5.5,p); vowel(t+.6,370,300,.6,600,1100,.5,5,p); },
-  coo2:t=>{ const p=rpan(); vowel(t,150,175,1.1,300,800,.65,3.2,p); vowel(t,300,350,1.1,300,800,.16,3.2,p); },
-  giggle:t=>giggleVoice(t,4+Math.floor(Math.random()*3),560),
+  coo0:t=>{ const p=rpan(); voice(t,520,720,.45,"sine",.03,7,p); voice(t+.5,610,520,.35,"sine",.022,7,p); },
+  coo1:t=>{ const p=rpan(); voice(t,360,470,.6,"triangle",.028,5,p); voice(t+.65,430,320,.5,"triangle",.02,5,p); },
+  coo2:t=>{ const p=rpan(); voice(t,190,150,1.1,"sine",.04,3,p); voice(t,380,300,1.1,"sine",.014,3,p); },
+  giggle:t=>{ const p=rpan(); const n=4+Math.floor(Math.random()*4);
+    for(let i=0;i<n;i++) voice(t+i*.11,1150-i*55,980-i*55,.08,"sine",.018,30,p); },
   growl:t=>{ voice(t,95,78,.9,"sawtooth",.028,9); hiss(t,.8,300,150,.025,4); },
-  whisper:t=>whisperPhrase(t)
+  whisper:t=>{ const n=4+Math.floor(Math.random()*6);
+    for(let i=0;i<n;i++) hiss(t+i*0.16+Math.random()*0.05,0.1+Math.random()*0.08,
+      1200+Math.random()*1800,900+Math.random()*1200,0.011,8); }
 });
 /* sound variants: several recipes per effect; playVar picks one, never twice running */
 const rr=(a,b)=>a+Math.random()*(b-a);
@@ -3142,20 +3104,20 @@ const SFX_V={
   rumble:[SFX.rumble, t=>{ voice(t,64,46,1.8,"sine",.06,4); hiss(t,1.5,150,70,.03,3); },
     t=>{ voice(t,80,60,1.1,"sine",.055,7); voice(t+1,70,52,.9,"sine",.04,5); }],
   coo0:[SFX.coo0,
-    t=>{ const p=rpan(); vowel(t,500,610,.3,350,950,.5,8,p); },
-    t=>{ const p=rpan(); vowel(t,440,500,.28,330,900,.45,7,p); vowel(t+.34,500,560,.28,330,900,.45,7,p); vowel(t+.68,560,450,.42,320,880,.42,7,p); },
-    t=>{ const p=rpan(); vowel(t,480,520,.3,700,1150,.45,7,p); vowel(t+.34,520,430,.45,310,880,.45,7,p); }],
+    t=>{ const p=rpan(); voice(t,600,820,.35,"sine",.028,9,p); },
+    t=>{ const p=rpan(); voice(t,480,640,.3,"sine",.026,8,p); voice(t+.35,560,700,.3,"sine",.022,8,p); voice(t+.7,640,500,.4,"sine",.018,8,p); },
+    t=>{ const p=rpan(); voice(t,700,560,.55,"sine",.025,6,p); }],
   coo1:[SFX.coo1,
-    t=>{ const p=rpan(); vowel(t,330,300,.4,330,860,.55,6,p); vowel(t+.46,340,420,.55,340,880,.5,6,p); },
-    t=>{ const p=rpan(); vowel(t,380,310,.8,340,880,.55,4.5,p); },
-    t=>{ const p=rpan(); vowel(t,290,340,.5,600,1100,.5,5,p); vowel(t+.55,340,280,.6,320,870,.5,5,p); }],
+    t=>{ const p=rpan(); voice(t,400,520,.7,"triangle",.026,4,p); },
+    t=>{ const p=rpan(); voice(t,330,300,.4,"triangle",.024,6,p); voice(t+.45,360,480,.5,"triangle",.022,6,p); },
+    t=>{ const p=rpan(); voice(t,450,350,.8,"sine",.026,3,p); }],
   coo2:[SFX.coo2,
-    t=>{ const p=rpan(); vowel(t,180,140,.8,290,780,.65,4,p); vowel(t+.9,150,130,.9,290,780,.6,3.5,p); },
-    t=>{ const p=rpan(); vowel(t,130,150,1.5,280,750,.7,2.6,p); },
-    t=>{ const p=rpan(); vowel(t,160,190,.9,310,820,.65,3,p); vowel(t,320,380,.9,310,820,.15,3,p); }],
+    t=>{ const p=rpan(); voice(t,170,210,1.3,"sine",.038,2,p); },
+    t=>{ const p=rpan(); voice(t,220,160,.8,"sine",.035,4,p); voice(t+.9,180,150,.9,"sine",.03,3,p); },
+    t=>{ const p=rpan(); voice(t,150,140,1.6,"sine",.04,2,p); voice(t,300,280,1.6,"sine",.012,2,p); }],
   giggle:[SFX.giggle,
-    t=>giggleVoice(t,3,520),
-    t=>giggleVoice(t,6,610)],
+    t=>{ const p=rpan(); for(let i=0;i<3;i++) voice(t+i*.15,rr(900,1100),rr(800,950),.1,"sine",.018,28,p); },
+    t=>{ const p=rpan(); for(let i=0;i<6;i++) voice(t+i*.08,1300-i*30,1250-i*30,.06,"sine",.015,35,p); }],
   growl:[SFX.growl, t=>{ voice(t,85,70,1.2,"sawtooth",.025,12); hiss(t,1,250,120,.02,4); },
     t=>{ voice(t,110,80,.5,"sawtooth",.026,8); voice(t+.6,95,75,.6,"sawtooth",.022,8); }],
   whisper:[SFX.whisper],
@@ -3198,16 +3160,16 @@ function ambStart(){
   src.start(); lfo.start(); AU.bed={src:src,lfo:lfo};
   const ambTick=()=>{
     if(!AU.ambTimer) return;
-    AU.ambTimer=setTimeout(ambTick,3500+Math.random()*7000);
+    AU.ambTimer=setTimeout(ambTick,4500+Math.random()*9000);
     if(document.hidden) return;
     const t=c.currentTime+0.05, r=Math.random();
     const spooky=(activeEvent()||{}).name==="Scary Fun Night";
     const wx=weather();
     if(wx==="Drizzle"||wx==="Storm") hiss(t,3+Math.random()*2,2400,1800,wx==="Storm"?0.03:0.016,0.6);
-    if(r<0.16) hiss(t,1.4+Math.random()*1.4,600+Math.random()*500,200+Math.random()*200,0.018,1.5);
-    else if(r<(spooky?0.48:0.34)) playVar("whisper",t);
-    else if(r<(spooky?0.58:0.42)) playVar("giggle",t);
-    else if(r<0.74&&S.plantimals.length){ const p=pick(S.plantimals); playVar("coo"+Math.min(2,int(p.stage)),t); }
+    if(r<0.28) hiss(t,1.4+Math.random()*1.4,600+Math.random()*500,200+Math.random()*200,0.018,1.5);
+    else if(r<(spooky?0.55:0.42)) playVar("whisper",t);
+    else if(r<(spooky?0.68:0.50)) playVar("giggle",t);
+    else if(r<0.70&&S.plantimals.length){ const p=pick(S.plantimals); playVar("coo"+Math.min(2,int(p.stage)),t); }
   };
   AU.ambTimer=setTimeout(ambTick,3000+Math.random()*5000);
 }
