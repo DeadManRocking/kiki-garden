@@ -891,7 +891,9 @@ function load(){
     S = r ? Object.assign({},FRESH,JSON.parse(r)) : Object.assign({},FRESH);
   }catch(e){ S=Object.assign({},FRESH); }
 }
+let resetting=false;
 function save(){
+  if(resetting) return;               /* Start over is erasing: nothing may write the old garden back */
   try{ localStorage.setItem(KEY,JSON.stringify(S)); }
   catch(e){ console.warn("save failed",e); }
 }
@@ -2608,7 +2610,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.13.1";
+const VERSION="1.13.2";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2782,7 +2784,7 @@ function buzz(p){
   try{
     const f=BUZZ_F[buzzLvl()]; if(!f||!navigator.vibrate) return;
     const pulse=x=>Math.min(600,Math.max(18,Math.round(x*f)));            /* Android ignores very short pulses, so none is under 18 ms */
-    navigator.vibrate(Array.isArray(p)?p.map((x,i)=>i%2===0?pulse(x):Math.max(20,Math.round(x))):pulse(p));
+    window.__lastVib=navigator.vibrate(Array.isArray(p)?p.map((x,i)=>i%2===0?pulse(x):Math.max(20,Math.round(x))):pulse(p));
   }catch(e){}
 }
 function setBuzz(i){ S.buzzLvl=i; S.buzzOff=(i===0); save(); uiSound(); if(i) buzz([60,60,60]); }
@@ -3189,10 +3191,11 @@ const MUSIC_FILES={
   "Anniversary Garden":["music/anniversary.mp3"],
   opening:["music/opening.mp3"]
 };
+function evKeyNow(){ const e=activeEvent(); return e?e.name+"|"+e.ends:""; }
 const MP={el:null,list:[],i:0,bad:new Set(),key:null,cur:null};
 function filePlay(){
   const ev=activeEvent();
-  const evOk=ev&&MUSIC_FILES[ev.name]&&MUSIC_FILES[ev.name].some(f=>!MP.bad.has(f));
+  const evOk=ev&&MUSIC_FILES[ev.name]&&MUSIC_FILES[ev.name].some(f=>!MP.bad.has(f))&&S.evMute!==ev.name+"|"+ev.ends;   /* choosing a genre during an event plays that genre */
   const key=openingOn&&!MP.bad.has("music/opening.mp3")?"opening":evOk?ev.name:(S.musicStream||"box");
   const list=(MUSIC_FILES[key]||[]).filter(f=>!MP.bad.has(f));
   if(!list.length) return false;
@@ -3234,6 +3237,7 @@ async function doStartOver(){
   if(await sha(($("#sopin").value||"").replace(/\D/g,""))!==S.pinHash){ m.textContent="That is not the code."; return; }
   if(Date.now()-startOverArmed>5000){ startOverArmed=Date.now(); m.textContent="Tap Erase everything once more to be sure."; return; }
   const keepPin=S.pinHash, keepKey=S.openaiKey;
+  resetting=true; audioHush();
   localStorage.removeItem(KEY);
   const fresh={pinHash:keepPin}; if(keepKey) fresh.openaiKey=keepKey;
   localStorage.setItem(KEY,JSON.stringify(fresh));
@@ -3241,10 +3245,11 @@ async function doStartOver(){
 }
 function uiSound(){
   const st=S.musicStream||"box";
-  const opt=(v,l)=>`<button class="opt ${st===v?"sel":""}" onclick="S.musicStream='${v}';save();musicRestart();uiSound()">${l}</button>`;
+  const opt=(v,l)=>`<button class="opt ${st===v?"sel":""}" onclick="S.musicStream='${v}';S.evMute=evKeyNow();save();musicRestart();uiSound()">${l}</button>`;
   openSheet(`<h2>Settings</h2>
     <button class="btn" data-seed="mu" onclick="S.musicOn=(S.musicOn===false);save();S.musicOn?musicStart():musicStop();uiSound()">Music · ${S.musicOn===false?"off":"on"}</button>
     <div class="lbl">Which music</div><div class="opts">${opt("box","Music box")}${opt("rock","Rock")}${opt("film","Film")}</div>
+    ${(()=>{ const e=activeEvent(); return e&&MUSIC_FILES[e.name]?`<div style="height:7px"></div><button class="btn" data-seed="evs" onclick="S.evMute=(S.evMute===evKeyNow()?'':evKeyNow());save();musicRestart();uiSound()">${esc(e.name)} song · ${S.evMute===evKeyNow()?"off":"on"}</button>`:""; })()}
     <div style="height:7px"></div>
     <button class="btn" data-seed="am" onclick="S.ambOff=!S.ambOff;save();S.ambOff?ambStop():ambStart();uiSound()">Garden sounds · ${S.ambOff?"off":"on"}</button>
     <div class="lbl">Garden voices</div>
@@ -3254,7 +3259,7 @@ function uiSound(){
     <div style="height:7px"></div>
     <div class="lbl">Touch feel</div>
     <div class="opts">${BUZZ_NAMES.map((l,i)=>`<button class="opt ${buzzLvl()===i?"sel":""}" onclick="setBuzz(${i})">${l}</button>`).join("")}</div>
-    <div class="note" style="margin:6px 0 0">${navigator.vibrate?"Tap a level and you will feel it.":"This browser cannot vibrate. On Android, check Settings, Sound and vibration, Vibration intensity, and that battery saver is off."}</div>
+    <div class="note" style="margin:6px 0 0">${navigator.vibrate?(window.__lastVib===true?"Tap a level to feel it. The phone is accepting the buzz. If you feel nothing, your phone is blocking vibration itself: check battery saver, silent mode, and Settings, Sound and vibration, Vibration intensity.":window.__lastVib===false?"The phone REFUSED the last buzz. Check battery saver, silent mode, and Settings, Sound and vibration, Vibration intensity.":"Tap a level and you will feel it."):"This browser cannot vibrate. On Android, check Settings, Sound and vibration, Vibration intensity, and that battery saver is off."}</div>
     <div style="height:7px"></div>
     <button class="btn" data-seed="shw" onclick="S.hand=!S.hand;save();applyHand();uiSound()">Handwriting · ${S.hand?"on":"off"}</button>
     <div style="height:7px"></div>
@@ -3773,7 +3778,7 @@ async function helpAsk(){
   const v=($("#hin").value||"").trim(); if(!v) return;
   helpHist.push({role:"user",content:v}); uiHelp();
   const l=$("#hlog"), d=document.createElement("div"); d.className="hm it"; d.textContent="…"; l.appendChild(d); l.scrollTop=l.scrollHeight;
-  const sys="You are a gentle, slightly mysterious guide inside Kiki's Secret Pocket Garden, a private game Cj made for Kiki. Speak to her warmly and briefly (2-4 sentences). GIVE HINTS AND CLUES, NEVER THE ANSWER: point her at what to notice, what to compare, what to try next, or which screen to look at; ask a leading question when useful. Never state exact preferences, numbers, best settings or solutions. If she is truly stuck after hints, suggest she ask Cj. Never explain STUFF, codes, a caretaker panel, or how Butterfly Kisses are paid: say those are worth asking Cj about. Use the game's own names. What you know:\\n"+KIKI_GUIDE+"\n\nHOW MUCH TO GIVE: "+["Only a NUDGE: say what to look at or compare, never the cause.","A CLUE: name the kind of cause or comparison that matters, without the exact answer.","A STRONGER CLUE: suggest one specific experiment to try. Still never the final answer, exact numbers or best settings."][int(S.helpLevel)];
+  const sys="You are a gentle, slightly mysterious guide inside Kiki's Secret Pocket Garden, a private game Cj made for Kiki. Speak to her warmly and briefly: 2 or 3 short sentences, never a list. GIVE HINTS AND CLUES, NEVER THE ANSWER: point her at what to notice, what to compare, what to try next, or which screen to look at; ask a leading question when useful. If her question is vague or one word, do NOT explain everything: ask her one short question about what she is trying to do. Never state exact preferences, numbers, best settings or solutions. NEVER mention or hint at any hidden panel, code, rare coin or reward from Cj, or anything secret. If she asks about money from Cj, rewards from Cj, secrets or anything you cannot explain, say only: That one is worth asking Cj. If she is truly stuck after hints, suggest she ask Cj. Use the game's own names. "+"What you know:\\n"+KIKI_GUIDE+"\n\nHOW MUCH TO GIVE: "+["Only a NUDGE: say what to look at or compare, never the cause.","A CLUE: name the kind of cause or comparison that matters, without the exact answer.","A STRONGER CLUE: suggest one specific experiment to try. Still never the final answer, exact numbers or best settings."][int(S.helpLevel)];
   const models=S.helpModel?[S.helpModel]:["gpt-5-mini","gpt-4.1-mini","gpt-4o-mini"];
   let txt="";
   for(const m of models){
@@ -5019,7 +5024,7 @@ function chatUnread(){
   return !!(last&&last.at>int(S.chatSeen));
 }
 /* messages to and from Cj's phone, through a free notification service (ntfy) on one secret channel */
-const KIKI_GUIDE="THE GARDEN, for a helper who only gives hints.\\nPlantimals: half plant, half animal. Stages: Babie (0/2), Smitterpleet (1/2), Bleeglyl (2/2). Each stage needs the three care actions once each: Hidrayshn (water), Coppertanrr (light), Fylth (feeding). After all three the creature wraps itself in a Cookuuunml (a cocoon) for hours, sometimes most of a day or two, and comes out at the next stage; how long depends on how well it was cared for and on its surroundings. Grades: Perfect, Good, Poor, Failed. Failed locks that action for a while. Perfect gives a little Polllen and mood. A run of Perfects brings good quirks and, after seven in a row, Nector.\\nHidrayshn: five water sources (Meltwater, Rainwater, Dewfall, Springwater, Wellwater); each COLOR prefers one, two-color creatures accept either. Three ways to give it: Hold, Sprinkle, Tip; each COVERING prefers one way (the creature says afterwards what it wanted). Stop when the ring is full, not past it. Thirsty creatures (the line at the top hints at it) do better.\\nCoppertanrr: six places (Low Thicket, Open Ridge, Ashen Clearing, Dappled Hollow, Moonside, Fogbank); the right place depends on its limbs and on its behavior. The best length of time changes every week or so, and the weather and season make the light stronger or weaker, so dim days need longer. After a miss it shows whether it wanted more or less.\\nFylth: six of twelve ingredients each day, two or three at a time; ingredients have tags, and opposite tags fight (warm/cool, damp/dry, sweet/bitter, bright/heavy). Fresh in the morning, turning by afternoon, stale at night: sweet, bright and floral things go flat when stale, but rotten, mineral and heavy things get better with age. Drench can be too much. Some creatures can't abide one tag (an allergy): they react, and the card remembers it.\\nMood drops with time. Neglect brings bad quirks; Cuddle Time fixes them: watch what it wants (pressing close = stroke slowly; squirming = quick taps; gone still and listening = hold a finger still) and each quirk has a favorite.\\nGifts: Babies and Smitterpleets have one gift each, which rests after use.\\nBreeding: only two grown ones (Bleeglyls), on Bull's card. Children inherit one copy of each gene from each parent. Two colors can both show. Some traits hide and come back later. Genes: color, markings, root-legs, arms, tendrils, wings, behavior, covering; a creature grows at most two of arms, tendrils and wings. The Journal's Genetics page shows the odds for any pair, and a chart appears in the Journal after the first breeding.\\nEgglings fade if never touched for three days. Hidden things are painted into portraits and tucked into screens; finding them pays Polllen and a trivia fact.\\nMoney: Polllen pays for nearly everything. Hunneee, Gold and Mystrieousness are the names of three shops, Chocolate is a shop that only opens in the Chocolate Eclipse, and Purple Puff is a shop paid for in Nector, which is only ever earned. Shadowpuff comes from giving gifts and buys its own shop. Shops sell helpers, upgrades, lore and secret places. Grown happy creatures make a little Polllen every hour. The rest of the Polllen comes from Cj.\\nEvents: Scary Fun Night every Friday; Chocolate Eclipse sometimes; others arrive in their own time. Each changes the garden and the chances of strange babies.\\nGrown ones bloom in the season of their color. After a month grown, she chooses what becomes of them.\\nTouching and holding a strange word shows what it means. While she is away the garden waits: after about half a day, the time away stops wearing on mood and eggs. A little dew of Polllen is left every day, and every third creature she raises to full growth makes the garden wider. NEVER EXPLAIN: STUFF (say only that some things are worth asking Cj about), anything about codes or a caretaker panel, how Butterfly Kisses are paid, or exact numbers that would solve a puzzle outright.";
+const KIKI_GUIDE="THE GARDEN, for a helper who only gives hints.\\nPlantimals: half plant, half animal. Stages: Babie (0/2), Smitterpleet (1/2), Bleeglyl (2/2). Each stage needs the three care actions once each: Hidrayshn (water), Coppertanrr (light), Fylth (feeding). After all three the creature wraps itself in a Cookuuunml (a cocoon) for hours, sometimes most of a day or two, and comes out at the next stage; how long depends on how well it was cared for and on its surroundings. Grades: Perfect, Good, Poor, Failed. Failed locks that action for a while. Perfect gives a little Polllen and mood. A run of Perfects brings good quirks and, after seven in a row, Nector.\\nHidrayshn: five water sources (Meltwater, Rainwater, Dewfall, Springwater, Wellwater); each COLOR prefers one, two-color creatures accept either. Three ways to give it: Hold, Sprinkle, Tip; each COVERING prefers one way (the creature says afterwards what it wanted). Stop when the ring is full, not past it. Thirsty creatures (the line at the top hints at it) do better.\\nCoppertanrr: six places (Low Thicket, Open Ridge, Ashen Clearing, Dappled Hollow, Moonside, Fogbank); the right place depends on its limbs and on its behavior. The best length of time changes every week or so, and the weather and season make the light stronger or weaker, so dim days need longer. After a miss it shows whether it wanted more or less.\\nFylth: six of twelve ingredients each day, two or three at a time; ingredients have tags, and opposite tags fight (warm/cool, damp/dry, sweet/bitter, bright/heavy). Fresh in the morning, turning by afternoon, stale at night: sweet, bright and floral things go flat when stale, but rotten, mineral and heavy things get better with age. Drench can be too much. Some creatures can't abide one tag (an allergy): they react, and the card remembers it.\\nMood drops with time. Neglect brings bad quirks; Cuddle Time fixes them: watch what it wants (pressing close = stroke slowly; squirming = quick taps; gone still and listening = hold a finger still) and each quirk has a favorite.\\nGifts: Babies and Smitterpleets have one gift each, which rests after use.\\nBreeding: only two grown ones (Bleeglyls), on Bull's card. Children inherit one copy of each gene from each parent. Two colors can both show. Some traits hide and come back later. Genes: color, markings, root-legs, arms, tendrils, wings, behavior, covering; a creature grows at most two of arms, tendrils and wings. The Journal's Genetics page shows the odds for any pair, and a chart appears in the Journal after the first breeding.\\nEgglings fade if never touched for three days. Hidden things are painted into portraits and tucked into screens; finding them pays Polllen and a trivia fact.\\nMoney: Polllen pays for nearly everything. Hunneee, Gold and Mystrieousness are the names of three shops, Chocolate is a shop that only opens in the Chocolate Eclipse, and Purple Puff is a shop paid for in Nector, which is only ever earned. Shadowpuff comes from giving gifts and buys its own shop. Shops sell helpers, upgrades, lore and secret places. Grown happy creatures make a little Polllen every hour. The rest of the Polllen comes from Cj.\\nEvents: Scary Fun Night every Friday; Chocolate Eclipse sometimes; others arrive in their own time. Each changes the garden and the chances of strange babies.\\nGrown ones bloom in the season of their color. After a month grown, she chooses what becomes of them.\\nTouching and holding a strange word shows what it means. While she is away the garden waits: after about half a day, the time away stops wearing on mood and eggs. A little dew of Polllen is left every day, and every third creature she raises to full growth makes the garden wider. Never give exact numbers or settings that would solve a puzzle outright.";
 const NTFY="kpg-kofmudguq14zpcbb3pbunx";
 function ntfySend(text){ try{ if(location.protocol==="file:") return; fetch("https://ntfy.sh/"+NTFY,{method:"POST",body:text,headers:{"Title":"Kiki","Tags":"seedling"}}).catch(()=>{}); }catch(e){} }
 let ntfyBusy=false;
