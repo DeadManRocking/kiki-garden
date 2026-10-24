@@ -828,6 +828,9 @@ html.calm .breathe,html.calm .fig,html.calm #fog i,html.calm #snail img,html.cal
 #sheet.tight .lbl{margin-top:9px !important;margin-bottom:5px !important}
 #sheet.tight .note{margin-top:5px !important;margin-bottom:5px !important}
 #sheet.tight .shitem .btn{margin-bottom:8px !important}
+/* a ring (collar, ruff) is painted whole; only its near arc shows, so its far side disappears behind the neck */
+.wpic img.wear.ring{-webkit-mask-image:linear-gradient(to bottom,transparent 34%,#000 56%) !important;mask-image:linear-gradient(to bottom,transparent 34%,#000 56%) !important}
+.wpic img.wear.ring.soft{-webkit-mask-image:linear-gradient(to bottom,transparent 34%,#000 56%),radial-gradient(circle,#000 45%,transparent 70%) !important;mask-image:linear-gradient(to bottom,transparent 34%,#000 56%),radial-gradient(circle,#000 45%,transparent 70%) !important;-webkit-mask-composite:source-in !important;mask-composite:intersect !important}
 </style>
 </head>
 <body>
@@ -2605,7 +2608,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.12.0";
+const VERSION="1.12.1";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -3503,8 +3506,8 @@ const COSTUMES=[
   {k:"moth",name:"Moth-Wing Headdress",slot:"head",cost:25,d:"Two dusty wings that seem to watch.",p:"a delicate headdress of two dusty moth wings with eye-spots, on a thin band"},
   {k:"hat",name:"Ribboned Top Hat",slot:"head",cost:16,d:"Battered velvet, a dried flower in the band.",p:"a tiny battered velvet top hat with a long trailing ribbon and a dried flower in the band"},
   {k:"veil",name:"Cobweb Veil",slot:"head",cost:18,d:"A short veil of spider lace.",p:"a short veil of cobweb lace hanging from a little band of dried rosebuds"},
-  {k:"ruff",name:"Ruff Collar",slot:"neck",cost:14,d:"Pleated lace, yellowed with age.",p:"a small pleated Elizabethan ruff collar of yellowed lace"},
-  {k:"collar",name:"Soft Collar",slot:"neck",cost:0,masq:false,d:"Something small to wear.",p:"a small soft collar of faded velvet with a single tiny bell"},
+  {k:"ruff",ring:true,name:"Ruff Collar",slot:"neck",cost:14,d:"Pleated lace, yellowed with age.",p:"a small pleated Elizabethan ruff collar of yellowed lace"},
+  {k:"collar",ring:true,name:"Soft Collar",slot:"neck",cost:0,masq:false,d:"Something small to wear.",p:"a small soft collar of faded velvet with a single tiny bell"},
   {k:"jewel",name:"Jewel on a Thread",slot:"neck",cost:10,d:"One dark red stone on a knotted thread.",p:"a single dark red jewel hanging from a fine knotted thread, worn as a pendant"}
 ];
 const WEAR_DEF={face:{x:.5,y:.3,s:.42},head:{x:.5,y:.13,s:.5},neck:{x:.5,y:.53,s:.4}};
@@ -3526,7 +3529,8 @@ function curWear(p){ const w=p.wear; if(!w) return null; return w[stageKey(p)]||
 function wearImgs(p,edit){
   const w=curWear(p); if(!w) return "";
   return Object.keys(w).map(sl=>{ const it=w[sl], a=ART["cos:"+it.k]; if(!a) return "";
-    return `<img class="wear ${S.cosCut&&S.cosCut[it.k]?"":"soft"} ${edit?"ed":""}" data-slot="${sl}" data-x="${it.x}" data-y="${it.y}" data-s="${it.s}" data-r="${it.r||0}" alt="" src="${a}">`;
+    const ring=(COSTUMES.find(c=>c.k===it.k)||{}).ring;
+    return `<img class="wear ${S.cosCut&&S.cosCut[it.k]?"":"soft"} ${ring?"ring":""} ${edit?"ed":""}" data-slot="${sl}" data-x="${it.x}" data-y="${it.y}" data-s="${it.s}" data-r="${it.r||0}" alt="" src="${a}">`;
   }).join("");
 }
 function placeWear(root){
