@@ -1164,7 +1164,9 @@ let sheetMove=0, sheetPose={x:0,y:0,rot:0};
 function sheetAnims(sh){ (sh.getAnimations?sh.getAnimations():[]).forEach(a=>a.cancel()); cancelAnimationFrame(sheetMove); sheetMove=0; }
 function veilDim(p){ $("#veil").style.setProperty("--vd",Math.max(0,Math.min(1,1-p)).toFixed(3)); }
 function poseSheet(p){ sheetPose=p; $("#sheet").style.transform=`translate3d(${p.x.toFixed(1)}px,${p.y.toFixed(1)}px,0) rotate(${p.rot.toFixed(2)}deg)`; }
+let sheetOpenedAt=0;
 function openSheet(html,kind){
+  sheetOpenedAt=performance.now();
   const v=$("#veil"), sh=$("#sheet");
   clearTimeout(sheetTimer);
   const k=kind||nextKind||"paper"; nextKind=null; sheetKind=k;
@@ -1305,8 +1307,8 @@ function closeSheet(dir,opt){
     const b=samples[samples.length-1], dt=Math.max(8,b[2]-a[2]);
     const vx=(b[0]-a[0])/dt, vy=(b[1]-a[1])/dt, was=axis; axis=null; ok=false;
     if(was==="x"&&pgN>1&&(Math.abs(dx)>50||Math.abs(vx)>.4)){ const p0={...sheetPose}; poseSheet({x:0,y:0,rot:0}); sh.classList.remove("moving"); sh.style.transform=""; turnPage(dx<0?1:-1); }
-    else if(was==="x"&&(Math.abs(dx)>innerWidth*.3||(Math.abs(vx)>.5&&Math.abs(dx)>44&&Math.sign(vx)===Math.sign(dx)))) closeSheet(dx<0?"left":"right",{vx:vx,vy:vy});
-    else if(was==="y"&&(dy>innerHeight*.2||(vy>.5&&dy>44))) closeSheet("down",{vx:vx,vy:vy});
+    else if(performance.now()-sheetOpenedAt>800&&was==="x"&&(Math.abs(dx)>innerWidth*.3||(Math.abs(vx)>.5&&Math.abs(dx)>44&&Math.sign(vx)===Math.sign(dx)))) closeSheet(dx<0?"left":"right",{vx:vx,vy:vy});
+    else if(performance.now()-sheetOpenedAt>800&&was==="y"&&(dy>innerHeight*.2||(vy>.5&&dy>44))) closeSheet("down",{vx:vx,vy:vy});
     else {                                                     /* not far enough: spring home */
       const p0={...sheetPose}, t0=performance.now(), tau=70;
       const go=t=>{ const k=Math.max(0,t-t0)/tau, e2=Math.exp(-k)*(1+k);
@@ -2642,7 +2644,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.14.1";
+const VERSION="1.14.2";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -3261,7 +3263,7 @@ function uiStartOver(){
     <input id="sopin" class="mono" type="password" inputmode="numeric" maxlength="6">
     <div class="msg" id="somsg"></div><div style="height:10px"></div>
     <button class="btn" data-seed="so2" onclick="doStartOver()">Erase everything</button>
-    <div style="height:7px"></div><button class="btn" data-seed="so3" onclick="uiSound()">Back</button>`);
+    <div style="height:7px"></div><button class="btn" data-seed="so3" onclick="uiSound()">Back</button>`,"fixed");
 }
 let startOverArmed=0;
 async function doStartOver(){
