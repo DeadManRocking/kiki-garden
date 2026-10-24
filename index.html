@@ -1346,6 +1346,9 @@ function oShow(id){ document.querySelectorAll("#open .oc").forEach(c=>{ const on
 function oNext(fn,ms){ clearTimeout(openTimer); openStep=fn; openTimer=setTimeout(fn,ms); }
 let holdMusic=true;      /* silent until she is in the garden: not on the code screen, the studio cards or the title */
 function showIntro(replay){
+  if(!replay&&S.seenIntro&&S.seenStudio&&window.__prevSeen&&Date.now()-window.__prevSeen<45*60000){   /* back within 45 minutes: no title screen */
+    introUp=false; openingOn=false; holdMusic=false; document.body.classList.remove("opening"); render(); return;
+  }
   const o=$("#open"); if(!o) return;
   introUp=true; openingOn=true; document.body.classList.add("opening");
   musicStop(); ambStop(); holdMusic=true;               /* a replay or restart never plays over the garden's music */
@@ -2244,6 +2247,27 @@ function eventPrompt(name){
 
 /* ══ ART STORE (IndexedDB) ═════════════════════════════════ */
 const ART={};
+function dataToBlob(u){
+  const i=u.indexOf(","), meta=u.slice(5,i), mime=meta.split(";")[0]||"image/png";
+  const raw=meta.indexOf(";base64")>=0?atob(u.slice(i+1)):decodeURIComponent(u.slice(i+1));
+  const a=new Uint8Array(raw.length); for(let j=0;j<raw.length;j++) a[j]=raw.charCodeAt(j);
+  return new Blob([a],{type:mime});
+}
+function artStore(v){
+  if(typeof v==="string"&&v.startsWith("data:")) return dataToBlob(v);
+  if(v&&typeof v==="object"&&!(v instanceof Blob)){ const o={}; for(const k in v) o[k]=artStore(v[k]); return o; }
+  return v;
+}
+function artUse(v){
+  if(v instanceof Blob) return URL.createObjectURL(v);
+  if(v&&typeof v==="object"){ const o={}; for(const k in v) o[k]=artUse(v[k]); return o; }
+  return v;
+}
+function artHasText(v){
+  if(typeof v==="string") return v.startsWith("data:");
+  if(v&&typeof v==="object"&&!(v instanceof Blob)){ for(const k in v) if(artHasText(v[k])) return true; }
+  return false;
+}
 const ArtDB={db:null,
   open(){ return new Promise(ok=>{
     try{
@@ -2253,20 +2277,27 @@ const ArtDB={db:null,
       r.onerror=()=>ok(false);
     }catch(e){ ok(false); }
   }); },
+  /* paintings are kept as image files (Blobs), not long text: light on memory, quick to open, so Android keeps the game alive */
   all(){ return new Promise(ok=>{
     if(!ArtDB.db) return ok({});
-    const out={};
+    const out={}, old=[];
     try{
       const c=ArtDB.db.transaction("art","readonly").objectStore("art").openCursor();
-      c.onsuccess=()=>{ const cur=c.result; if(cur){ out[cur.key]=cur.value; cur.continue(); } else ok(out); };
+      c.onsuccess=()=>{ const cur=c.result; if(cur){ out[cur.key]=artUse(cur.value); if(artHasText(cur.value)) old.push([cur.key,cur.value]); cur.continue(); }
+        else { ok(out); if(old.length) setTimeout(()=>ArtDB.convert(old),1500); } };
       c.onerror=()=>ok(out);
     }catch(e){ ok(out); }
   }); },
-  put(k,v){ ART[k]=v; return new Promise(ok=>{
+  convert(list){                                   /* once only: old text paintings become image files; nothing is repainted */
+    try{ const tx=ArtDB.db.transaction("art","readwrite"), st=tx.objectStore("art"); for(const [k,v] of list) st.put(artStore(v),k); }catch(e){}
+  },
+  put(k,v){ const stored=artStore(v); const prev=ART[k]; ART[k]=artUse(stored);
+    if(typeof prev==="string"&&prev.startsWith("blob:")){ try{ URL.revokeObjectURL(prev); }catch(e){} }
+    return new Promise(ok=>{
     if(!ArtDB.db) return ok(false);
     try{
       const tx=ArtDB.db.transaction("art","readwrite");
-      tx.objectStore("art").put(v,k);
+      tx.objectStore("art").put(stored,k);
       tx.oncomplete=()=>ok(true); tx.onerror=()=>ok(false);
     }catch(e){ ok(false); }
   }); }
@@ -2611,7 +2642,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.14.0";
+const VERSION="1.14.1";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -5767,7 +5798,7 @@ function applyCalm(){
   document.documentElement.classList.toggle("calm",c); try{ fxSet(); }catch(e){}
 }
 function boot(){
-  mergeWallet(); absenceSafe(); setTimeout(dewCheck,5000); applyCalm();
+  window.__prevSeen=int(S.lastSeen); mergeWallet(); absenceSafe(); setTimeout(dewCheck,5000); applyCalm();
   applyHand(); setTimeout(()=>{ try{ fxSet(); }catch(e){} },500); snailStart();
   const hq=$("#helpq"); if(hq) hq.innerHTML=iconSpan("hq",'<text x="12" y="17.5" font-size="17" font-family="serif" text-anchor="middle" fill="currentColor" stroke="none">?</text>',"qmark");
   setTimeout(bloomCheck,3000);
