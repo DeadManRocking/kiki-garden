@@ -821,6 +821,13 @@ html.hand .fn,html.hand .rnm{font-family:'Caveat','Kalam',cursive !important;fon
 .fig.need .fn::after{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#e2b45c;box-shadow:0 0 7px #e2b45c;margin-left:6px;vertical-align:1px}
 html.calm .breathe,html.calm .fig,html.calm #fog i,html.calm #snail img,html.calm #sheet.k-wood .btn.sign,html.calm .tgate{animation:none !important}
 #nav{display:grid !important;grid-template-columns:repeat(3,1fr) !important}
+#sheet #dpic{width:max(190px,min(100%,calc((100dvh - 440px) * .667))) !important;margin-left:auto !important;margin-right:auto !important}
+#sheet.tight h2{margin-bottom:8px !important}
+#sheet.tight .btn{min-height:40px !important;padding-top:7px !important;padding-bottom:7px !important;margin-top:4px !important;margin-bottom:4px !important}
+#sheet.tight .opt{padding:5px 10px !important}
+#sheet.tight .lbl{margin-top:9px !important;margin-bottom:5px !important}
+#sheet.tight .note{margin-top:5px !important;margin-bottom:5px !important}
+#sheet.tight .shitem .btn{margin-bottom:8px !important}
 </style>
 </head>
 <body>
@@ -1180,9 +1187,12 @@ function paginate(sh){
   else go();
 }
 function paginateNow(sh){
+  window.__pgInfo=null;
   if(sh.querySelector(":scope > .pg")||sh.querySelector("[data-nopage]")) return;       /* screens that scroll inside their own box are not paged */
   const maxH=innerHeight-56;
   if(sh.scrollHeight<=maxH+6) return;  /* sizes below ignore the opening flip */
+  sh.classList.add("tight");           /* a little tighter spacing often saves a whole page */
+  if(sh.scrollHeight<=maxH+6) return;
   const kids=[...sh.children].filter(el=>{ const p=getComputedStyle(el).position; return p!=="absolute"&&p!=="fixed"; });   /* floating pieces (hidden things) stay put */
   const hOf=el=>{ const cs=getComputedStyle(el); return el.offsetHeight+parseFloat(cs.marginTop)+parseFloat(cs.marginBottom); };
   const head=kids[0]&&kids[0].tagName==="H2"?kids.shift():null;
@@ -1191,9 +1201,11 @@ function paginateNow(sh){
   const room=maxH-(head?hOf(head):0)-foot.reduce((a,e)=>a+hOf(e),0)-58;
   if(room<120) return;
   const pages=[]; let cur=[], used=0;
-  for(const k of kids){ const h=hOf(k); if(cur.length&&used+h>room){ pages.push(cur); cur=[]; used=0; } cur.push(k); used+=h; }
+  const total=kids.reduce((a,k)=>a+hOf(k),0), want=Math.max(2,Math.ceil(total/room)), target=total/want;       /* pages of about equal size */
+  for(const k of kids){ const h=hOf(k); if(cur.length&&(used+h>room||(pages.length<want-1&&used+h/2>target))){ pages.push(cur); cur=[]; used=0; } cur.push(k); used+=h; }
   if(cur.length) pages.push(cur);
   if(pages.length<2) return;
+  window.__pgInfo={room,fills:pages.map(g=>Math.round(g.reduce((t,e)=>t+hOf(e),0)))};
   const anchor=foot[0]||null;
   pages.forEach((grp,i)=>{ const pg=document.createElement("div"); pg.className="pg"+(i?" off":""); sh.insertBefore(pg,anchor); grp.forEach(e=>pg.appendChild(e)); });
   const nav=document.createElement("div"); nav.className="pgnav";
@@ -1326,10 +1338,12 @@ let openingOn=false, openTimer=null, openStep=null;
 const RETURN_LINES=["The garden kept your place.","Something moved while you were gone.","They heard you coming.","Everything is just where you left it. Almost."];
 function oShow(id){ document.querySelectorAll("#open .oc").forEach(c=>{ const on=c.id===id; if(on&&!c.classList.contains("on")) c._shownAt=Date.now(); c.classList.toggle("on",on); }); }
 function oNext(fn,ms){ clearTimeout(openTimer); openStep=fn; openTimer=setTimeout(fn,ms); }
-let holdMusic=false;
+let holdMusic=true;      /* silent until she is in the garden: not on the code screen, the studio cards or the title */
 function showIntro(replay){
   const o=$("#open"); if(!o) return;
   introUp=true; openingOn=true; document.body.classList.add("opening");
+  musicStop(); ambStop(); holdMusic=true;               /* a replay or restart never plays over the garden's music */
+  for(const a of [window.__studioA,window.__titleA]){ try{ a&&a.pause(); }catch(e){} }
   o.classList.add("on"); o.classList.remove("clear");
   o.onclick=e=>{ if(e.target.closest("button")) return;
     const on=document.querySelector("#open .oc.on");
@@ -1376,7 +1390,7 @@ function storyStart(){
 function openSkip(){
   clearTimeout(openTimer);
   const on=document.querySelector("#open .oc.on");
-  holdMusic=false; musicStart();
+  holdMusic=false; musicStart(); ambStart();
   if(on&&(on.classList.contains("story")||on.id==="oded")) { openDone(); return; }
   if(!S.seenStudio){ S.seenStudio=true; save(); }
   if(S.seenIntro&&!openReplay) openDone(); else storyStart();
@@ -1389,21 +1403,21 @@ function openTitle(){
   oShow("otitle");
 }
 function openEnter(){
-  au(); musicStart(); ambStart();
+  holdMusic=false; au(); musicStart(); ambStart();
   try{ if(screen.orientation&&screen.orientation.lock) screen.orientation.lock("portrait").catch(()=>{}); }catch(e){}
   if(S.seenIntro&&!openReplay){ openDone(); return; }
   storyStart();
 }
 let openReplay=false;
 function openDone(){
-  clearTimeout(openTimer); openStep=null;
+  clearTimeout(openTimer); openStep=null; holdMusic=false;
   const o=$("#open"); if(!o) return;
   S.seenIntro=true; openReplay=false; save();
   o.style.transition="opacity 1s ease"; o.style.opacity="0";
   document.body.classList.remove("opening");
   setTimeout(()=>{ o.classList.remove("on","clear","skippable"); o.style.opacity=""; o.style.transition="";
     document.querySelectorAll("#open .oc").forEach(c=>c.classList.remove("on"));
-    const was=openingOn; openingOn=false; introUp=false; if(was) musicRestart(); render(); },1000);
+    const was=openingOn; openingOn=false; introUp=false; if(was) musicRestart(); ambStart(); render(); },1000);
 }
 function replayOpening(){ closeSheet(); openReplay=true; showIntro(true); }
 function dayKey(){ const d=new Date(); return d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate(); }
@@ -2591,7 +2605,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.11.2";
+const VERSION="1.12.0";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2750,7 +2764,16 @@ function playVar(k,t){
   try{ fn(t+(small?0:Math.random()*0.04)); }catch(e){}
   AU.pm=1; AU.ts=1;
 }
-function buzz(p){ try{ if(!S.buzzOff&&navigator.vibrate) navigator.vibrate(p); }catch(e){} }
+const BUZZ_NAMES=["Off","Light","Medium","Strong","Max"], BUZZ_F=[0,.7,1.2,2,3.2];
+function buzzLvl(){ return S.buzzOff?0:(S.buzzLvl==null?2:int(S.buzzLvl)); }
+function buzz(p){
+  try{
+    const f=BUZZ_F[buzzLvl()]; if(!f||!navigator.vibrate) return;
+    const pulse=x=>Math.min(600,Math.max(18,Math.round(x*f)));            /* Android ignores very short pulses, so none is under 18 ms */
+    navigator.vibrate(Array.isArray(p)?p.map((x,i)=>i%2===0?pulse(x):Math.max(20,Math.round(x))):pulse(p));
+  }catch(e){}
+}
+function setBuzz(i){ S.buzzLvl=i; S.buzzOff=(i===0); save(); uiSound(); if(i) buzz([60,60,60]); }
 function loud(k,g){ AU.gm=g||2.4; sfx(k); AU.gm=1; }
 function sfx(k){
   if(S.sfxOff) return;
@@ -2820,7 +2843,19 @@ function synthMusicStart(){
 function musicStop(){ clearTimeout(AU.musicTimer); clearInterval(AU.whisperTimer); AU.musicTimer=AU.whisperTimer=null;
   if(MP.el){ try{ MP.el.pause(); }catch(e){} } MP.key=null; }
 document.addEventListener("pointerdown",()=>{ au(); musicStart(); ambStart(); },{passive:true});
-document.addEventListener("click",ev=>{ if(ev.target.closest&&ev.target.closest(".btn,.opt")) sfx("tap"); },true);
+document.addEventListener("click",ev=>{ if(ev.target.closest&&ev.target.closest(".btn,.opt,.nb")){ sfx("tap"); buzz(14); } },true);
+/* leaving the app (home button, another app, screen off, closing the tab) silences everything; coming back wakes it */
+function audioHush(){
+  try{ musicStop(); ambStop(); if(AU.ctx&&AU.ctx.state==="running") AU.ctx.suspend(); }catch(e){}
+  for(const a of [window.__studioA,window.__titleA]){ try{ a&&a.pause(); }catch(e){} }
+}
+function audioWake(){
+  try{ if(AU.ctx&&AU.ctx.state==="suspended") AU.ctx.resume(); }catch(e){}
+  if(!holdMusic&&!document.hidden){ musicStart(); ambStart(); }
+}
+document.addEventListener("visibilitychange",()=>{ if(document.hidden) audioHush(); else audioWake(); });
+window.addEventListener("pagehide",audioHush);
+window.addEventListener("pageshow",e=>{ if(e.persisted) audioWake(); });
 
 /* ══ STUFF (contextual, never explained) ═══════════════════ */
 function coax(id){
@@ -3101,7 +3136,7 @@ const SFX_V={
     t=>{ for(let i=0;i<6;i++) note(rr(900,1700),t+i*.18,1.2,"sine",.016); voice(t,330,392,2,"triangle",.016,2); }]
 };
 function ambStart(){
-  if(AU.ambTimer||S.ambOff) return;
+  if(AU.ambTimer||S.ambOff||holdMusic||document.hidden) return;
   const c=au(); if(!c) return;
   const n=c.sampleRate*4, b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0);
   let last=0; for(let i=0;i<n;i++){ last=(last+0.02*(Math.random()*2-1))/1.02; d[i]=last*3; }
@@ -3165,7 +3200,7 @@ function playIdx(){
   const pr=MP.el.play(); if(pr&&pr.catch) pr.catch(()=>{});
 }
 function musicStart(){
-  if(S.musicOn===false||holdMusic) return;
+  if(S.musicOn===false||holdMusic||document.hidden) return;
   if(AU.musicTimer) return;
   if(MP.el&&!MP.el.paused&&MP.key) return;
   if(!filePlay()) synthMusicStart();
@@ -3203,7 +3238,9 @@ function uiSound(){
     <div style="height:7px"></div>
     <button class="btn" data-seed="sf" onclick="S.sfxOff=!S.sfxOff;save();uiSound()">Effects · ${S.sfxOff?"off":"on"}</button>
     <div style="height:7px"></div>
-    <button class="btn" data-seed="sbz" onclick="S.buzzOff=!S.buzzOff;save();uiSound();buzz(20)">Touch feel · ${S.buzzOff?"off":"on"}</button>
+    <div class="lbl">Touch feel</div>
+    <div class="opts">${BUZZ_NAMES.map((l,i)=>`<button class="opt ${buzzLvl()===i?"sel":""}" onclick="setBuzz(${i})">${l}</button>`).join("")}</div>
+    <div class="note" style="margin:6px 0 0">${navigator.vibrate?"Tap a level and you will feel it.":"This browser cannot vibrate. On Android, check Settings, Sound and vibration, Vibration intensity, and that battery saver is off."}</div>
     <div style="height:7px"></div>
     <button class="btn" data-seed="shw" onclick="S.hand=!S.hand;save();applyHand();uiSound()">Handwriting · ${S.hand?"on":"off"}</button>
     <div style="height:7px"></div>
