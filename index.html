@@ -1353,16 +1353,17 @@ function openGate(){
 }
 function titlePop(){
   oShow("");                                             /* let the last card go fully dark first */
-  oNext(titlePopNow,1800);
+  fadeA(window.__studioA);
+  /* the title sound is a swell that peaks about 1.75 s in, so it starts here, in the dark, and peaks as the title pops */
+  const ta=window.__titleA; window.__titleStarted=false;
+  if(ta&&ta.readyState>=3){ try{ ta.currentTime=0; ta.volume=1; const pr=ta.play(); window.__titleStarted=true; if(pr&&pr.catch) pr.catch(()=>{ window.__titleStarted=false; }); }catch(e){} }
+  oNext(titlePopNow,1750);
 }
 function titlePopNow(){
   const o=$("#open"); o.classList.add("clear");
   if(!S.seenStudio){ S.seenStudio=true; save(); }
   oShow("oc6"); buzz([60,40,120]);
-  fadeA(window.__studioA);
-  const ta=window.__titleA; let played=false;
-  if(ta&&ta.readyState>=3){ try{ ta.volume=1; const pr=ta.play(); played=true; if(pr&&pr.catch) pr.catch(()=>loud("boom",3)); }catch(e){ played=false; } }
-  if(!played) loud("boom",3);
+  if(!window.__titleStarted) loud("boom",3);          /* no title file: the built-in hit lands with the pop */
   oNext(()=>{ holdMusic=false; musicStart(); ambStart();
     const c=$("#oc6"); c.classList.add("fadeaway");
     oNext(()=>{ c.classList.remove("fadeaway"); storyStart(); },2400); },6600);
@@ -2590,7 +2591,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.11.0";
+const VERSION="1.11.1";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
