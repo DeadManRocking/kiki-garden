@@ -832,6 +832,7 @@ html.calm .breathe,html.calm .fig,html.calm #fog i,html.calm #snail img,html.cal
 /* a ring (collar, ruff) is painted whole; only its near arc shows, so its far side disappears behind the neck */
 .wpic img.wear.ring{-webkit-mask-image:linear-gradient(to bottom,transparent 34%,#000 56%) !important;mask-image:linear-gradient(to bottom,transparent 34%,#000 56%) !important}
 .wpic img.wear.ring.soft{-webkit-mask-image:linear-gradient(to bottom,transparent 34%,#000 56%),radial-gradient(circle,#000 45%,transparent 70%) !important;mask-image:linear-gradient(to bottom,transparent 34%,#000 56%),radial-gradient(circle,#000 45%,transparent 70%) !important;-webkit-mask-composite:source-in !important;mask-composite:intersect !important}
+html,body,button{touch-action:manipulation}
 </style>
 </head>
 <body>
@@ -2644,7 +2645,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.14.2";
+const VERSION="1.15.0";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2814,14 +2815,29 @@ function playVar(k,t){
 }
 const BUZZ_NAMES=["Off","Light","Medium","Strong","Max"], BUZZ_F=[0,.7,1.2,2,3.2];
 function buzzLvl(){ return S.buzzOff?0:(S.buzzLvl==null?2:int(S.buzzLvl)); }
+let buzzAsk=false;
+function buzzSoftOn(){ return S.buzzSoft===true||(S.buzzSoft===undefined&&!navigator.vibrate); }
 function buzz(p){
   try{
-    const f=BUZZ_F[buzzLvl()]; if(!f||!navigator.vibrate) return;
-    const pulse=x=>Math.min(600,Math.max(18,Math.round(x*f)));            /* Android ignores very short pulses, so none is under 18 ms */
-    window.__lastVib=navigator.vibrate(Array.isArray(p)?p.map((x,i)=>i%2===0?pulse(x):Math.max(20,Math.round(x))):pulse(p));
+    const f=BUZZ_F[buzzLvl()]; if(!f) return;
+    if(navigator.vibrate){
+      const pulse=x=>Math.min(600,Math.max(18,Math.round(x*f)));            /* Android ignores very short pulses, so none is under 18 ms */
+      window.__lastVib=navigator.vibrate(Array.isArray(p)?p.map((x,i)=>i%2===0?pulse(x):Math.max(20,Math.round(x))):pulse(p));
+    }
+    if(buzzSoftOn()) softBuzz(p,f);
   }catch(e){}
 }
-function setBuzz(i){ S.buzzLvl=i; S.buzzOff=(i===0); save(); uiSound(); if(i) buzz([60,60,60]); }
+function softBuzz(p,f){                      /* the screen shakes a little and a soft thump sounds: a touch you can see and hear */
+  const ms=Array.isArray(p)?p.filter((x,i)=>i%2===0).reduce((a,b)=>a+b,0):p, amp=Math.min(5,.5+f*ms/45);
+  const el=document.getElementById(sheetIsOpen?"sheet":"scene");
+  if(el&&el.animate&&!document.documentElement.classList.contains("calm")) el.animate([{transform:"translate(0,0)"},{transform:`translate(${amp}px,${-amp*.5}px)`},{transform:`translate(${-amp}px,${amp*.5}px)`},{transform:"translate(0,0)"}],{duration:Math.min(260,70+ms*1.2),easing:"ease-out"});
+  if(ms>30){ const c=au(); if(c) voice(c.currentTime+.01,210,95,Math.min(.16,.05+ms/1500),"sine",Math.min(.22,.035*f*(1+ms/120))); }
+}
+function reSound(){ const pi=pgIdx; uiSound(); setTimeout(()=>{ for(let i=0;i<pi;i++) turnPage(1); },180); }
+function setBuzz(i){ S.buzzLvl=i; S.buzzOff=(i===0); save(); reSound(); if(i) buzz([60,60,60]); }
+function feelTest(){ buzzAsk=true; buzz([120,70,120,70,160]); reSound(); }
+function feelAnswer(ok){ S.buzzSoft=!ok; buzzAsk=false; save(); reSound(); if(!ok) setTimeout(()=>softBuzz([120,70,120],BUZZ_F[buzzLvl()]||1.2),450); }
+function refreshGame(){ try{ sessionStorage.removeItem("kg_up"); }catch(e){} location.replace(location.pathname+"?fresh="+Date.now()); }
 function loud(k,g){ AU.gm=g||2.4; sfx(k); AU.gm=1; }
 function sfx(k){
   if(S.sfxOff) return;
@@ -2891,7 +2907,9 @@ function synthMusicStart(){
 function musicStop(){ clearTimeout(AU.musicTimer); clearInterval(AU.whisperTimer); AU.musicTimer=AU.whisperTimer=null;
   if(MP.el){ try{ MP.el.pause(); }catch(e){} } MP.key=null; }
 document.addEventListener("pointerdown",()=>{ au(); musicStart(); ambStart(); },{passive:true});
-document.addEventListener("click",ev=>{ if(ev.target.closest&&ev.target.closest(".btn,.opt,.nb")){ sfx("tap"); buzz(14); } },true);
+document.addEventListener("click",ev=>{
+  if(sheetIsOpen&&performance.now()-sheetOpenedAt<500&&ev.target.closest&&ev.target.closest("#veil")){ ev.stopPropagation(); ev.preventDefault(); return; }    /* the second tap of a double tap */
+  if(ev.target.closest&&ev.target.closest(".btn,.opt,.nb")){ sfx("tap"); buzz(14); } },true);
 /* leaving the app (home button, another app, screen off, closing the tab) silences everything; coming back wakes it */
 function audioHush(){
   try{ musicStop(); ambStop(); if(AU.ctx&&AU.ctx.state==="running") AU.ctx.suspend(); }catch(e){}
@@ -3293,7 +3311,9 @@ function uiSound(){
     <div style="height:7px"></div>
     <div class="lbl">Touch feel</div>
     <div class="opts">${BUZZ_NAMES.map((l,i)=>`<button class="opt ${buzzLvl()===i?"sel":""}" onclick="setBuzz(${i})">${l}</button>`).join("")}</div>
-    <div class="note" style="margin:6px 0 0">${navigator.vibrate?(window.__lastVib===true?"Tap a level to feel it. The phone is accepting the buzz. If you feel nothing, your phone is blocking vibration itself: check battery saver, silent mode, and Settings, Sound and vibration, Vibration intensity.":window.__lastVib===false?"The phone REFUSED the last buzz. Check battery saver, silent mode, and Settings, Sound and vibration, Vibration intensity.":"Tap a level and you will feel it."):"This browser cannot vibrate. On Android, check Settings, Sound and vibration, Vibration intensity, and that battery saver is off."}</div>
+    <button class="btn" data-seed="ft" style="margin-top:8px" onclick="feelTest()">Feel test</button>
+    ${buzzAsk?`<div class="note" style="margin:8px 0 4px">Did you feel that buzz?</div><div class="opts"><button class="opt" onclick="feelAnswer(true)">I felt it</button><button class="opt" onclick="feelAnswer(false)">Nothing</button></div>`:""}
+    <div class="note" style="margin:6px 0 0">${buzzSoftOn()?"Your phone is not vibrating, so the garden answers your touch with a small shake and a soft thump instead. Choose a level above to set how strong.":"Vibration is on. If you ever feel nothing, press Feel test and answer Nothing."}</div>
     <div style="height:7px"></div>
     <button class="btn" data-seed="shw" onclick="S.hand=!S.hand;save();applyHand();uiSound()">Handwriting · ${S.hand?"on":"off"}</button>
     <div style="height:7px"></div>
@@ -3302,6 +3322,8 @@ function uiSound(){
     <button class="btn" data-seed="scm" onclick="S.calm=!document.documentElement.classList.contains('calm');save();applyCalm();uiSound()">Calm motion · ${document.documentElement.classList.contains("calm")?"on":"off"}</button>
     <div style="height:7px"></div>
     <button class="btn" data-seed="sgw" onclick="S.gentleOff=!S.gentleOff;save();uiSound()">Gentle while away · ${S.gentleOff?"off":"on"}</button>
+    <div style="height:7px"></div>
+    <button class="btn" data-seed="srf" onclick="refreshGame()">Refresh the game</button>
     <div style="height:14px"></div>
     <button class="btn" data-seed="sop" onclick="replayOpening()">Play the opening again</button>
     <div style="height:7px"></div>
