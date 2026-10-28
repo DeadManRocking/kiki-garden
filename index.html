@@ -2645,7 +2645,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.15.0";
+const VERSION="1.15.1";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2817,15 +2817,30 @@ const BUZZ_NAMES=["Off","Light","Medium","Strong","Max"], BUZZ_F=[0,.7,1.2,2,3.2
 function buzzLvl(){ return S.buzzOff?0:(S.buzzLvl==null?2:int(S.buzzLvl)); }
 let buzzAsk=false;
 function buzzSoftOn(){ return S.buzzSoft===true||(S.buzzSoft===undefined&&!navigator.vibrate); }
+let buzzUntil=0;
 function buzz(p){
   try{
     const f=BUZZ_F[buzzLvl()]; if(!f) return;
+    const now=performance.now(), raw=Array.isArray(p)?p.reduce((a,b)=>a+b,0):p;
+    if(now<buzzUntil&&raw<100) return;                      /* a tap or a page-flip tick must never cut off a longer buzz that is still running */
     if(navigator.vibrate){
       const pulse=x=>Math.min(600,Math.max(18,Math.round(x*f)));            /* Android ignores very short pulses, so none is under 18 ms */
-      window.__lastVib=navigator.vibrate(Array.isArray(p)?p.map((x,i)=>i%2===0?pulse(x):Math.max(20,Math.round(x))):pulse(p));
+      const arg=Array.isArray(p)?p.map((x,i)=>i%2===0?pulse(x):Math.max(20,Math.round(x))):pulse(p);
+      window.__lastVib=navigator.vibrate(arg); window.__lastVibAt=Date.now(); window.__lastVibArg=arg;
+      buzzUntil=now+(Array.isArray(arg)?arg.reduce((a,b)=>a+b,0):arg);
     }
     if(buzzSoftOn()) softBuzz(p,f);
   }catch(e){}
+}
+function vibRead(){
+  if(!navigator.vibrate) return "This browser has no vibration at all.";
+  if(window.__lastVibAt===undefined) return "No buzz sent yet.";
+  const a=window.__lastVibArg, ago=Math.round((Date.now()-window.__lastVibAt)/1000);
+  return "Last buzz sent: "+(Array.isArray(a)?a.join(", "):a)+" ms, "+ago+" s ago. The phone said: "+(window.__lastVib===true?"accepted":"REFUSED")+".";
+}
+function rawBuzz(){                                         /* one buzz and nothing else: no sound, no redraw, no second call */
+  try{ window.__lastVib=navigator.vibrate?navigator.vibrate(500):false; window.__lastVibAt=Date.now(); window.__lastVibArg=500; buzzUntil=performance.now()+500; }catch(e){ window.__lastVib=false; }
+  const el=document.getElementById("vibread"); if(el) el.textContent=vibRead();
 }
 function softBuzz(p,f){                      /* the screen shakes a little and a soft thump sounds: a touch you can see and hear */
   const ms=Array.isArray(p)?p.filter((x,i)=>i%2===0).reduce((a,b)=>a+b,0):p, amp=Math.min(5,.5+f*ms/45);
@@ -3312,6 +3327,8 @@ function uiSound(){
     <div class="lbl">Touch feel</div>
     <div class="opts">${BUZZ_NAMES.map((l,i)=>`<button class="opt ${buzzLvl()===i?"sel":""}" onclick="setBuzz(${i})">${l}</button>`).join("")}</div>
     <button class="btn" data-seed="ft" style="margin-top:8px" onclick="feelTest()">Feel test</button>
+    <div style="height:7px"></div><button class="btn" data-seed="frb" onclick="rawBuzz()">Raw buzz (nothing else)</button>
+    <div class="note" id="vibread" style="margin:6px 0 0">${vibRead()}</div>
     ${buzzAsk?`<div class="note" style="margin:8px 0 4px">Did you feel that buzz?</div><div class="opts"><button class="opt" onclick="feelAnswer(true)">I felt it</button><button class="opt" onclick="feelAnswer(false)">Nothing</button></div>`:""}
     <div class="note" style="margin:6px 0 0">${buzzSoftOn()?"Your phone is not vibrating, so the garden answers your touch with a small shake and a soft thump instead. Choose a level above to set how strong.":"Vibration is on. If you ever feel nothing, press Feel test and answer Nothing."}</div>
     <div style="height:7px"></div>
