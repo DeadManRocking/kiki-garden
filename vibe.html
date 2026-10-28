@@ -1,0 +1,19 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vibration test</title><style>
+body{font:17px/1.5 system-ui,sans-serif;background:#16120d;color:#f1e4c3;margin:0;padding:22px;max-width:560px;margin:auto}
+h1{font-size:22px}button{display:block;width:100%;font:700 20px system-ui;padding:20px;margin:12px 0;border-radius:16px;border:0;background:#c98a1e;color:#1a1208}
+pre{background:#241c12;padding:12px;border-radius:12px;white-space:pre-wrap;font-size:14px}small{color:#b9a67f}</style></head><body>
+<h1>Vibration test</h1><small>No game, no code but this. Hold the phone in your hand.</small>
+<button onclick="go(500)">Buzz for half a second</button>
+<button onclick="go([200,100,200,100,200])">Buzz three times</button>
+<pre id="o"></pre>
+<script>
+const o=document.getElementById("o"); let log=[];
+function show(){ o.textContent=log.join("\n"); }
+function go(p){ const r=navigator.vibrate?navigator.vibrate(p):"no vibrate() in this browser"; log.unshift(new Date().toLocaleTimeString()+"  sent "+JSON.stringify(p)+"  -> the phone said: "+(r===true?"ACCEPTED":String(r))); show(); }
+(async()=>{ const L=["Vibrate supported by this browser: "+("vibrate" in navigator),"Page visible: "+document.visibilityState];
+ try{ const b=await navigator.getBattery(); L.push("Battery: "+Math.round(b.level*100)+"%, charging: "+b.charging+(b.level<.2&&!b.charging?"   <- LOW BATTERY: phones turn vibration off to save power":"")); }catch(e){ L.push("Battery: unknown"); }
+ L.push("Browser: "+navigator.userAgent.replace(/\).*/,")").slice(0,90)); log=L.concat([""]); show(); })();
+</script>
+<p><small>If it says ACCEPTED and you feel nothing, the phone is blocking vibration itself. Check: battery saver off, sound mode set to Vibrate (not Mute), and Settings, Sound and vibration, Vibration intensity, on. If it says anything else, the browser is refusing.</small></p>
+</body></html>
