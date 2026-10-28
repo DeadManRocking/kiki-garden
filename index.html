@@ -2645,7 +2645,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.15.3";
+const VERSION="1.15.4";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2829,6 +2829,10 @@ function tapBuzz(){
   }catch(e){}
 }
 function setTapMs(v){ S.tapMs=int(v); save(); const l=document.getElementById("tapms"); if(l) l.textContent=tapMs()+" ms"; try{ if(navigator.vibrate&&buzzLvl()) window.__lastVib=navigator.vibrate(tapMs()); window.__lastVibAt=Date.now(); window.__lastVibArg=tapMs(); }catch(e){} const el=document.getElementById("vibread"); if(el) el.textContent=vibRead(); }
+const TAP_SEL="button,[onclick],.btn,.opt,.nb,.fig,.apple,.pgb,.sign,.shitem,#bull,#purse,#helpq,#keeki";
+function tapWhen(){ return S.tapWhen||"down"; }
+function setTapWhen(v){ S.tapWhen=v; save(); reSound(); }
+document.addEventListener("pointerdown",ev=>{ try{ if(tapWhen()!=="up"&&ev.target.closest&&ev.target.closest(TAP_SEL)&&!(ev.target.closest("input[type=range]"))) tapBuzz(); }catch(e){} },{capture:true,passive:true});
 let buzzUntil=0;
 function buzz(p){
   try{
@@ -2936,7 +2940,7 @@ function musicStop(){ clearTimeout(AU.musicTimer); clearInterval(AU.whisperTimer
 document.addEventListener("pointerdown",()=>{ au(); musicStart(); ambStart(); },{passive:true});
 document.addEventListener("click",ev=>{
   if(sheetIsOpen&&performance.now()-sheetOpenedAt<500&&ev.target.closest&&ev.target.closest("#veil")){ ev.stopPropagation(); ev.preventDefault(); return; }    /* the second tap of a double tap */
-  if(ev.target.closest&&ev.target.closest("button,[onclick],.btn,.opt,.nb,.fig,.apple,.pgb,.sign,.shitem,#bull,#purse,#helpq,#keeki")){ tapBuzz(); try{ sfx("tap"); }catch(e){} } },true);
+  if(ev.target.closest&&ev.target.closest(TAP_SEL)){ if(tapWhen()!=="down") tapBuzz(); try{ sfx("tap"); }catch(e){} } },true);
 /* leaving the app (home button, another app, screen off, closing the tab) silences everything; coming back wakes it */
 function audioHush(){
   try{ musicStop(); ambStop(); if(AU.ctx&&AU.ctx.state==="running") AU.ctx.suspend(); }catch(e){}
@@ -3340,6 +3344,8 @@ function uiSound(){
     <div class="opts">${BUZZ_NAMES.map((l,i)=>`<button class="opt ${buzzLvl()===i?"sel":""}" onclick="setBuzz(${i})">${l}</button>`).join("")}</div>
     <div class="lbl">Tap length: <span id="tapms" class="mono">${tapMs()} ms</span></div>
     <input type="range" min="20" max="300" step="10" value="${int(S.tapMs)||90}" style="width:100%" oninput="setTapMs(this.value)">
+    <div class="lbl">Buzz when</div>
+    <div class="opts">${[["down","Finger down"],["up","Finger up"],["both","Both"]].map(([v,l])=>`<button class="opt ${tapWhen()===v?"sel":""}" onclick="setTapWhen('${v}')">${l}</button>`).join("")}</div>
     <button class="btn" data-seed="tpd" style="margin-top:6px" onclick="">Tap pad: tap here to feel a tap</button>
     <div style="height:7px"></div>
     <button class="btn" data-seed="ft" onclick="feelTest()">Feel test</button>
