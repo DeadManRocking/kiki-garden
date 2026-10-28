@@ -1225,7 +1225,7 @@ function paginateNow(sh){
 function turnPage(d){
   const sh=$("#sheet"), pages=[...sh.querySelectorAll(":scope > .pg")]; if(!pages.length) return;
   const n=Math.max(0,Math.min(pages.length-1,pgIdx+d)); if(n===pgIdx) return;
-  const out=pages[pgIdx], inn=pages[n]; pgIdx=n; sfx("flip"); buzz(6);
+  const out=pages[pgIdx], inn=pages[n]; pgIdx=n; sfx("flip"); tapBuzz();
   const sign=d>0?1:-1;
   if(out.animate){ out.animate([{transform:"none",opacity:1},{transform:`rotateY(${-70*sign}deg)`,opacity:0}],{duration:170,easing:"ease-in"}).onfinish=()=>{
       out.classList.add("off"); inn.classList.remove("off");
@@ -2645,7 +2645,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.15.1";
+const VERSION="1.15.2";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2817,6 +2817,15 @@ const BUZZ_NAMES=["Off","Light","Medium","Strong","Max"], BUZZ_F=[0,.7,1.2,2,3.2
 function buzzLvl(){ return S.buzzOff?0:(S.buzzLvl==null?2:int(S.buzzLvl)); }
 let buzzAsk=false;
 function buzzSoftOn(){ return S.buzzSoft===true||(S.buzzSoft===undefined&&!navigator.vibrate); }
+const TAP_MS=[0,30,42,64,96];                              /* a tap is a real, short thump: phone motors cannot make anything under about 25 ms */
+function tapBuzz(){
+  try{
+    const l=buzzLvl(); if(!l) return; const now=performance.now(); if(now<buzzUntil) return;
+    const ms=TAP_MS[l];
+    if(navigator.vibrate){ window.__lastVib=navigator.vibrate(ms); window.__lastVibAt=Date.now(); window.__lastVibArg=ms; buzzUntil=now+ms; }
+    if(buzzSoftOn()) softBuzz(14,BUZZ_F[l]);
+  }catch(e){}
+}
 let buzzUntil=0;
 function buzz(p){
   try{
@@ -2824,7 +2833,7 @@ function buzz(p){
     const now=performance.now(), raw=Array.isArray(p)?p.reduce((a,b)=>a+b,0):p;
     if(now<buzzUntil&&raw<100) return;                      /* a tap or a page-flip tick must never cut off a longer buzz that is still running */
     if(navigator.vibrate){
-      const pulse=x=>Math.min(600,Math.max(18,Math.round(x*f)));            /* Android ignores very short pulses, so none is under 18 ms */
+      const pulse=x=>Math.min(600,Math.max(30,Math.round(x*f)));            /* phone motors ignore very short pulses, so none is under 30 ms */
       const arg=Array.isArray(p)?p.map((x,i)=>i%2===0?pulse(x):Math.max(20,Math.round(x))):pulse(p);
       window.__lastVib=navigator.vibrate(arg); window.__lastVibAt=Date.now(); window.__lastVibArg=arg;
       buzzUntil=now+(Array.isArray(arg)?arg.reduce((a,b)=>a+b,0):arg);
@@ -2924,7 +2933,7 @@ function musicStop(){ clearTimeout(AU.musicTimer); clearInterval(AU.whisperTimer
 document.addEventListener("pointerdown",()=>{ au(); musicStart(); ambStart(); },{passive:true});
 document.addEventListener("click",ev=>{
   if(sheetIsOpen&&performance.now()-sheetOpenedAt<500&&ev.target.closest&&ev.target.closest("#veil")){ ev.stopPropagation(); ev.preventDefault(); return; }    /* the second tap of a double tap */
-  if(ev.target.closest&&ev.target.closest(".btn,.opt,.nb")){ sfx("tap"); buzz(14); } },true);
+  if(ev.target.closest&&ev.target.closest("button,[onclick],.btn,.opt,.nb,.fig,.apple,.pgb,.sign,.shitem,#bull,#purse,#helpq,#keeki")){ sfx("tap"); tapBuzz(); } },true);
 /* leaving the app (home button, another app, screen off, closing the tab) silences everything; coming back wakes it */
 function audioHush(){
   try{ musicStop(); ambStop(); if(AU.ctx&&AU.ctx.state==="running") AU.ctx.suspend(); }catch(e){}
@@ -5804,7 +5813,7 @@ document.addEventListener("pointerdown",e=>{
   const t=(el.textContent||"").trim(); if(!t||t.length>44) return;
   const key=GLOSS_KEYS.find(k=>new RegExp("(^|[^A-Za-z])"+k+"([^A-Za-z]|$)","i").test(t)); if(!key) return;
   glX=e.clientX; glY=e.clientY;
-  glT=setTimeout(()=>{ glHit=true; showGloss(GLOSS[key]); buzz(8); },620);
+  glT=setTimeout(()=>{ glHit=true; showGloss(GLOSS[key]); tapBuzz(); },620);
 },{passive:true});
 document.addEventListener("pointermove",e=>{ if(glT&&Math.hypot(e.clientX-glX,e.clientY-glY)>10){ clearTimeout(glT); glT=0; } },{passive:true});
 document.addEventListener("pointerup",()=>{ clearTimeout(glT); glT=0; },{passive:true});
