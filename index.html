@@ -539,17 +539,35 @@ body.opening #veil:has(#sheet.k-fixed){z-index:800}
 #purseBtn .ink svg{width:17px;height:17px;stroke:#efe2c4}
 #purseBtn.open{border-color:rgba(240,226,196,.85)}
 #purseBtn .mono{color:#f6ecd2 !important;font-size:14px;text-shadow:0 1px 3px #000,0 0 6px #000}
-#purse{position:absolute;left:0;top:52px;width:min(92vw,330px);display:grid;grid-template-columns:repeat(3,1fr);gap:6px 4px;padding:12px 8px 10px;
+#purse{position:absolute;left:0;top:52px;width:min(92vw,330px);display:grid;grid-template-columns:repeat(12,1fr);gap:6px 4px;padding:12px 8px 10px;
   border:1px solid rgba(240,226,196,.6);border-radius:16px;background:rgba(14,10,7,.08);
   box-shadow:inset 0 0 0 4px rgba(240,226,196,.06),0 10px 28px rgba(0,0,0,.25);
   transform-origin:24px -8px;transform:scale(.6) translateY(-10px);opacity:0;pointer-events:none;transition:transform .32s cubic-bezier(.16,.84,.3,1),opacity .22s ease}
 #purse.open{transform:none;opacity:1;pointer-events:auto}
-#purse .coin{display:flex;flex-direction:column;align-items:center;min-height:0;padding:2px 0}
+#purse .coin{grid-column:span 3;display:flex;flex-direction:column;align-items:center;min-height:0;padding:2px 0}
 #purse .coin img,#purse .coin .ink{width:46px;height:46px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 1px rgba(240,226,196,.4),0 3px 8px rgba(0,0,0,.55)}
 #purse .coin .ink{display:grid;place-items:center;background:rgba(240,226,196,.1)}
 #purse .coin .cn{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:#efe2c4;margin-top:4px;text-shadow:0 1px 3px #000,0 0 6px #000;white-space:nowrap}
 #purse .coin .cv{font-size:12px;color:#f6ecd2 !important;text-shadow:0 1px 3px #000,0 0 6px #000;margin-top:1px}
 #purse .coin.dim .cv{opacity:.55}
+#purse .coin.g{grid-column:span 4}
+#purse .psep{grid-column:1/-1;height:1px;margin:2px 14px;background:linear-gradient(90deg,transparent,rgba(240,226,196,.5),transparent)}
+#purse .xbtn{grid-column:1/-1;justify-self:center;display:flex;align-items:center;gap:10px;padding:6px 18px;min-height:48px;border-radius:24px;border:1px solid rgba(240,226,196,.5);background:rgba(240,226,196,.08);color:#f6ecd2}
+#purse .xbtn img,#purse .xbtn .ink{width:34px;height:34px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 1px rgba(240,226,196,.4)}
+#purse .xbtn .ink{display:grid;place-items:center}
+#purse .xbtn b{font-size:20px;font-weight:400}
+.xch{display:flex;flex-direction:column;align-items:center;gap:12px}
+.xch .xg{display:flex;gap:10px;justify-content:center}
+.xch .xg button{display:flex;flex-direction:column;align-items:center;min-width:84px;min-height:84px;padding:8px;border-radius:14px;border:1px solid rgba(60,40,20,.35);background:rgba(255,248,230,.25)}
+.xch .xg button.sel{border-color:#7a4a1a;background:rgba(255,236,190,.65);box-shadow:0 0 0 2px rgba(122,74,26,.35)}
+.xch img,.xch .ink{width:46px;height:46px;border-radius:50%;object-fit:cover}
+.xch .ink{display:grid;place-items:center}
+.xch .xrow{display:flex;align-items:center;gap:14px}
+.xch .xrow button.xs{width:56px;height:56px;border-radius:50%;font-size:26px;border:1px solid rgba(60,40,20,.4);background:rgba(255,248,230,.35)}
+.xch .xstack{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;min-width:120px;min-height:46px;align-items:center}
+.xch .xstack img,.xch .xstack .ink{width:34px;height:34px}
+.xch .xcost{display:flex;align-items:center;gap:8px;font-size:18px}
+.xch .xcost img,.xch .xcost .ink{width:36px;height:36px}
 #more{position:absolute;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 74px);display:grid;grid-template-columns:repeat(2,1fr);gap:7px;padding:10px;
   border:1px solid rgba(240,226,196,.6);border-radius:18px;background:rgba(14,10,7,.10);z-index:25;
   transform:translateY(calc(100% + 90px));opacity:0;pointer-events:none;transition:transform .36s cubic-bezier(.16,.84,.3,1),opacity .25s ease}
@@ -924,20 +942,17 @@ const C={
   BASE_MUTATION:0.10
 };
 
-/* THE WALLET: Polllen pays for nearly everything. Hunneee, Gold, Mystrieousness and Chocolate are shops (priced in Polllen at
-   the old exchange rates), Purple Puff is a shop paid in Nector, Shadowpuff and STUFF stay as coins. */
-const PRICE_RATE={hunneee:10,gold:20,mystrieousness:5,chocolate:50};
-const COINNAME={polllen:"Polllen",nector:"Nector",shadowpuff:"Shadowpuff"};
-const PURSE_COINS=["polllen","nector","shadowpuff","stuff"];
-function coinOf(k){ return k==="purple_puff"?"nector":(PRICE_RATE[k]?"polllen":k); }
-function priceOf(k,it){ return k==="purple_puff"?int(it[1]):PRICE_RATE[k]?int(it[1])*PRICE_RATE[k]:int(it[1]); }
-function mergeWallet(){
-  if(S.mergeV===1) return;
-  const add=int(S.hunneee)*10+int(S.gold)*20+int(S.mystrieousness)*5+int(S.chocolate)*50;
-  if(add) S.polllen=int(S.polllen)+add;
-  if(int(S.purple_puff)) S.nector=int(S.nector)+int(S.purple_puff);
-  S.hunneee=0; S.gold=0; S.mystrieousness=0; S.chocolate=0; S.purple_puff=0; S.mergeV=1; save();
-}
+/* THE WALLET (v1.16): GOLD is the one spending coin. Polllen, Hunneee and Mystrieousness are GOODS kept in the larder;
+   they become Gold only through the exchange (1 Gold = 20 Polllen = 4 Hunneee = 2 Mystrieousness).
+   Nector, Shadowpuff and STUFF are coins as before. Purple Puff and Shadowpuff shops are paid in their own coin. */
+const GOLD_RATE={polllen:20,hunneee:4,mystrieousness:2};
+const GOODS=["polllen","hunneee","mystrieousness"];
+const OLD_RATE={hunneee:10,gold:20,mystrieousness:5,chocolate:50};   /* old Polllen price per shop unit; Gold price = old/20 */
+const COINNAME={gold:"Gold",polllen:"Polllen",hunneee:"Hunneee",mystrieousness:"Mystrieousness",nector:"Nector",shadowpuff:"Shadowpuff"};
+const PURSE_COINS=["gold","nector","shadowpuff","stuff"];
+function coinOf(k){ return k==="purple_puff"?"nector":k==="shadowpuff"?"shadowpuff":"gold"; }
+function priceOf(k,it){ const c=int(it[1]); return (k==="purple_puff"||k==="shadowpuff")?c:Math.max(1,Math.round(c*(OLD_RATE[k]||20)/20)); }
+function mergeWallet(){ if(S.mergeV===2) return; S.mergeV=2; save(); }   /* no migration: Kiki starts fresh */
 const KISSES=[
   ["Cheek",100,"Common"],["Nose",150,"Common"],["Back of Hand",75,"Common"],
   ["Sole of Foot",200,"Uncommon"],["Toes",225,"Uncommon"],["Neck",250,"Rare"],
@@ -1078,35 +1093,12 @@ function decayMood(){
 }
 
 /* ══ CURRENCY OPERATIONS ═══════════════════════════════════ */
-let lastConv=null;
-function convert(from,to,amt){
-  amt=int(amt);
-  if(from==="stuff"||to==="stuff") return "STUFF cannot be converted.";
-  if(from==="nector") return "Nector can only be earned.";
-  if(from!=="polllen") return "Only Polllen converts.";
-  if(to==="chocolate" && !eventActive("Chocolate Eclipse"))
-    return "Not available right now.";
-  const rate=C.RATES[to];
-  if(!rate) return "That conversion does not exist.";
-  if(amt<=0) return "Enter an amount.";
-  if(int(S.polllen)<amt) return "Not enough Polllen.";
-  const got=Math.floor(amt/rate);
-  if(got<1) return `At least ${rate} Polllen needed.`;
-  S.polllen=int(S.polllen)-got*rate;          /* only what was used; the rest stays hers */
-  S[to]=int(S[to])+got;
-  save();
-  lastConv={got:got,to:to,used:got*rate};
-  return null;
-}
-function craftPurplePuff(){
-  const r=C.PURPLE_PUFF;
-  if(int(S.nector)<r.nector) return "Not enough Nector.";
-  if(int(S.polllen)<r.polllen) return "Not enough Polllen.";
-  S.nector=int(S.nector)-r.nector;
-  S.polllen=int(S.polllen)-r.polllen;
-  S.purple_puff=int(S.purple_puff)+1;
-  save();
-  return null;
+function exchange(good,n){
+  n=int(n); const r=GOLD_RATE[good];
+  if(!r) return "No.";
+  if(n<=0) return "Choose an amount.";
+  if(int(S[good])<n*r) return "Not enough.";
+  S[good]=int(S[good])-n*r; S.gold=int(S.gold)+n; save(); return null;
 }
 function eventActive(name){ const e=activeEvent(); return !!(e&&e.name===name); }
 
@@ -1457,7 +1449,8 @@ function uiEventCard(){
 function bullMarkup(){
   const art=(S.pastyUnlocked&&ART.bull_pasty)||ART.bull;
   const cut=S.bullCut&&S.bullCut[S.pastyUnlocked&&ART.bull_pasty?"bull_pasty":"bull"];
-  const line=!bullReady()?"Resting. About "+bullWaitMins()+" minutes."
+  bullCollect();
+  const line=bullOut()?"Out on his rounds. About "+Math.ceil((S.bullOut-Date.now())/60000)+" minutes.":!bullReady()?"Resting. About "+bullWaitMins()+" minutes."
     :live().filter(x=>x.stage>=2).length>=2?"Ready to breed. Tap to pair two grown ones.":"Hovering near the Fylth.";
   return `<div id="bull" onclick="uiBull()" aria-label="${S.pastyUnlocked?"Bull the Pasty Bee":"Bull the Bee"}">
     <div class="pollen"></div>${art?`<img alt="" class="${cut?"cut":"soft"}" src="${art}">`:`<div style="height:90px"></div>`}
@@ -1530,12 +1523,18 @@ function render(){
   if(S.plantimals.length>=2&&!S.foundersDone){ S.foundersDone=true; save(); }
   const cap=capacity(), used=occupied(), ev=activeEvent();
   const coin=(k,tint)=>ART["cur:"+k]?`<img alt="" src="${ART["cur:"+k]}">`:`<span class="ink ${tint}"><svg viewBox="0 0 24 24">${ICONS[k]}</svg></span>`;
-  let h=`<div id="scene"><div id="top"><button id="purseBtn" class="${purseOpen?"open":""}" onclick="togglePurse()" aria-label="Purse">${coin("polllen","")}<span class="mono">${int(S.polllen)}</span></button>
+  let h=`<div id="scene"><div id="top"><button id="purseBtn" class="${purseOpen?"open":""}" onclick="togglePurse()" aria-label="Purse">${coin("gold","")}<span class="mono">${int(S.gold)}</span></button>
     <div id="purse" class="${purseOpen?"open":""}">`;
   for(const [k,label,tint] of CURRENCIES.filter(c=>PURSE_COINS.indexOf(c[0])>=0)){
     const v=int(S[k]);
     h+=`<div class="coin ${v===0?"dim":""}">${coin(k,tint)}<span class="cn">${label}</span><span class="cv mono">${v}</span></div>`;
   }
+  h+=`<i class="psep"></i>`;
+  for(const k of GOODS){
+    const v=int(S[k]);
+    h+=`<div class="coin g ${v===0?"dim":""}">${coin(k,"")}<span class="cn">${COINNAME[k]}</span><span class="cv mono">${v}</span></div>`;
+  }
+  h+=`<button class="xbtn" onclick="uiExchange()" aria-label="Exchange">${coin("polllen","")}<b>&#8594;</b>${coin("gold","")}</button>`;
   h+=`</div><div id="strip"><button id="helpq" aria-label="Help" onclick="uiHelpGate()">?</button><button id="keeki" aria-label="" onclick="keekiTap(event)"><svg viewBox="0 0 24 22"><path d="M12 21C5 15.5 1.5 12 1.5 7.2 1.5 4 4 1.5 7 1.5c2.2 0 3.8 1.2 5 3 1.2-1.8 2.8-3 5-3 3 0 5.5 2.5 5.5 5.7 0 4.8-3.5 8.3-10.5 13.8z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="9.2" r="1.9" fill="currentColor"/><path d="M11.1 10.4h1.8l.6 4.2h-3z" fill="currentColor"/></svg></button><span class="pill mono">${int(used)} / ${int(cap)}</span>
     ${ev?`<span class="pill ev" onclick="uiEventCard()">${esc(ev.name)}</span>`:""}
     ${shadowOwned()?`<span class="pill moon ${S.shadowOn&&midnightNow()&&S.moonHeard!==nightKey()?"stir":""}" onclick="uiMoon()" aria-label="Moon"><svg viewBox="0 0 24 24" width="13" height="13"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></span>`:""}</div></div>
@@ -2645,7 +2644,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.15.4";
+const VERSION="1.16.0";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -3053,7 +3052,7 @@ const TEEN_AB={
   "Hidden Path":{cd:0,once:true,run:p=>{ S.loreSeen=S.loreSeen||[];
     const pool=LORE.filter(l=>S.loreSeen.indexOf(l)<0);
     if(pool.length){ S.loreSeen.push(pick(pool)); return "It shows you a path that was not there before. Something new is written in the Journal."; }
-    S.polllen=int(S.polllen)+15; return "It shows you a path you already know. +15 Polllen."; }},
+    S.mystrieousness=int(S.mystrieousness)+2; return "It shows you a path you already know. +2 Mystrieousness."; }},
   "Changeling":{cd:24,target:"other",run:(p,q)=>{ const m=int(p.mood); p.mood=int(q.mood); q.mood=m;
     return `It and ${esc(q.name)} trade something invisible. Their moods have swapped.`; }},
   "Echo":{cd:24,target:"other",run:(p,q)=>{ q.mood=Math.min(100,int(q.mood)+15);
@@ -3665,11 +3664,11 @@ function placeWear(root){
 function masqOn(){ const e=activeEvent(); return !!(e&&e.name==="Masquerade Garden"); }
 function uiWardrobe(){
   S.wardrobe=S.wardrobe||[];
-  openSheet(`<h2>Masquerade Wardrobe</h2><div class="lbl">Paid in Polllen · you have ${int(S.polllen)}</div>
+  openSheet(`<h2>Masquerade Wardrobe</h2><div class="lbl">Paid in Gold · you have ${int(S.gold)}</div>
     ${COSTUMES.filter(c=>c.masq!==false).map(c=>{ const own=S.wardrobe.indexOf(c.k)>=0;
       return `<div class="shelf"><div class="nm" style="font-family:'Fraunces',Georgia,serif;font-size:16px">${esc(c.name)}</div>
         <div class="note">${esc(c.d)}</div><div style="height:7px"></div>
-        ${own?`<div class="note">Yours.</div>`:`<button class="btn" data-seed="wd${c.k}" onclick="buyCostume('${c.k}')">${c.cost*10} Polllen</button>`}</div>`;
+        ${own?`<div class="note">Yours.</div>`:`<button class="btn" data-seed="wd${c.k}" onclick="buyCostume('${c.k}')">${Math.max(1,Math.round(c.cost/2))} Gold</button>`}</div>`;
     }).join("")}
     <div class="msg" id="wmsg"></div><div style="height:10px"></div>
     <button class="btn" data-seed="wdb" onclick="uiShops()">Back</button>`,"wood");
@@ -3679,8 +3678,9 @@ function buyCostume(k){
   S.wardrobe=S.wardrobe||[];
   if(!masqOn()){ $("#wmsg").textContent="The wardrobe is shut until the masks come out."; return; }
   if(S.wardrobe.indexOf(k)>=0) return;
-  if(int(S.polllen)<c.cost*10){ $("#wmsg").textContent="Not enough Polllen. "+(c.cost*10)+" needed, you have "+int(S.polllen)+"."; return; }
-  S.polllen=int(S.polllen)-c.cost*10; S.wardrobe.push(k); save(); sfx("found");
+  const gp=Math.max(1,Math.round(c.cost/2));
+  if(int(S.gold)<gp){ $("#wmsg").textContent="Not enough Gold. "+gp+" needed, you have "+int(S.gold)+"."; return; }
+  S.gold=int(S.gold)-gp; S.wardrobe.push(k); save(); sfx("found");
   if(!ART["cos:"+k]) auto("cos:"+k,async()=>{ await paintCostume(k); render(); });
   uiWardrobe();
 }
@@ -3812,9 +3812,9 @@ function moonListen(){
   let said;
   if(pool.length){ said=pick(pool); S.loreSeen.push(said); }
   else said=pick(TRIVIA);
-  S.polllen=int(S.polllen)+5; save(); sfx("whisper");
+  S.mystrieousness=int(S.mystrieousness)+1; save(); sfx("whisper");
   openSheet(`<h2>…</h2><div style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:16px;line-height:1.55">${esc(said)}</div>
-    <div class="note" style="margin-top:10px">A little Polllen lingers after it.</div>
+    <div class="note" style="margin-top:10px">A little Mystrieousness lingers after it.</div>
     <div style="height:14px"></div><button class="btn" data-seed="mnd" onclick="closeSheet()">Back</button>`,"drift");
 }
 /* ── Kiki's guide: a choice first, then hints, never spoilers ── */
@@ -3866,7 +3866,7 @@ const HELP_LOCAL=[
  [/cocoon|cookuuunml|wait/i,"A cocoon cannot be hurried. How well it was cared for, and the weather outside, change how long it takes."],
  [/breed|egg|bull|gene|parent|babie|baby/i,"Only the fully grown can be paired. The Journal's Genetics page shows what two creatures could make; some traits hide for generations."],
  [/mood|quirk|cuddle|grump|shy/i,"A quirk is a creature's way of saying what it needs. In Cuddle Time, watch what it asks for before you try anything."],
- [/polllen|money|currency|convert|gold|hunnie|mystr|shop/i,"Polllen is where it all starts, and it only ever turns into the others. Touch and hold any strange word to see what it means."],
+ [/polllen|money|currency|convert|exchange|gold|hunnie|mystr|shop/i,"Gold pays in the shops. Polllen, Hunneee and Mystrieousness are kept in the larder, and the purse turns them into Gold. Touch and hold any strange word to see what it means."],
  [/kiss|stuff|code/i,"Some things are worth asking Cj about."]];
 function helpLocal(q){ for(const [re,t] of HELP_LOCAL) if(re.test(q)) return t; return "Look closely at what changed after the last thing you tried, and try one thing at a time. If you are truly stuck, ask Cj."; }
 async function helpAsk(){
@@ -4504,50 +4504,37 @@ function uiGene(id){
     <div style="height:14px"></div><button class="btn" data-seed="gb" onclick="uiPlant('${id}')">Back</button>`);
 }
 
-/* ══ CONVERT / KISS UI ═════════════════════════════════════ */
-function uiConvert(){
-  openSheet(`<h2>Convert</h2>
-    <div class="lbl">Polllen becomes</div>
-    <div class="opts">
-      <button class="opt" data-t="hunneee" onclick="pickTo(this)">Hunneee · 10</button>
-      <button class="opt" data-t="gold" onclick="pickTo(this)">Gold · 20</button>
-      <button class="opt" data-t="mystrieousness" onclick="pickTo(this)">Mystrieousness · 5</button>
-      ${eventActive("Chocolate Eclipse")?`<button class="opt" data-t="chocolate" onclick="pickTo(this)">Chocolate · 50</button>`:""}
-    </div>
-    <div class="lbl">Amount of Polllen</div>
-    <input id="amt" type="tel" inputmode="numeric" placeholder="0">
-    <div class="msg" id="vmsg"></div>
-    <div style="height:12px"></div>
-    <button class="btn" data-seed="cv" onclick="doConvert()">Convert</button>
-    <div style="height:16px"></div>
-    <button class="btn" data-seed="pp" onclick="doCraft()">
-      Craft Purple Puff · <span class="ac">1 Nector + 50 Polllen</span></button>
-    <div class="note" id="vbal">You have ${int(S.polllen)} Polllen, ${int(S.nector)} Nector.</div>
-    <div style="height:12px"></div><button class="btn" data-seed="cvb" onclick="closeSheet()">Done</button>`);
-  if(convTo){ const o=$("#sheet").querySelector(`.opt[data-t="${convTo}"]`); if(o) o.classList.add("sel"); else convTo=null; }
+/* ══ EXCHANGE ══════════════════════════════════════════════ */
+let xGood="polllen", xN=1;
+function coinHtml(k){ const a=ART["cur:"+k]; return a?`<img alt="" src="${a}">`:`<span class="ink"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.3">${ICONS[k]}</svg></span>`; }
+function uiExchange(){
+  purseOpen=false; const pp=$("#purse"); if(pp) pp.classList.remove("open"); const pb=$("#purseBtn"); if(pb) pb.classList.remove("open");
+  openSheet(`<div class="xch">
+    <div class="xg">${GOODS.map(g=>`<button data-g="${g}" onclick="xPick('${g}')">${coinHtml(g)}<span class="mono" data-xb="${g}">${int(S[g])}</span></button>`).join("")}</div>
+    <div class="xrow"><button class="xs" onclick="xStep(-1)" aria-label="Less">&#8722;</button><div class="xstack" id="xstack"></div><button class="xs" onclick="xStep(1)" aria-label="More">+</button></div>
+    <div class="xcost"><span id="xcoin"></span><span class="mono" id="xcostn"></span><b>&#8594;</b>${coinHtml("gold")}<span class="mono" id="xgotn"></span></div>
+    <div class="msg" id="xmsg"></div>
+    <button class="btn" data-seed="xdo" onclick="xDo()" aria-label="Exchange">${coinHtml("gold")}</button>
+  </div>`);
+  xGood=GOODS.indexOf(xGood)>=0?xGood:"polllen"; xUpdate();
 }
-let convTo=null;
-function pickTo(el){
-  $("#sheet").querySelectorAll(".opt").forEach(o=>o.classList.remove("sel"));
-  el.classList.add("sel"); convTo=el.dataset.t;
+function xMax(){ return Math.floor(int(S[xGood])/GOLD_RATE[xGood]); }
+function xPick(g){ xGood=g; xN=1; xUpdate(); }
+function xStep(d){ const m=Math.max(1,xMax()); xN=Math.max(1,Math.min(m,xN+d)); xUpdate(); }
+function xUpdate(){
+  const sh=$("#sheet"); if(!sh) return;
+  sh.querySelectorAll(".xg button").forEach(b=>b.classList.toggle("sel",b.dataset.g===xGood));
+  GOODS.forEach(g=>{ const e=sh.querySelector(`[data-xb="${g}"]`); if(e) e.textContent=int(S[g]); });
+  if(xN>Math.max(1,xMax())) xN=Math.max(1,xMax());
+  const st=$("#xstack"); if(st) st.innerHTML=Array.from({length:Math.min(xN,8)},()=>coinHtml("gold")).join("")+(xN>8?`<span class="mono">+${xN-8}</span>`:"");
+  const xc=$("#xcoin"); if(xc) xc.innerHTML=coinHtml(xGood);
+  const a=$("#xcostn"); if(a) a.textContent="×"+(xN*GOLD_RATE[xGood]);
+  const b=$("#xgotn"); if(b) b.textContent="×"+xN;
 }
-function doConvert(){
-  const m=$("#vmsg");
-  if(!convTo){ m.textContent="Choose what it becomes."; return; }
-  const btn=$("#sheet").querySelector('[data-seed="cv"]');
-  const err=convert("polllen",convTo,$("#amt").value);
+function xDo(){
+  const m=$("#xmsg"), err=exchange(xGood,xN);
   if(err){ m.textContent=err; return; }
-  const name=(CURRENCIES.find(c=>c[0]===lastConv.to)||[0,lastConv.to])[1];
-  render(); poof(btn,`+${lastConv.got} ${name}`); buzz([12,30,12]);
-  m.textContent=`${lastConv.used} Polllen became ${lastConv.got} ${name}.`;
-  $("#vbal").textContent=`You have ${int(S.polllen)} Polllen, ${int(S.nector)} Nector.`; $("#amt").value="";
-}
-function doCraft(){
-  const btn=$("#sheet").querySelector('[data-seed="pp"]');
-  const err=craftPurplePuff();
-  if(err){ $("#vmsg").textContent=err; return; }
-  render(); poof(btn,"+1 Purple Puff"); buzz([12,30,12]);
-  $("#vmsg").textContent="A Purple Puff, made."; $("#vbal").textContent=`You have ${int(S.polllen)} Polllen, ${int(S.nector)} Nector.`;
+  m.textContent=""; sfx("found"); buzz([12,30,12]); render(); xN=1; xUpdate();
 }
 /* a little burst of pollen with words in it */
 const BI_GIFT='<path d="M4 9h16v4H4zM5 13h14v8H5zM12 9v12M12 9c-2-4-6-4-6-1 0 1 2 1 6 1zM12 9c2-4 6-4 6-1 0 1-2 1-6 1z"/>';
@@ -4775,7 +4762,22 @@ async function doKiss(){
 /* ══ BULL ══════════════════════════════════════════════════ */
 const BULL_COOLDOWN=4*3600000;
 function bullCool(){ if(S.noCool) return 0; const e=S.event&&Date.now()<S.event.ends&&S.event.name; return e==="Anniversary Garden"?BULL_COOLDOWN/2:BULL_COOLDOWN; }
-function bullReady(){ return Date.now() >= (S.bullLast||0)+bullCool(); }
+function bullOut(){ return !!(S.bullOut&&Date.now()<S.bullOut); }
+function bullReady(){ return !bullOut() && Date.now() >= (S.bullLast||0)+bullCool(); }
+function bullRested(){ return Date.now() >= (S.bullLast||0)+bullCool(); }
+const ROUNDS_MS=3*3600000;
+function bloomCount(){ return live().filter(p=>bloomingNow(p)).length; }
+function bullCollect(){
+  if(!S.bullOut||Date.now()<S.bullOut) return false;
+  const n=Math.min(6,2+Math.floor(Math.random()*3)+Math.min(2,bloomCount()));
+  S.hunneee=int(S.hunneee)+n; S.bullOut=0; S.pm=S.pm||[];
+  S.pm.unshift({from:"System",at:Date.now(),body:"Bull is back from his rounds with "+n+" Hunneee. The hunny elves sent it. The elves cannot fly, are nothing like bees, and have never been seen. The Hunneee is real."});
+  save(); return true;
+}
+function bullGoOut(){
+  if(!bullReady()) return;
+  S.bullOut=Date.now()+(S.noCool?20000:ROUNDS_MS); save(); closeSheet(); render();
+}
 function bullWaitMins(){ return Math.ceil(((S.bullLast||0)+bullCool()-Date.now())/60000); }
 
 /* the sequence, in order, unsanitised */
@@ -4796,13 +4798,14 @@ const BEATS=[
   "Bull wipes itself clean and drifts back to the Fylth."
 ];
 function uiBull(){
-  parentA=null; parentB=null;
+  parentA=null; parentB=null; if(bullCollect()) render();
   const grown=live().filter(p=>p.stage>=2);
   const canFeed=int(S.stuff)>=C.STUFF.pasty&&!S.pastyUnlocked;
   const canExtra=int(S.stuff)>=C.STUFF.mutation&&!S.nextEgglingGuaranteed&&bullReady()&&grown.length>=2;
   const art=(S.pastyUnlocked&&ART.bull_pasty)||ART.bull;
   let body;
-  if(!bullReady()) body=`<div class="note">Bull is not interested just now.
+  if(bullOut()) body=`<div class="note">Bull is out on his rounds, carrying messages for the hunny elves. About ${Math.ceil((S.bullOut-Date.now())/60000)} minutes.</div>`;
+  else if(!bullReady()) body=`<div class="note">Bull is not interested just now.
     About ${bullWaitMins()} minutes.</div>`;
   else if(grown.length<2) body=`<div class="note">Bull only stirs for two grown ones.</div>`;
   else body=`<div class="lbl">Daddy</div>
@@ -4814,10 +4817,11 @@ function uiBull(){
     <div class="msg" id="bmsg"></div>
     <div style="height:12px"></div>
     <button class="btn" data-seed="pol" onclick="startPollination()">Pollinate</button>`;
+  const roundsBtn=bullReady()?`<div style="height:10px"></div><button class="btn" data-seed="rnd" onclick="bullGoOut()">${coinHtml("hunneee")} · 3h</button>`:"";
   openSheet(`<h2>${S.pastyUnlocked?"Bull the Pasty Bee":"Bull the Bee"}</h2>
     ${art?`<img class="breathe" alt="" src="${art}" style="display:block;width:72%;margin:0 auto 8px;filter:drop-shadow(0 8px 12px rgba(40,22,8,.4))"/>`:""}
     <div class="note" style="margin-bottom:4px">Hovering near the Fylth, chewing at nothing.</div>
-    ${body}
+    ${body}${roundsBtn}
     ${canExtra?`<div style="height:10px"></div>
       <button class="btn" data-seed="xs" onclick="extraSomething()">Something extra · <span class="ac">1 STUFF</span></button>`:""}
     ${canFeed?`<div style="height:10px"></div>
@@ -4872,6 +4876,7 @@ function pollScene(){
   const egg=S.egglingses[S.egglingses.length-1];
   S.nextEgglingGuaranteed=false; S.mutBoost=false; pa.spicyBoost=false; pb.spicyBoost=false;
   if(!([pa,pb].some(x=>x.mutation==="Static Bloom")&&Math.random()<0.2)) S.bullLast=Date.now();
+  S.hunneee=int(S.hunneee)+1; S.pm=S.pm||[]; S.pm.unshift({from:"System",at:Date.now(),body:"1 Hunneee, paid by the elves for the pollen he carried."});
   const chartNew=!S.chartFound;
   if(chartNew){ S.chartFound=true; S.pm=S.pm||[]; S.pm.unshift({from:"System",at:Date.now(),body:"A loose page has slipped into the Journal."}); }
   save();
@@ -5103,7 +5108,7 @@ function uiEOL(id){
     <button class="btn" data-seed="k3" onclick="doEOL('${id}','preserve')">Preserve</button>
     <div style="height:7px"></div>
     <button class="btn" data-seed="k4" onclick="doEOL('${id}','ascend')">
-      Ascend · <span class="ac">650 Polllen</span></button>
+      Ascend · <span class="ac">33 Gold</span></button>
     <div class="msg" id="eomsg"></div>
     <div style="height:10px"></div>
     <button class="btn" data-seed="k5" onclick="uiPlant('${id}')">Not yet</button>`);
@@ -5113,9 +5118,9 @@ function doEOL(id,choice){
   const p=S.plantimals[i];
   if(choice==="keep"){ p.eolDone=true; save(); closeSheet(); render(); return; }
   if(choice==="ascend"){
-    if(int(S.polllen)<650){
+    if(int(S.gold)<33){
       $("#eomsg").textContent="Not enough for that."; return; }
-    S.polllen=int(S.polllen)-650;
+    S.gold=int(S.gold)-33;
     S.guardians=S.guardians||[];
     S.guardians.push({name:p.name,at:Date.now(),pid:p.id,stage:"adult"});
     S.plantimals.splice(i,1);
@@ -5138,9 +5143,9 @@ function releasedGifts(){
   for(const r of (S.released||[])){
     while(r.next && now>=r.next){
       const gold=Math.random()<0.5;
-      S.polllen=int(S.polllen)+(gold?20:10);
+      if(gold) S.mystrieousness=int(S.mystrieousness)+2; else S.polllen=int(S.polllen)+10;
       S.pm.unshift({from:"System",
-        body:esc(r.name)+" sent something back: "+(gold?20:10)+" Polllen.",at:now});
+        body:esc(r.name)+" sent something back: "+(gold?"2 Mystrieousness.":"10 Polllen."),at:now});
       r.next=now+(3+Math.random()*4)*86400000;
     }
   }
@@ -5162,7 +5167,7 @@ function chatUnread(){
   return !!(last&&last.at>int(S.chatSeen));
 }
 /* messages to and from Cj's phone, through a free notification service (ntfy) on one secret channel */
-const KIKI_GUIDE="THE GARDEN, for a helper who only gives hints.\\nPlantimals: half plant, half animal. Stages: Babie (0/2), Smitterpleet (1/2), Bleeglyl (2/2). Each stage needs the three care actions once each: Hidrayshn (water), Coppertanrr (light), Fylth (feeding). After all three the creature wraps itself in a Cookuuunml (a cocoon) for hours, sometimes most of a day or two, and comes out at the next stage; how long depends on how well it was cared for and on its surroundings. Grades: Perfect, Good, Poor, Failed. Failed locks that action for a while. Perfect gives a little Polllen and mood. A run of Perfects brings good quirks and, after seven in a row, Nector.\\nHidrayshn: five water sources (Meltwater, Rainwater, Dewfall, Springwater, Wellwater); each COLOR prefers one, two-color creatures accept either. Three ways to give it: Hold, Sprinkle, Tip; each COVERING prefers one way (the creature says afterwards what it wanted). Stop when the ring is full, not past it. Thirsty creatures (the line at the top hints at it) do better.\\nCoppertanrr: six places (Low Thicket, Open Ridge, Ashen Clearing, Dappled Hollow, Moonside, Fogbank); the right place depends on its limbs and on its behavior. The best length of time changes every week or so, and the weather and season make the light stronger or weaker, so dim days need longer. After a miss it shows whether it wanted more or less.\\nFylth: six of twelve ingredients each day, two or three at a time; ingredients have tags, and opposite tags fight (warm/cool, damp/dry, sweet/bitter, bright/heavy). Fresh in the morning, turning by afternoon, stale at night: sweet, bright and floral things go flat when stale, but rotten, mineral and heavy things get better with age. Drench can be too much. Some creatures can't abide one tag (an allergy): they react, and the card remembers it.\\nMood drops with time. Neglect brings bad quirks; Cuddle Time fixes them: watch what it wants (pressing close = stroke slowly; squirming = quick taps; gone still and listening = hold a finger still) and each quirk has a favorite.\\nGifts: Babies and Smitterpleets have one gift each, which rests after use.\\nBreeding: only two grown ones (Bleeglyls), on Bull's card. Children inherit one copy of each gene from each parent. Two colors can both show. Some traits hide and come back later. Genes: color, markings, root-legs, arms, tendrils, wings, behavior, covering; a creature grows at most two of arms, tendrils and wings. The Journal's Genetics page shows the odds for any pair, and a chart appears in the Journal after the first breeding.\\nEgglings fade if never touched for three days. Hidden things are painted into portraits and tucked into screens; finding them pays Polllen and a trivia fact.\\nMoney: Polllen pays for nearly everything. Hunneee, Gold and Mystrieousness are the names of three shops, Chocolate is a shop that only opens in the Chocolate Eclipse, and Purple Puff is a shop paid for in Nector, which is only ever earned. Shadowpuff comes from giving gifts and buys its own shop. Shops sell helpers, upgrades, lore and secret places. Grown happy creatures make a little Polllen every hour. The rest of the Polllen comes from Cj.\\nEvents: Scary Fun Night every Friday; Chocolate Eclipse sometimes; others arrive in their own time. Each changes the garden and the chances of strange babies.\\nGrown ones bloom in the season of their color. After a month grown, she chooses what becomes of them.\\nTouching and holding a strange word shows what it means. While she is away the garden waits: after about half a day, the time away stops wearing on mood and eggs. A little dew of Polllen is left every day, and every third creature she raises to full growth makes the garden wider. Never give exact numbers or settings that would solve a puzzle outright.";
+const KIKI_GUIDE="THE GARDEN, for a helper who only gives hints.\\nPlantimals: half plant, half animal. Stages: Babie (0/2), Smitterpleet (1/2), Bleeglyl (2/2). Each stage needs the three care actions once each: Hidrayshn (water), Coppertanrr (light), Fylth (feeding). After all three the creature wraps itself in a Cookuuunml (a cocoon) for hours, sometimes most of a day or two, and comes out at the next stage; how long depends on how well it was cared for and on its surroundings. Grades: Perfect, Good, Poor, Failed. Failed locks that action for a while. Perfect gives a little Polllen and mood. A run of Perfects brings good quirks and, after seven in a row, Nector.\\nHidrayshn: five water sources (Meltwater, Rainwater, Dewfall, Springwater, Wellwater); each COLOR prefers one, two-color creatures accept either. Three ways to give it: Hold, Sprinkle, Tip; each COVERING prefers one way (the creature says afterwards what it wanted). Stop when the ring is full, not past it. Thirsty creatures (the line at the top hints at it) do better.\\nCoppertanrr: six places (Low Thicket, Open Ridge, Ashen Clearing, Dappled Hollow, Moonside, Fogbank); the right place depends on its limbs and on its behavior. The best length of time changes every week or so, and the weather and season make the light stronger or weaker, so dim days need longer. After a miss it shows whether it wanted more or less.\\nFylth: six of twelve ingredients each day, two or three at a time; ingredients have tags, and opposite tags fight (warm/cool, damp/dry, sweet/bitter, bright/heavy). Fresh in the morning, turning by afternoon, stale at night: sweet, bright and floral things go flat when stale, but rotten, mineral and heavy things get better with age. Drench can be too much. Some creatures can't abide one tag (an allergy): they react, and the card remembers it.\\nMood drops with time. Neglect brings bad quirks; Cuddle Time fixes them: watch what it wants (pressing close = stroke slowly; squirming = quick taps; gone still and listening = hold a finger still) and each quirk has a favorite.\\nGifts: Babies and Smitterpleets have one gift each, which rests after use.\\nBreeding: only two grown ones (Bleeglyls), on Bull's card. Children inherit one copy of each gene from each parent. Two colors can both show. Some traits hide and come back later. Genes: color, markings, root-legs, arms, tendrils, wings, behavior, covering; a creature grows at most two of arms, tendrils and wings. The Journal's Genetics page shows the odds for any pair, and a chart appears in the Journal after the first breeding.\\nEgglings fade if never touched for three days. Hidden things are painted into portraits and tucked into screens; finding them pays a little Mystrieousness and a trivia fact.\\nMoney: Gold pays for nearly everything in the shops. Polllen, Hunneee and Mystrieousness are goods kept in the larder, and the purse turns them into Gold. Polllen comes from grown happy creatures, Hunneee from Bull, Mystrieousness from hidden things. Hunneee, Gold and Mystrieousness are also the names of three shops, Chocolate is a shop that only opens in the Chocolate Eclipse, and Purple Puff is a shop paid for in Nector, which is only ever earned. Shadowpuff comes from giving gifts and buys its own shop. Shops sell helpers, upgrades, lore and secret places. Grown happy creatures make a little Polllen every hour. The rest of the Polllen comes from Cj.\\nEvents: Scary Fun Night every Friday; Chocolate Eclipse sometimes; others arrive in their own time. Each changes the garden and the chances of strange babies.\\nGrown ones bloom in the season of their color. After a month grown, she chooses what becomes of them.\\nTouching and holding a strange word shows what it means. While she is away the garden waits: after about half a day, the time away stops wearing on mood and eggs. A little dew of Polllen is left every day, and every third creature she raises to full growth makes the garden wider. Never give exact numbers or settings that would solve a puzzle outright.";
 const NTFY="kpg-kofmudguq14zpcbb3pbunx";
 function ntfySend(text){ try{ if(location.protocol==="file:") return; fetch("https://ntfy.sh/"+NTFY,{method:"POST",body:text,headers:{"Title":"Kiki","Tags":"seedling"}}).catch(()=>{}); }catch(e){} }
 let ntfyBusy=false;
@@ -5419,7 +5424,7 @@ const TRIVIA=[
   "The last line of a trivia list about a garden game is often the most overlooked."
 ];
 
-const REWARD={card:[5,12],garden:[10,18],rare:[15,25]};
+const REWARD={card:[1,1],garden:[1,2],rare:[2,3]};   /* Mystrieousness */
 
 /* ══ EASTER EGGS ═══════════════════════════════════════════ */
 /* An egg is seeded to the screen it hides on, so it stays put
@@ -5440,7 +5445,7 @@ function findEgg(n){
   const [lo,hi]=REWARD[egg.t];
   const r=seeded("rw"+n);
   const amt=lo+Math.floor(r()*(hi-lo+1));
-  S.polllen=int(S.polllen)+amt;
+  S.mystrieousness=int(S.mystrieousness)+amt;
   const t=TRIVIA[(n*7)%TRIVIA.length];
   if(!S.foundTrivia) S.foundTrivia=[];
   if(S.foundTrivia.indexOf(t)<0) S.foundTrivia.push(t);
@@ -5448,7 +5453,7 @@ function findEgg(n){
   save();
   openSheet(`<h2>Found</h2>
     <div class="note">${esc(egg.w)}</div>
-    <div class="lbl">Polllen</div><div class="mono" style="font-size:19px">+${amt}</div>
+    <div class="lbl">${coinHtml("mystrieousness")}</div><div class="mono" style="font-size:19px">+${amt}</div>
     <div class="lbl">A Speck of Pretty Damn Useless Knowledge</div>
     <div style="font-size:13.5px;line-height:1.45">${esc(t)}</div>
     <div style="height:14px"></div>
@@ -5636,7 +5641,7 @@ function uiShop(k){
     <button class="btn" data-seed="b${k}${i}" onclick="buy('${k}',${i})">${coin?`<span class="bi coinb"><img alt="" src="${coin}"></span>`:""}${priceOf(k,it)}${coin?"":" "+COINNAME[cn]}</button></div>`;
   const rows=[]; for(let i=0;i<sh.items.length;i+=2) rows.push(`<div class="shrow">${sh.items.slice(i,i+2).map((it,j)=>cell(it,i+j)).join("")}<i class="plank"></i></div>`);
   openSheet(`<h2>${sh.label}</h2>
-    <div class="lbl">Paid in ${COINNAME[cn]} · you have <span class="mono">${int(S[cn])}</span></div>
+    <div class="lbl">${coin?`<span class="bi coinb"><img alt="" src="${coin}"></span> `:"Paid in "+COINNAME[cn]+" · "}you have <span class="mono">${int(S[cn])}</span></div>
     ${rows.join("")}
     <div class="msg" id="shmsg"></div>
     <button class="btn" data-seed="sb3" onclick="uiShops()">Back</button>`,"wood");
@@ -5813,8 +5818,8 @@ function uiMemory(){
 }
 
 /* ══ BOOT ══════════════════════════════════════════════════ */
-const GLOSS={Hidrayshn:"Hidrayshn is watering.",Coppertanrr:"Coppertanrr is giving it light.",Fylth:"Fylth is feeding.",Polllen:"Polllen is the garden's pollen: where every other coin begins.",
-  Hunneee:"Hunneee is honey: the name of a shop, paid for in Polllen.",Gold:"Gold is the name of a shop of lasting upgrades, paid for in Polllen.",Mystrieousness:"Mystrieousness is the name of a shop of strange and secret things, paid for in Polllen.",
+const GLOSS={Hidrayshn:"Hidrayshn is watering.",Coppertanrr:"Coppertanrr is giving it light.",Fylth:"Fylth is feeding.",Polllen:"Polllen is the garden's pollen. It is kept, and it can be turned into Gold.",
+  Hunneee:"Hunneee is honey. It arrives with Bull, from elves nobody has seen.",Gold:"Gold is what the shops are paid in. The goods turn into it, a little at a time.",Mystrieousness:"Mystrieousness is what hidden things leave behind.",
   Nector:"Nector is only ever earned. It pays for the Purple Puff shop.","Purple Puff":"Purple Puff is the name of a shop of rare things, paid for in Nector.",Shadowpuff:"Shadowpuff comes from giving gifts.",Chocolate:"Chocolate is a shop that only opens during the Chocolate Eclipse.",
   Cookuuunml:"The Cookuuunml is the cocoon it changes in.",Babie:"A Babie is the first age.",Smitterpleet:"A Smitterpleet is the middle age.",Bleeglyl:"A Bleeglyl is fully grown, and the only age that can breed.",
   Eggling:"An Eggling is an egg.",Plantimal:"A Plantimal is half plant, half animal."};
