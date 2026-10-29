@@ -24,7 +24,7 @@ button.go{background:var(--acc);color:#fff;border-color:var(--acc)}button:disabl
 <div class="box">
  <label>OpenAI key (stays on this device)</label><input id="key" type="password" autocomplete="off" placeholder="sk-...">
  <div class="row"><div><label>Model</label><input id="model" value="gpt-image-2.5-sunburst"></div>
-  <div><label>Quality</label><select id="q"><option value="medium" selected>medium (use this)</option><option value="high">high (about 4x the cost)</option></select></div>
+  <div><label>Quality</label><select id="q"><option value="auto" selected>auto: low for small icons, medium for big pieces (cheapest, use this)</option><option value="low">low for all</option><option value="medium">medium for all</option><option value="high">high for all (about 4x medium)</option></select></div>
   <div><label>Paint at most, per press</label><input id="max" type="number" value="8" min="1" max="300"></div>
   <div><label>Only this group</label><select id="grp"><option value="">all groups</option></select></div></div>
  <div class="row" style="margin-top:10px"><button class="go" id="all">Paint the next batch</button><button id="stop" disabled>Stop</button><button id="zip">Save all (one .zip)</button></div>
@@ -56,7 +56,8 @@ function b64blob(b){ const a=atob(b), u=new Uint8Array(a.length); for(let i=0;i<
 async function paint(it){
   const key=$("#key").value.trim(); if(!key) throw new Error("Paste your OpenAI key first.");
   localStorage.setItem("uip_key",key);
-  const model=$("#model").value.trim()||"gpt-image-2.5-sunburst", quality=$("#q").value;
+  const model=$("#model").value.trim()||"gpt-image-2.5-sunburst", qs=$("#q").value, px=Array.isArray(it.size)?Math.max(...it.size):it.size;
+  const quality=qs==="auto"?(px<=256?"low":"medium"):qs;
   const paper=it.kind==="paper"||it.kind==="plate", ref=(it.kind!=="paper"&&it.id!==ANCHOR)?await get(ANCHOR):null;
   if(it.kind!=="paper"&&it.id!==ANCHOR&&!ref) throw new Error("Paint the watering can first: it sets the style.");
   const prompt=it.kind==="plate"?(ref?LOCK:"")+it.subject:paper?PAPER+it.subject:(ref?LOCK:"")+PREFIX+it.subject;
