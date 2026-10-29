@@ -1,0 +1,118 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>UI Painter</title>
+<style>
+:root{--bg:#f4ead2;--ink:#2b2016;--card:#fbf4e1;--line:#cdb88a;--acc:#8a2f3d;--soft:#6d5a3c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Georgia,'Lora',serif;padding:calc(env(safe-area-inset-top,0px) + 14px) 14px 40px}
+h1{font-size:25px;margin:6px 0 2px}.sub{color:var(--soft);font-style:italic;margin-bottom:12px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 auto 12px;max-width:900px}
+label{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);margin:8px 0 3px}
+input,select{width:100%;font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#fff9ea;color:var(--ink)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1 1 140px}
+button{font:inherit;font-weight:700;padding:10px 14px;border-radius:12px;border:1px solid #8d7650;background:#efe0b8;color:var(--ink);cursor:pointer}
+button.go{background:var(--acc);color:#fff;border-color:var(--acc)}button:disabled{opacity:.5}
+.bar{height:10px;border-radius:5px;background:#e3d3a8;overflow:hidden;margin:8px 0 2px}.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .3s}
+#log{font:12.5px/1.45 ui-monospace,Menlo,monospace;color:var(--soft);white-space:pre-wrap;max-height:130px;overflow:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;max-width:900px;margin:0 auto}
+.it{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px}
+.th{aspect-ratio:1/1;background:repeating-conic-gradient(#e6d8b4 0 25%,#f3e8cb 0 50%) 0 0/16px 16px;border-radius:8px;display:grid;place-items:center;overflow:hidden;color:#8d7650;font-size:12px;text-align:center}
+.th.L{aspect-ratio:3/2}.th.S{aspect-ratio:1/1}.th img{width:100%;height:100%;object-fit:cover}
+.t{font-size:12.5px;margin:6px 0 4px;min-height:34px}.st{font-size:11px;color:var(--soft);min-height:15px}
+.it button{padding:6px 8px;font-size:12px;margin-top:4px;width:100%}
+</style>
+<body>
+<h1>UI Painter</h1><div class="sub">Paints every picture the garden shows instead of words, once, in one matching style, then saves them as one zip.</div>
+<div class="box">
+ <label>OpenAI key (stays on this device)</label><input id="key" type="password" autocomplete="off" placeholder="sk-...">
+ <div class="row"><div><label>Model</label><input id="model" value="gpt-image-2.5-sunburst"></div>
+  <div><label>Quality</label><select id="q"><option value="medium" selected>medium (use this)</option><option value="high">high (about 4x the cost)</option></select></div>
+  <div><label>Only this group</label><select id="grp"><option value="">all groups</option></select></div></div>
+ <div class="row" style="margin-top:10px"><button class="go" id="all">Paint everything still missing</button><button id="stop" disabled>Stop</button><button id="zip">Save all (one .zip)</button></div>
+ <div class="bar"><i id="pb"></i></div><div id="pc" class="st"></div><div id="log"></div>
+ <div class="st" style="margin-top:6px">Order: the copper watering can first (it sets the style for all the rest), then the others. Tap Paint on any one to roll it again. Rolling the watering can again changes the style, so repaint the rest afterwards. Check your OpenAI usage after the first ten.</div>
+</div>
+<div class="grid" id="grid"></div>
+<script>
+const ANCHOR="card/hidrayshn";
+const PREFIX="Antique ink-and-watercolour painting, like a page from a Victorian naturalist's sketchbook: loose wet washes, pigment blooms, faint pencil underdrawing, soft bleeding edges, faded desaturated pigments (sepia, umber, moss, faded rose, slate, tarnished gold), one small warm accent per subject. Dark fairy-tale feeling in the manner of Arthur Rackham, John Bauer and Odilon Redon. ONE subject, centred, filling about 70% of the square, in a clear three-quarter view. NO paper, NO frame, NO border, NO background, NO ground shadow box: the washes thin out and feather into full transparency all around the subject, a soft vignette edge with no hard cut-out outline. No text, no letters, no numbers, no signature. Strong silhouette and strong light-against-dark contrast so it reads at thumbnail size.\nSubject: ";
+const LOCK="Paint a NEW subject in exactly the same medium, palette, brushwork, lighting and feathered transparent edge as the reference image. Do not repeat the reference subject.\n\n";
+const PAPER="Antique ink-and-watercolour paper texture. ";
+const $=s=>document.querySelector(s), nap=ms=>new Promise(r=>setTimeout(r,ms));
+let ITEMS=[], db=null, URLS={}, stop=false, busy=false;
+const log=t=>{ const l=$("#log"); l.textContent=(t+"\n"+l.textContent).slice(0,4000); };
+function open(){ return new Promise(ok=>{ const r=indexedDB.open("kiki-ui-painter",1); r.onupgradeneeded=()=>r.result.createObjectStore("img"); r.onsuccess=()=>{ db=r.result; ok(); }; r.onerror=()=>ok(); }); }
+const get=k=>new Promise(ok=>{ try{ const q=db.transaction("img").objectStore("img").get(k); q.onsuccess=()=>ok(q.result); q.onerror=()=>ok(null); }catch(e){ ok(null); } });
+const put=(k,v)=>new Promise(ok=>{ try{ const tx=db.transaction("img","readwrite"); tx.objectStore("img").put(v,k); tx.oncomplete=()=>ok(); tx.onerror=()=>ok(); }catch(e){ ok(); } });
+function show(it,blob){ if(URLS[it.id]) URL.revokeObjectURL(URLS[it.id]); URLS[it.id]=URL.createObjectURL(blob); document.querySelector(`[data-th="${it.id}"]`).innerHTML=`<img src="${URLS[it.id]}">`; }
+function draw(){
+  const gs=[...new Set(ITEMS.map(i=>i.id.split("/")[0]))]; $("#grp").innerHTML='<option value="">all groups</option>'+gs.map(g=>`<option>${g}</option>`).join("");
+  $("#grid").innerHTML=ITEMS.map(it=>`<div class="it"><div class="th" data-th="${it.id}">${it.id.split("/")[1]}</div><div class="t">${it.id}</div><div class="st" data-st="${it.id}"></div><button data-p="${it.id}">Paint</button></div>`).join("");
+  document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{ const it=ITEMS.find(x=>x.id===b.dataset.p); if(it.id===ANCHOR&&!confirm("This changes the style of everything. Roll the watering can again?")) return; run([it],true); });
+}
+async function refresh(){ let n=0; for(const it of ITEMS){ const bl=await get(it.id); if(bl){ show(it,bl); n++; document.querySelector(`[data-st="${it.id}"]`).textContent="painted"; } }
+  $("#pc").textContent=n+" of "+ITEMS.length+" painted"; $("#pb").style.width=(100*n/ITEMS.length)+"%"; return n; }
+function b64blob(b){ const a=atob(b), u=new Uint8Array(a.length); for(let i=0;i<a.length;i++) u[i]=a.charCodeAt(i); return new Blob([u],{type:"image/png"}); }
+async function paint(it){
+  const key=$("#key").value.trim(); if(!key) throw new Error("Paste your OpenAI key first.");
+  localStorage.setItem("uip_key",key);
+  const model=$("#model").value.trim()||"gpt-image-2.5-sunburst", quality=$("#q").value;
+  const paper=it.kind==="paper", ref=(!paper&&it.id!==ANCHOR)?await get(ANCHOR):null;
+  if(!paper&&it.id!==ANCHOR&&!ref) throw new Error("Paint the watering can first: it sets the style.");
+  const prompt=paper?PAPER+it.subject:(ref?LOCK:"")+PREFIX+it.subject;
+  const bg=paper?"opaque":"transparent";
+  for(let attempt=0;attempt<4;attempt++){
+    let r,j={};
+    try{
+      if(ref){ const fd=new FormData(); fd.append("model",model); fd.append("prompt",prompt); fd.append("size","1024x1024"); fd.append("quality",quality); fd.append("background",bg); fd.append("output_format","png"); fd.append("image",ref,"style.png");
+        r=await fetch("https://api.openai.com/v1/images/edits",{method:"POST",headers:{Authorization:"Bearer "+key},body:fd}); }
+      else r=await fetch("https://api.openai.com/v1/images/generations",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+key},body:JSON.stringify({model,prompt,size:"1024x1024",quality,background:bg,output_format:"png",n:1})});
+      j=await r.json().catch(()=>({}));
+    }catch(e){ log("could not reach OpenAI ("+(e.message||e)+"), retrying"); await nap(4000); continue; }
+    const b=j.data&&j.data[0]&&j.data[0].b64_json; if(r.ok&&b) return b64blob(b);
+    const msg=String((j.error&&j.error.message)||"no image").slice(0,200);
+    if(r.status===401||r.status===403) throw new Error("OpenAI refused the key ("+r.status+"): "+msg);
+    if(r.status===429){ log("busy or out of credit (429): "+msg); await nap(15000); continue; }
+    log(it.id+": "+r.status+" "+msg); await nap(3000);
+  }
+  throw new Error("gave up on "+it.id);
+}
+async function run(list,force){
+  if(busy) return; busy=true; stop=false; $("#all").disabled=true; $("#stop").disabled=false;
+  const g=$("#grp").value; if(!force&&g) list=list.filter(i=>i.id.startsWith(g+"/"));
+  if(!force&&!(await get(ANCHOR))){ const a=ITEMS.find(i=>i.id===ANCHOR); list=[a,...list.filter(i=>i!==a)]; }
+  for(const it of list){
+    if(stop) break;
+    if(!force&&await get(it.id)) continue;
+    const st=document.querySelector(`[data-st="${it.id}"]`); st.textContent="painting…";
+    try{ const bl=await paint(it); await put(it.id,bl); show(it,bl); st.textContent="painted"; log("painted "+it.id); }
+    catch(e){ st.textContent="not yet"; log("STOPPED: "+e.message); if(/refused the key|Paste your|watering can first/.test(e.message)) break; }
+    await refresh(); await nap(1200);
+  }
+  busy=false; $("#all").disabled=false; $("#stop").disabled=true; await refresh();
+}
+async function toWebp(blob,px){ const im=await createImageBitmap(blob); const c=document.createElement("canvas"); c.width=c.height=px; const x=c.getContext("2d"); x.imageSmoothingQuality="high"; x.drawImage(im,0,0,px,px);
+  return new Promise(ok=>c.toBlob(b=>ok(b),"image/webp",.88)); }
+function save(blob,name){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000); }
+function crcTable(){ const t=[]; for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0; } return t; }
+const CRC=crcTable(); const crc32=u=>{ let c=0xFFFFFFFF; for(let i=0;i<u.length;i++) c=CRC[(c^u[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; };
+async function zipAll(){
+  const files=[]; for(const it of ITEMS){ const bl=await get(it.id); if(bl){ const w=await toWebp(bl,it.size); files.push([it.file,new Uint8Array(await w.arrayBuffer())]); } }
+  if(!files.length) return log("Nothing painted yet.");
+  const enc=new TextEncoder(), parts=[], cen=[]; let off=0;
+  const u16=n=>new Uint8Array([n&255,(n>>8)&255]), u32=n=>new Uint8Array([n&255,(n>>8)&255,(n>>16)&255,(n>>24)&255]);
+  for(const [name,data] of files){ const nm=enc.encode(name), c=crc32(data);
+    const lh=[u32(0x04034b50),u16(20),u16(0),u16(0),u16(0),u16(33),u32(c),u32(data.length),u32(data.length),u16(nm.length),u16(0),nm];
+    lh.forEach(p=>parts.push(p)); parts.push(data);
+    cen.push([u32(0x02014b50),u16(20),u16(20),u16(0),u16(0),u16(0),u16(33),u32(c),u32(data.length),u32(data.length),u16(nm.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(off),nm]);
+    off+=lh.reduce((a,p)=>a+p.length,0)+data.length; }
+  const cs=off; for(const c of cen) c.forEach(p=>{ parts.push(p); off+=p.length; });
+  [u32(0x06054b50),u16(0),u16(0),u16(files.length),u16(files.length),u32(off-cs),u32(cs),u16(0)].forEach(p=>parts.push(p));
+  save(new Blob(parts,{type:"application/zip"}),"kiki-ui-art.zip"); log("zip saved with "+files.length+" pictures");
+}
+(async()=>{ await open(); try{ ITEMS=await (await fetch("assets/ui/manifest.json?v="+Date.now())).json(); }catch(e){ log("Could not load the list: "+e.message); return; }
+  const a=ITEMS.findIndex(i=>i.id===ANCHOR); if(a>0) ITEMS.unshift(ITEMS.splice(a,1)[0]);
+  draw();
+  let k=localStorage.getItem("uip_key")||localStorage.getItem("bp_key")||""; if(!k){ try{ k=(JSON.parse(localStorage.getItem("kiki_garden_v1")||"{}").openaiKey)||""; }catch(e){} } $("#key").value=k;
+  await refresh();
+  $("#all").onclick=()=>run(ITEMS,false); $("#stop").onclick=()=>{ stop=true; log("stopping after this one"); }; $("#zip").onclick=zipAll;
+})();
+</script></body></html>
