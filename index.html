@@ -240,7 +240,17 @@ html.painted .card::after,html.painted .btn::after,html.painted #sheet::after{di
 html,body{height:100%}
 html.painted body,body{padding:0 !important;max-width:none !important;min-height:0 !important;height:100dvh;overflow:hidden;background:#15110d !important}
 #bgs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:#15110d}
+#bgcam{position:absolute;left:0;top:0;height:100%;will-change:transform}
 .bgl{position:absolute;inset:-5%;background:center/cover no-repeat}
+#world{position:absolute;left:0;top:0;height:100%;will-change:transform;pointer-events:none}
+#world .fig{pointer-events:auto}
+#field{touch-action:pan-y}
+#bgcam.glide,#world.glide{transition:transform .5s cubic-bezier(.2,.8,.25,1)}
+#pdots{position:absolute;left:0;right:0;bottom:4px;display:flex;justify-content:center;gap:2px;z-index:4;pointer-events:none}
+#pdots i{pointer-events:auto;width:26px;height:26px;display:grid;place-items:center;cursor:pointer}
+#pdots i::after{content:"";width:6px;height:6px;border-radius:52% 46% 55% 44%;background:rgba(240,226,196,.38);box-shadow:0 0 3px rgba(240,226,196,.25);transition:all .3s}
+#pdots i.on::after{width:9px;height:9px;background:rgba(246,226,176,.85);box-shadow:0 0 6px rgba(246,226,176,.5)}
+#pdots i.home::after{border-radius:50% 50% 50% 50%}
 #bg1{animation:bgdrift 260s ease-in-out infinite alternate}
 #bg2,#bg3{opacity:0;transition:opacity 6s ease;-webkit-mask-repeat:repeat;mask-repeat:repeat}
 #bg2.on,#bg3.on{opacity:1}
@@ -719,7 +729,9 @@ textarea.notebook{width:100%;min-height:52vh;box-sizing:border-box;border:0;outl
   background-attachment:local;border-radius:6px}
 
 .bi{display:inline-flex;vertical-align:-4px;margin-right:7px}
-.bi svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.bi{position:relative}
+.bi:has(svg)::before{content:"";position:absolute;inset:-6px -5px -5px -6px;border-radius:52% 46% 56% 44% / 47% 55% 45% 53%;background:radial-gradient(ellipse at 42% 40%,rgba(var(--w,150,110,60),.55) 0,rgba(var(--w,150,110,60),.28) 55%,transparent 78%);filter:blur(1.2px);pointer-events:none}
+.bi svg{position:relative;width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .bi.coinb img{width:22px;height:22px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
 .nb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 .nb .bi{margin:0}
@@ -874,7 +886,7 @@ html,body,button{touch-action:manipulation}
 </style>
 </head>
 <body>
-<div id="bgs"><div class="bgl" id="bg1"></div><div class="bgl" id="bg2"></div><div class="bgl" id="bg3"></div><div id="fog"><i></i><i></i></div><div id="wxsky"></div><div id="wxrain"></div><div id="wxflash"></div></div>
+<div id="bgs"><div id="bgcam"><div class="bgl" id="bg1"></div><div class="bgl" id="bg2"></div><div class="bgl" id="bg3"></div></div><div id="fog"><i></i><i></i></div><div id="wxsky"></div><div id="wxrain"></div><div id="wxflash"></div></div>
 <div id="grain"></div>
 <div id="stain"></div>
 <div id="app"></div>
@@ -1579,41 +1591,114 @@ function eggFig(e){
     <div class="fn i">${e.status==="pending"?"It stirs.":"Something is inside."}</div></div>`;
 }
 function layoutFlock(){
-  const f=$("#field"); if(!f) return;
-  const items=[...f.querySelectorAll(".fig")]; if(!items.length) return;
-  const W=f.clientWidth, H=f.clientHeight, n=items.length, AR=1.62;
+  const f=$("#field"), world=$("#world"); if(!f||!world) return;
+  panoMetrics();
+  const items=[...world.querySelectorAll(".fig")];
+  const W=f.clientWidth, H=f.clientHeight, AR=1.62;
   const b=$("#bull");
   const br=b?{x:b.offsetLeft-8,y:b.offsetTop-6,w:b.offsetWidth+16,h:b.offsetHeight+12}:null;
-  let best=null;
-  for(let cols=1;cols<=10;cols++){
-    const cw=W/cols, ch=cw*AR, rows=Math.floor(H/ch);
-    if(rows<1||(cw>(innerWidth>=900?230:150)&&cols<10)) continue;
-    const off=(H-rows*ch)/2, cells=[];
-    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
-      const x=c*cw, y=off+r*ch, cx=x+cw/2, cy=y+ch/2;
-      if(br&&cx>br.x&&cx<br.x+br.w&&cy>br.y&&cy<br.y+br.h) continue;
-      cells.push({x:x,y:y,w:cw,h:ch});
+  panoAssign(items);
+  const groups={}; items.forEach(el=>{ const k=PANO.of[el.dataset.id||el.dataset.eid]; (groups[k]=groups[k]||[]).push(el); });
+  Object.keys(groups).forEach(k=>{
+    const g=groups[k], n=g.length, x0=(+k)*PANO.step;
+    let best=null;
+    for(let cols=1;cols<=10;cols++){
+      const cw=W/cols, ch=cw*AR, rows=Math.floor(H/ch);
+      if(rows<1||(cw>(innerWidth>=900?230:150)&&cols<10)) continue;
+      const off=(H-rows*ch)/2, cells=[];
+      for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+        const x=c*cw, y=off+r*ch, cx=x+cw/2, cy=y+ch/2;
+        if(br&&cx>br.x&&cx<br.x+br.w&&cy>br.y&&cy<br.y+br.h) continue;
+        cells.push({x:x,y:y,w:cw,h:ch});
+      }
+      if(cells.length>=n&&(!best||cw>best.cw)) best={cw:cw,cells:cells};
     }
-    if(cells.length>=n&&(!best||cw>best.cw)) best={cw:cw,cells:cells};
-  }
-  if(!best){
-    const cols=Math.max(1,Math.ceil(Math.sqrt(n*W/(H/AR)))), rows=Math.ceil(n/cols), cw=W/cols, ch=H/rows, cells=[];
-    for(let i=0;i<n;i++) cells.push({x:(i%cols)*cw,y:Math.floor(i/cols)*ch,w:cw,h:ch});
-    best={cw:cw,cells:cells};
-  }
-  const cells=best.cells;
-  items.forEach((el,i)=>{
-    const c=cells[Math.floor((i+0.5)*cells.length/n)];
-    const r=seeded("fig"+(el.dataset.id||el.dataset.eid));
-    const sc=+el.dataset.sc||.7;
-    const w=Math.min(innerWidth>=900?190:120,c.w*0.86,c.h/AR*0.86)*sc, hh=w*AR;
-    const jx=(r()-.5)*Math.max(0,c.w-w)*0.8, jy=(r()-.5)*Math.max(0,c.h-hh)*0.6;
-    el.style.width=w.toFixed(1)+"px";
-    el.style.left=(c.x+(c.w-w)/2+jx).toFixed(1)+"px";
-    el.style.top=(c.y+(c.h-hh)/2+jy).toFixed(1)+"px";
-    el.style.setProperty("--rot",((r()-.5)*5).toFixed(1)+"deg");
+    if(!best){
+      const cols=Math.max(1,Math.ceil(Math.sqrt(n*W/(H/AR)))), rows=Math.ceil(n/cols), cw=W/cols, ch=H/rows, cells=[];
+      for(let i=0;i<n;i++) cells.push({x:(i%cols)*cw,y:Math.floor(i/cols)*ch,w:cw,h:ch});
+      best={cw:cw,cells:cells};
+    }
+    const cells=best.cells;
+    g.forEach((el,i)=>{
+      const c=cells[Math.floor((i+0.5)*cells.length/n)];
+      const r=seeded("fig"+(el.dataset.id||el.dataset.eid));
+      const sc=+el.dataset.sc||.7;
+      const w=Math.min(innerWidth>=900?190:120,c.w*0.86,c.h/AR*0.86)*sc, hh=w*AR;
+      const jx=(r()-.5)*Math.max(0,c.w-w)*0.8, jy=(r()-.5)*Math.max(0,c.h-hh)*0.6;
+      el.style.width=w.toFixed(1)+"px";
+      el.style.left=(x0+c.x+(c.w-w)/2+jx).toFixed(1)+"px";
+      el.style.top=(c.y+(c.h-hh)/2+jy).toFixed(1)+"px";
+      el.style.setProperty("--rot",((r()-.5)*5).toFixed(1)+"deg");
+    });
   });
+  panoApply(false);
 }
+/* ══ THE PANORAMA (v1.19): six panels, home is the second; swipe sideways on the garden to pan ══ */
+const PANELS=6, HOME=1, PANEL_CAP=6, FILL_ORDER=[1,2,0,3,4,5];
+const PANO={step:380,of:{},seen:null,x:HOME*380,k:HOME,drag:null,noClick:0};
+function panoMetrics(){
+  const f=document.getElementById("field");
+  PANO.step=Math.max(200,Math.round(f?f.clientWidth:Math.min(innerWidth,480)-20));
+  const bg=document.getElementById("bgcam"), w=document.getElementById("world");
+  if(bg) bg.style.width=((PANELS-1)*PANO.step+innerWidth)+"px";
+  if(w) w.style.width=((PANELS-1)*PANO.step+PANO.step)+"px";
+}
+function panoAssign(items){
+  S.pano=S.pano||{}; const ids=new Set(items.map(el=>el.dataset.id||el.dataset.eid));
+  for(const id of Object.keys(S.pano)) if(!ids.has(id)) delete S.pano[id];
+  const cnt=Array(PANELS).fill(0); Object.values(S.pano).forEach(k=>{ if(k>=0&&k<PANELS) cnt[k]++; });
+  items.forEach(el=>{ const id=el.dataset.id||el.dataset.eid;
+    if(!(S.pano[id]>=0&&S.pano[id]<PANELS)){ const k=FILL_ORDER.find(k=>cnt[k]<PANEL_CAP); S.pano[id]=k===undefined?FILL_ORDER[0]:k; cnt[S.pano[id]]++; save(); }
+    PANO.of[id]=S.pano[id]; });
+}
+function panoApply(glide){
+  const t=`translate3d(${-PANO.x}px,0,0)`;
+  ["bgcam","world"].forEach(id=>{ const e=document.getElementById(id); if(!e) return; e.classList.toggle("glide",!!glide); e.style.transform=t; });
+  const d=document.getElementById("pdots"); if(!d) return;
+  d.style.display=S.panoDots===false?"none":"flex";
+  if(d.children.length!==PANELS) d.innerHTML=Array.from({length:PANELS},(_,k)=>`<i data-k="${k}" class="${k===HOME?"home":""}" onclick="panoGo(${k})"></i>`).join("");
+  [...d.children].forEach((e,k)=>e.classList.toggle("on",k===PANO.k));
+}
+function panoGo(k,quiet){
+  k=Math.max(0,Math.min(PANELS-1,k)); PANO.k=k; PANO.x=k*PANO.step; panoApply(true);
+  if(!quiet) sfx("tick");
+}
+function panoFollow(){        /* a newcomer on another panel: the garden turns to it */
+  const world=document.getElementById("world"); if(!world) return;
+  const ids=[...world.querySelectorAll(".fig")].map(el=>el.dataset.id||el.dataset.eid);
+  if(PANO.seen){ const fresh=ids.find(id=>!PANO.seen.has(id)); if(fresh&&PANO.of[fresh]!==undefined&&PANO.of[fresh]!==PANO.k) setTimeout(()=>panoGo(PANO.of[fresh],true),400); }
+  PANO.seen=new Set(ids);
+}
+const PAIR={};
+function paintBg(el,src){
+  el.dataset.src=src||"";
+  if(!src){ el.style.backgroundImage="none"; return; }
+  const tw=Math.max(innerWidth,PANO.step), key=src.length+":"+src.slice(-40)+":"+tw+"x"+innerHeight;
+  const set=u=>{ el.style.backgroundImage=`url("${u}")`; el.style.backgroundSize=(tw*2)+"px 100%"; el.style.backgroundRepeat="repeat-x"; el.style.backgroundPosition="0 0"; };
+  if(PAIR[key]){ set(PAIR[key]); return; }
+  const im=new Image(); im.onload=()=>{
+    try{ const dpr=Math.min(1.5,window.devicePixelRatio||1), H=innerHeight, c=document.createElement("canvas"); c.width=Math.round(tw*2*dpr); c.height=Math.round(H*dpr);
+      const x=c.getContext("2d"), sc=Math.max(c.width/2/im.naturalWidth,c.height/im.naturalHeight), w=im.naturalWidth*sc, h=im.naturalHeight*sc, ox=(c.width/2-w)/2, oy=(c.height-h)/2;
+      x.drawImage(im,ox,oy,w,h); x.save(); x.translate(c.width,0); x.scale(-1,1); x.drawImage(im,ox,oy,w,h); x.restore();   /* the second half is the mirror, so every seam matches */
+      c.toBlob(b=>{ if(!b) return; PAIR[key]=URL.createObjectURL(b); if(el.dataset.src===src) set(PAIR[key]); },"image/jpeg",.9);
+    }catch(e){} };
+  im.src=src;
+}
+(function panoInput(){
+  const down=e=>{ if(typeof sheetIsOpen!=="undefined"&&sheetIsOpen) return; if(!e.target.closest||!e.target.closest("#field")) return; if(e.pointerType==="mouse"&&e.button!==0) return;
+    PANO.drag={x:e.clientX,y:e.clientY,x0:PANO.x,moved:false,lx:e.clientX,lt:performance.now(),vx:0}; };
+  const move=e=>{ const d=PANO.drag; if(!d) return; const dx=e.clientX-d.x, dy=e.clientY-d.y;
+    if(!d.moved){ if(Math.abs(dy)>16&&Math.abs(dy)>Math.abs(dx)){ PANO.drag=null; return; } if(Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.2){ d.moved=true; } else return; }
+    const now=performance.now(), dt=Math.max(1,now-d.lt); d.vx=.7*d.vx+.3*((e.clientX-d.lx)/dt); d.lx=e.clientX; d.lt=now;
+    const max=(PANELS-1)*PANO.step; let nx=d.x0-dx; if(nx<0) nx*=.35; if(nx>max) nx=max+(nx-max)*.35; PANO.x=nx; panoApply(false); };
+  const up=e=>{ const d=PANO.drag; PANO.drag=null; if(!d||!d.moved) return; PANO.noClick=performance.now()+350;
+    const k=Math.round((PANO.x-d.vx*220)/PANO.step); panoGo(k,false); };
+  document.addEventListener("pointerdown",down,true); document.addEventListener("pointermove",move,true);
+  document.addEventListener("pointerup",up,true); document.addEventListener("pointercancel",up,true);
+  document.addEventListener("click",e=>{ if(performance.now()<PANO.noClick){ e.stopPropagation(); e.preventDefault(); } },true);
+  document.addEventListener("keydown",e=>{ if(typeof sheetIsOpen!=="undefined"&&sheetIsOpen) return; if(/^(INPUT|TEXTAREA|SELECT)$/.test((e.target||{}).tagName||"")) return;
+    if(e.key==="ArrowLeft"){ panoGo(PANO.k-1); e.preventDefault(); } else if(e.key==="ArrowRight"){ panoGo(PANO.k+1); e.preventDefault(); } });
+})();
 let purseOpen=false, moreOpen=false;
 function togglePurse(){ purseOpen=!purseOpen; if(purseOpen) moreOpen=false; sfx(purseOpen?"slide":"tick");
   const p=$("#purse"), b=$("#purseBtn"); if(p) p.classList.toggle("open",purseOpen); if(b) b.classList.toggle("open",purseOpen);
@@ -1647,7 +1732,7 @@ function render(){
     ${ev?`<span class="pill ev" onclick="uiEventCard()">${esc(ev.name)}</span>`:""}
     ${shadowOwned()?`<span class="pill moon ${S.shadowOn&&midnightNow()&&S.moonHeard!==nightKey()?"stir":""}" onclick="uiMoon()" aria-label="Moon"><svg viewBox="0 0 24 24" width="13" height="13"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></span>`:""}</div></div>
     <div id="field">${bullMarkup()}${eggMarkup("garden"+dayKey(),["garden"])}
-      ${live().map(figMarkup).join("")}${S.egglingses.map(eggFig).join("")}
+      <div id="world">${live().map(figMarkup).join("")}${S.egglingses.map(eggFig).join("")}</div><div id="pdots"></div>
       ${int((S.owned||{}).hiddenGarden)?`<div id="hdoor" onclick="uiHidden()" aria-label="A small door"><svg viewBox="0 0 24 34"><path d="M3 33V12a9 9 0 0 1 18 0v21z" fill="rgba(30,20,12,.55)" stroke="rgba(240,226,196,.55)"/><path d="M12 33V8.5" stroke="rgba(240,226,196,.35)"/><path d="M12 33l7-3V11" fill="rgba(240,200,120,.18)" stroke="rgba(240,226,196,.45)"/><circle cx="15" cy="21" r="1" fill="rgba(240,226,196,.7)"/></svg></div>`:""}</div>
     <div id="more" class="${moreOpen?"open":""}">
       <button class="nb" onclick="moreGo(uiJournal)">Journal</button>
@@ -1670,6 +1755,7 @@ function render(){
   layoutFlock();
   placeWear($("#app"));
   requestAnimationFrame(()=>{ layoutFlock(); placeWear($("#app")); });
+  panoApply(false); panoFollow();
   maybeFounder();
 }
 
@@ -2752,7 +2838,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.18.1";
+const VERSION="1.19.0";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2766,9 +2852,10 @@ function applyPaper(){
   const evArt=ev&&(ART["ui:ev:"+ev]||ART["ev:"+ev]);
   document.documentElement.dataset.ev=evArt?"1":"";
   const L=[["bg1",evArt?null:"ui:bg"],["bg2","ui:bg2"],["bg3","ui:bg3"]];
+  panoMetrics();
   for(const [id,k] of L){ const el=document.getElementById(id); if(!el) continue;
     const src=id==="bg1"&&evArt?evArt:ART[k];
-    el.style.backgroundImage=src?`url("${src}")`:"none"; el.classList.toggle("on",!!src&&!(evArt&&id!=="bg1")); }
+    paintBg(el,src); el.classList.toggle("on",!!src&&!(evArt&&id!=="bg1")); }
 }
 let repaintArmed=0;
 function repaintPaper(el){
@@ -3469,6 +3556,8 @@ function uiSound(){
     <div style="height:7px"></div>
     <button class="btn" data-seed="nvh" onclick="S.navHide=!S.navHide;save();uiSound()">Swipe hints · ${S.navHide?"off":"on"}</button>
     <div style="height:7px"></div>
+    <button class="btn" data-seed="pdt" onclick="S.panoDots=S.panoDots===false;save();panoApply(false);uiSound()">Garden dots · ${S.panoDots===false?"off":"on"}</button>
+    <div style="height:7px"></div>
     <button class="btn" data-seed="sgw" onclick="S.gentleOff=!S.gentleOff;save();uiSound()">Gentle while away · ${S.gentleOff?"off":"on"}</button>
     <div style="height:7px"></div>
     <button class="btn" data-seed="srf" onclick="refreshGame()">Refresh the game</button>
@@ -3900,7 +3989,7 @@ function applyShadow(){
   document.documentElement.dataset.shadow=on?"1":"";
   document.documentElement.dataset.night=int((S.owned||{}).nightMode)>0?"1":"";
   const b1=document.getElementById("bg1");
-  if(on&&ART["ui:shadow"]&&b1) b1.style.backgroundImage=`url("${ART["ui:shadow"]}")`;
+  if(on&&ART["ui:shadow"]&&b1) paintBg(b1,ART["ui:shadow"]);
   if(on&&!ART["ui:shadow"]) auto("ui:shadow",async()=>{ await ArtDB.put("ui:shadow",await shrink(await genImage(BG_PROMPT+SHADOW_PROMPT,"2:3"),1024)); applyPaper(); applyShadow(); });
 }
 function toggleShadow(){
@@ -4795,12 +4884,14 @@ Object.assign(BI,{"Handwriting":'<path d="M20 4c-6 1-11 6-13 12l-2 4 4-2c6-2 11-
 Object.assign(BI_DESC,{"Handwriting":"a feather quill and a small inkwell","Rain and snow":"a small rain cloud with a snowflake","Show the":"a brass question mark charm","Cocoons":"a silk chrysalis",
   pgprev:"a small curled fern frond pointing left",pgnext:"a small curled fern frond pointing right",qmark:"a small brass question mark charm","Calm motion":"a still pond with one ripple","Gentle while away":"a small pocket watch with a leaf"});
 let biTimer=0;
+const WASH=["150,110,60","92,120,70","160,90,100","90,110,130","180,150,70","110,70,100","70,120,115","120,80,50"];   /* faded pigments for the stand-in washes */
 function iconSpan(cls,svg,label){
   const h=svgHash(svg);
   if(!BI_WHO[h]){ BI_WHO[h]=BI_DESC[label]||(label==="gift"?BI_DESC.gift:BI_DESC.sprig);
     if(!ART["bi:"+h]){ clearTimeout(biTimer); biTimer=setTimeout(paintButtonIcons,1200); } }
   const a=ART["bi:"+h];
-  return `<span class="${cls}" data-h="${h}">${a?`<img alt="" src="${a}">`:`<svg viewBox="0 0 24 24">${svg}</svg>`}</span>`;
+  const wi=[...String(h)].reduce((t,c)=>t+c.charCodeAt(0),0)%WASH.length;
+  return `<span class="${cls}" data-h="${h}" style="--w:${WASH[wi]}">${a?`<img alt="" src="${a}">`:`<svg viewBox="0 0 24 24">${svg}</svg>`}</span>`;
 }
 let biBusy=false;
 const BI_FIRST=["Convert","Butterfly","Shops","More","Less","Journal","Collection","Messages","Kept","Settings","Hidrayshn","Coppertanrr","Fylth","Genetics","Rename","Back","Done","Ask","Confirm"];
@@ -6063,7 +6154,7 @@ load();
   hideLoad();
   if(!S.pinHash) pinGate(); else boot();
 })();
-window.addEventListener("resize",()=>requestAnimationFrame(()=>{ shapeAll(); layoutFlock(); }));
+window.addEventListener("resize",()=>requestAnimationFrame(()=>{ shapeAll(); applyPaper(); layoutFlock(); PANO.x=PANO.k*PANO.step; panoApply(false); }));
 document.fonts && document.fonts.ready.then(()=>requestAnimationFrame(shapeAll));
 </script>
 </body>
