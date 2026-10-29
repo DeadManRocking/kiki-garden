@@ -1,0 +1,1913 @@
+[
+{
+"id": "coin/gold",
+"file": "assets/ui/coin/gold.webp",
+"size": 192,
+"kind": "icon",
+"subject": "one thick, worn antique gold coin seen at a slight tilt, its rim nicked, a faint sleeping-moth face stamped on it, warm tarnish in the hollows"
+},
+{
+"id": "coin/nector",
+"file": "assets/ui/coin/nector.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a single pear-shaped drop of pale glowing nectar hanging from the tip of a curled petal, a tiny bright spark at its heart"
+},
+{
+"id": "coin/shadowpuff",
+"file": "assets/ui/coin/shadowpuff.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a soft round puff of charcoal-violet smoke with two small pale eyes peering out of it, edges curling away into nothing"
+},
+{
+"id": "coin/stuff",
+"file": "assets/ui/coin/stuff.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small closed drawstring pouch of patched dark velvet, knotted with red thread, bulging with something unseen"
+},
+{
+"id": "coin/polllen",
+"file": "assets/ui/coin/polllen.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small heap of glowing golden pollen grains, a few drifting up from the top like dust in sunlight"
+},
+{
+"id": "coin/hunneee",
+"file": "assets/ui/coin/hunneee.webp",
+"size": 192,
+"kind": "icon",
+"subject": "one thick, slow drop of dark amber honey falling from a tiny wooden honey dipper, honey stringing between them"
+},
+{
+"id": "coin/mystrieousness",
+"file": "assets/ui/coin/mystrieousness.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a curl of violet smoke twisting upward into a spiral, one faint closed eye hidden inside the curl"
+},
+{
+"id": "coin/purple_puff",
+"file": "assets/ui/coin/purple_puff.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a fat, fluffy puffball of dusky purple seed-fluff resting on a tiny shallow clay bowl"
+},
+{
+"id": "coin/chocolate",
+"file": "assets/ui/coin/chocolate.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a square of dark chocolate snapped in two, the break rough, a curl of chocolate shaving beside it"
+},
+{
+"id": "nav/kiss",
+"file": "assets/ui/nav/kiss.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a pale dusty butterfly resting with its wings half open, a faint blush of rose at the wing roots"
+},
+{
+"id": "nav/shops",
+"file": "assets/ui/nav/shops.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small hanging wooden shop sign on an iron bracket, the board blank and weathered, a tiny painted honey pot on it"
+},
+{
+"id": "nav/more",
+"file": "assets/ui/nav/more.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a sprig of three fresh leaves fanning upward"
+},
+{
+"id": "nav/less",
+"file": "assets/ui/nav/less.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a single leaf folded closed on its stem"
+},
+{
+"id": "nav/journal",
+"file": "assets/ui/nav/journal.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small worn leather journal tied with a cord, a pressed fern poking out from the pages"
+},
+{
+"id": "nav/collection",
+"file": "assets/ui/nav/collection.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a little wooden card-file box with a brass label plate, its lid open and cards standing inside"
+},
+{
+"id": "nav/messages",
+"file": "assets/ui/nav/messages.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a folded letter sealed with a blot of red wax pressed with a leaf"
+},
+{
+"id": "nav/kept",
+"file": "assets/ui/nav/kept.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a pressed flower under a tiny oval glass dome"
+},
+{
+"id": "nav/settings",
+"file": "assets/ui/nav/settings.webp",
+"size": 192,
+"kind": "icon",
+"subject": "an old brass sundial with a mossy base"
+},
+{
+"id": "nav/help",
+"file": "assets/ui/nav/help.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small brass question-mark charm hanging from a thread, swinging slightly"
+},
+{
+"id": "nav/exchange",
+"file": "assets/ui/nav/exchange.webp",
+"size": 192,
+"kind": "icon",
+"subject": "an antique brass balance scale, a small heap of pollen in one pan and one gold coin in the other, the beam level"
+},
+{
+"id": "card/hidrayshn",
+"file": "assets/ui/card/hidrayshn.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small dented copper watering can, a few drops falling from the rose"
+},
+{
+"id": "card/coppertanrr",
+"file": "assets/ui/card/coppertanrr.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a warm low sun with long copper rays fanning out over a single leaf"
+},
+{
+"id": "card/fylth",
+"file": "assets/ui/card/fylth.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small iron garden trowel heaped with dark crumbly soil and a few odd scraps"
+},
+{
+"id": "card/gift",
+"file": "assets/ui/card/gift.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small bundle wrapped in leaf and tied with a faded ribbon"
+},
+{
+"id": "card/genetics",
+"file": "assets/ui/card/genetics.webp",
+"size": 192,
+"kind": "icon",
+"subject": "two green vines twisting together into a double helix, small leaves at the turns"
+},
+{
+"id": "card/rename",
+"file": "assets/ui/card/rename.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a feather quill pen with a bead of ink at the nib"
+},
+{
+"id": "card/dress",
+"file": "assets/ui/card/dress.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small masquerade mask with one ribbon trailing"
+},
+{
+"id": "card/cuddle",
+"file": "assets/ui/card/cuddle.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a soft heart shape made of plump moss"
+},
+{
+"id": "card/coax",
+"file": "assets/ui/card/coax.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a tiny glowing spark cupped in a curled leaf"
+},
+{
+"id": "card/hidden_take",
+"file": "assets/ui/card/hidden_take.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small arched wooden door standing ajar, warm light inside"
+},
+{
+"id": "card/hidden_back",
+"file": "assets/ui/card/hidden_back.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small arched wooden door with a little path of stones leading out of it"
+},
+{
+"id": "card/note",
+"file": "assets/ui/card/note.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a scrap of lined paper pinned with a thorn"
+},
+{
+"id": "verb/done",
+"file": "assets/ui/verb/done.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a sprig with one dewdrop at its tip"
+},
+{
+"id": "verb/notyet",
+"file": "assets/ui/verb/notyet.webp",
+"size": 192,
+"kind": "icon",
+"subject": "an old hourglass with the sand half run"
+},
+{
+"id": "verb/goon",
+"file": "assets/ui/verb/goon.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a fern frond uncurling forward"
+},
+{
+"id": "verb/confirm",
+"file": "assets/ui/verb/confirm.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a red wax seal pressed with a leaf"
+},
+{
+"id": "verb/send",
+"file": "assets/ui/verb/send.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a folded paper bird in flight"
+},
+{
+"id": "verb/ask",
+"file": "assets/ui/verb/ask.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a glowing seed in an open palm-shaped leaf"
+},
+{
+"id": "verb/listen",
+"file": "assets/ui/verb/listen.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a pale ear-shaped seashell"
+},
+{
+"id": "verb/look",
+"file": "assets/ui/verb/look.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a single wide-open eye with long lashes, drawn like an old engraving"
+},
+{
+"id": "verb/tryagain",
+"file": "assets/ui/verb/tryagain.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a coiled fern frond, tightly wound"
+},
+{
+"id": "verb/pollinate",
+"file": "assets/ui/verb/pollinate.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a fuzzy round bumblebee hovering over an open flower"
+},
+{
+"id": "verb/rounds",
+"file": "assets/ui/verb/rounds.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a tiny leather satchel with a honey-pot stamp, its strap hanging, a few drops of amber on it"
+},
+{
+"id": "verb/feedit",
+"file": "assets/ui/verb/feedit.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small wooden bowl of dark glossy berries"
+},
+{
+"id": "verb/extra",
+"file": "assets/ui/verb/extra.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a single bright spark with tiny rays"
+},
+{
+"id": "verb/keep",
+"file": "assets/ui/verb/keep.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small heart carved from pale wood"
+},
+{
+"id": "verb/preserve",
+"file": "assets/ui/verb/preserve.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a pressed flower in a small brass frame"
+},
+{
+"id": "verb/release",
+"file": "assets/ui/verb/release.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a single feather drifting on the wind, a faint curl of breeze"
+},
+{
+"id": "verb/ascend",
+"file": "assets/ui/verb/ascend.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a pale feather rising upward trailing faint light"
+},
+{
+"id": "verb/darken",
+"file": "assets/ui/verb/darken.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a crescent moon with a thin veil of cloud"
+},
+{
+"id": "verb/lighten",
+"file": "assets/ui/verb/lighten.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small sun breaking through cloud"
+},
+{
+"id": "verb/askkiss",
+"file": "assets/ui/verb/askkiss.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a pale butterfly carrying a tiny folded note"
+},
+{
+"id": "verb/call",
+"file": "assets/ui/verb/call.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small brass hand-bell with a dark ribbon"
+},
+{
+"id": "verb/makeroom",
+"file": "assets/ui/verb/makeroom.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small garden gate swung open onto empty ground"
+},
+{
+"id": "verb/erase",
+"file": "assets/ui/verb/erase.webp",
+"size": 192,
+"kind": "icon",
+"subject": "two crossed twigs bound with thread"
+},
+{
+"id": "verb/playopening",
+"file": "assets/ui/verb/playopening.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small theatre curtain of faded velvet, drawn half open"
+},
+{
+"id": "verb/startover",
+"file": "assets/ui/verb/startover.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a seed split open with a new shoot inside"
+},
+{
+"id": "verb/refresh",
+"file": "assets/ui/verb/refresh.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a curled leaf turning over, beads of dew rolling off"
+},
+{
+"id": "water/meltwater",
+"file": "assets/ui/water/meltwater.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a glass vial of water with a thin shard of ice floating in it and frost on the glass, a red-thread stopper"
+},
+{
+"id": "water/rainwater",
+"file": "assets/ui/water/rainwater.webp",
+"size": 192,
+"kind": "icon",
+"subject": "an upturned leaf cupping three round raindrops, more drops striking the surface"
+},
+{
+"id": "water/dewfall",
+"file": "assets/ui/water/dewfall.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a single heavy dewdrop clinging under a blade of grass, a spider-silk thread beside it"
+},
+{
+"id": "water/springwater",
+"file": "assets/ui/water/springwater.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small stone basin with water bubbling up from below in rings, sunlight on the ripples"
+},
+{
+"id": "water/wellwater",
+"file": "assets/ui/water/wellwater.webp",
+"size": 192,
+"kind": "icon",
+"subject": "an old wooden well-bucket on a rope, dark water inside reflecting one star"
+},
+{
+"id": "water/pour_hold",
+"file": "assets/ui/water/pour_hold.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a watering can held level and steady, a single thin unbroken stream falling"
+},
+{
+"id": "water/pour_sprinkle",
+"file": "assets/ui/water/pour_sprinkle.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a watering can rose shaking out a fine scatter of separate droplets"
+},
+{
+"id": "water/pour_tip",
+"file": "assets/ui/water/pour_tip.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a watering can tipped steeply on its side, water gushing out in one sheet"
+},
+{
+"id": "water/enough",
+"file": "assets/ui/water/enough.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a watering can set upright, a last drop hanging from the spout"
+},
+{
+"id": "zone/dappled_hollow",
+"file": "assets/ui/zone/dappled_hollow.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small grassy hollow under leaves, coins of sunlight scattered across it"
+},
+{
+"id": "zone/open_ridge",
+"file": "assets/ui/zone/open_ridge.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a bare windswept ridge under a wide pale sky, one bent tree"
+},
+{
+"id": "zone/fogbank",
+"file": "assets/ui/zone/fogbank.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a low bank of fog rolling over reeds, shapes half hidden"
+},
+{
+"id": "zone/low_thicket",
+"file": "assets/ui/zone/low_thicket.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a dense low thicket of brambles and ferns, a small dark gap at its heart"
+},
+{
+"id": "zone/ashen_clearing",
+"file": "assets/ui/zone/ashen_clearing.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a clearing of grey ash and burnt stumps, the first green shoot coming up"
+},
+{
+"id": "zone/moonside",
+"file": "assets/ui/zone/moonside.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a mossy stone in pale moonlight, a crescent moon low above it"
+},
+{
+"id": "ingredient/ashen_rind",
+"file": "assets/ui/ingredient/ashen_rind.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a curled, cracked grey rind of some dried fruit, dusted with ash"
+},
+{
+"id": "ingredient/bogmilk",
+"file": "assets/ui/ingredient/bogmilk.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small clay cup of thick pale milky bog-water with a lily pad on the rim"
+},
+{
+"id": "ingredient/cinderpepper",
+"file": "assets/ui/ingredient/cinderpepper.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a few wrinkled black-red peppercorns glowing faintly at the edges like coals"
+},
+{
+"id": "ingredient/dewmoss",
+"file": "assets/ui/ingredient/dewmoss.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a cool green cushion of moss beaded all over with dew"
+},
+{
+"id": "ingredient/emberbark",
+"file": "assets/ui/ingredient/emberbark.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a heavy chunk of dark bark with a seam of orange ember glowing in its cracks"
+},
+{
+"id": "ingredient/frostcap",
+"file": "assets/ui/ingredient/frostcap.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small pale mushroom with a frosted cap that gives off faint cold light"
+},
+{
+"id": "ingredient/gravelbloom",
+"file": "assets/ui/ingredient/gravelbloom.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a tiny flower growing out of a pile of grey gravel, its petals like flakes of stone"
+},
+{
+"id": "ingredient/hollowseed",
+"file": "assets/ui/ingredient/hollowseed.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a dry hollow seed pod split open, empty and papery"
+},
+{
+"id": "ingredient/marrowdust",
+"file": "assets/ui/ingredient/marrowdust.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small heap of pale bone-coloured dust beside a fragment of knuckle bone"
+},
+{
+"id": "ingredient/nightpetal",
+"file": "assets/ui/ingredient/nightpetal.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a single deep blue-black petal with a faint silver edge, glistening"
+},
+{
+"id": "ingredient/rotwick",
+"file": "assets/ui/ingredient/rotwick.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a soft rotting twig with fungus and a curl of warm steam"
+},
+{
+"id": "ingredient/sunfleck",
+"file": "assets/ui/ingredient/sunfleck.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small round golden berry glowing as if a speck of sunlight were inside it"
+},
+{
+"id": "tag/warm",
+"file": "assets/ui/tag/warm.webp",
+"size": 128,
+"kind": "icon",
+"subject": "a small curl of heat-shimmer rising from a hot stone"
+},
+{
+"id": "tag/cool",
+"file": "assets/ui/tag/cool.webp",
+"size": 128,
+"kind": "icon",
+"subject": "a snowflake resting on a leaf"
+},
+{
+"id": "tag/damp",
+"file": "assets/ui/tag/damp.webp",
+"size": 128,
+"kind": "icon",
+"subject": "a drop of water running down a leaf"
+},
+{
+"id": "tag/dry",
+"file": "assets/ui/tag/dry.webp",
+"size": 128,
+"kind": "icon",
+"subject": "a cracked dry leaf crumbling at the edge"
+},
+{
+"id": "tag/sweet",
+"file": "assets/ui/tag/sweet.webp",
+"size": 128,
+"kind": "icon",
+"subject": "a honey-soaked sugar crystal"
+},
+{
+"id": "tag/bitter",
+"file": "assets/ui/tag/bitter.webp",
+"size": 128,
+"kind": "icon",
+"subject": "a split bitter green walnut husk"
+},
+{
+"id": "tag/bright",
+"file": "assets/ui/tag/bright.webp",
+"size": 128,
+"kind": "icon",
+"subject": "a star-shaped burst of light"
+},
+{
+"id": "tag/heavy",
+"file": "assets/ui/tag/heavy.webp",
+"size": 128,
+"kind": "icon",
+"subject": "a round grey stone pressing into soft moss"
+},
+{
+"id": "tag/spicy",
+"file": "assets/ui/tag/spicy.webp",
+"size": 128,
+"kind": "icon",
+"subject": "a tiny red chili with a wisp of smoke"
+},
+{
+"id": "tag/mineral",
+"file": "assets/ui/tag/mineral.webp",
+"size": 128,
+"kind": "icon",
+"subject": "a small cluster of rough crystals"
+},
+{
+"id": "tag/floral",
+"file": "assets/ui/tag/floral.webp",
+"size": 128,
+"kind": "icon",
+"subject": "a single open five-petal flower"
+},
+{
+"id": "tag/rotten",
+"file": "assets/ui/tag/rotten.webp",
+"size": 128,
+"kind": "icon",
+"subject": "a bruised, collapsing apple with a fly"
+},
+{
+"id": "method/sprinkle",
+"file": "assets/ui/method/sprinkle.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a pinch of soil scattered lightly from fingertips"
+},
+{
+"id": "method/pack",
+"file": "assets/ui/method/pack.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small mound of soil pressed firm with a trowel's flat"
+},
+{
+"id": "method/drench",
+"file": "assets/ui/method/drench.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a scoop of soil drowned in a pouring stream of water"
+},
+{
+"id": "fresh/fresh",
+"file": "assets/ui/fresh/fresh.webp",
+"size": 128,
+"kind": "icon",
+"subject": "a crisp green leaf with a bead of dew"
+},
+{
+"id": "fresh/turning",
+"file": "assets/ui/fresh/turning.webp",
+"size": 128,
+"kind": "icon",
+"subject": "a leaf half green, half turning amber"
+},
+{
+"id": "fresh/stale",
+"file": "assets/ui/fresh/stale.webp",
+"size": 128,
+"kind": "icon",
+"subject": "a brown curled leaf, dry and spotted"
+},
+{
+"id": "result/perfect",
+"file": "assets/ui/result/perfect.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a flower in full open bloom with a sparkle at its heart"
+},
+{
+"id": "result/good",
+"file": "assets/ui/result/good.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a flower half open"
+},
+{
+"id": "result/poor",
+"file": "assets/ui/result/poor.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a drooping flower with a bent stem"
+},
+{
+"id": "result/failed",
+"file": "assets/ui/result/failed.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a wilted flower lying flat, petals fallen"
+},
+{
+"id": "trait/color_crimson",
+"file": "assets/ui/trait/color_crimson.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a single crimson poppy petal, deep and dark-veined, with a drop of red pigment"
+},
+{
+"id": "trait/color_azure",
+"file": "assets/ui/trait/color_azure.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a blue forget-me-not cluster with a drop of blue pigment, cool and pale"
+},
+{
+"id": "trait/color_verdant",
+"file": "assets/ui/trait/color_verdant.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a fresh unfurling green fern fiddlehead"
+},
+{
+"id": "trait/color_solar",
+"file": "assets/ui/trait/color_solar.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a yellow-gold sunflower head, bright and round"
+},
+{
+"id": "trait/color_twilight",
+"file": "assets/ui/trait/color_twilight.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a violet night-blooming flower with a tiny star above it, dark and dusky"
+},
+{
+"id": "trait/mark_rosette",
+"file": "assets/ui/trait/mark_rosette.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a patch of pale bark with leopard-like rosette markings"
+},
+{
+"id": "trait/mark_stripe",
+"file": "assets/ui/trait/mark_stripe.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a curved leaf with bold tiger-like dark stripes"
+},
+{
+"id": "trait/mark_freckle",
+"file": "assets/ui/trait/mark_freckle.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a smooth seed speckled with lichen-like freckles"
+},
+{
+"id": "trait/mark_vein",
+"file": "assets/ui/trait/mark_vein.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a translucent leaf showing a fine branching network of veins"
+},
+{
+"id": "trait/mark_glow",
+"file": "assets/ui/trait/mark_glow.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a leaf whose edges glow softly with pale bioluminescent light in darkness"
+},
+{
+"id": "trait/wing_bat",
+"file": "assets/ui/trait/wing_bat.webp",
+"size": 160,
+"kind": "icon",
+"subject": "one leathery bat-like wing with long finger bones and thin membranes"
+},
+{
+"id": "trait/wing_bird",
+"file": "assets/ui/trait/wing_bird.webp",
+"size": 160,
+"kind": "icon",
+"subject": "one feathered bird wing, spread"
+},
+{
+"id": "trait/wing_bee",
+"file": "assets/ui/trait/wing_bee.webp",
+"size": 160,
+"kind": "icon",
+"subject": "one small glassy golden bee wing"
+},
+{
+"id": "trait/wing_moth",
+"file": "assets/ui/trait/wing_moth.webp",
+"size": 160,
+"kind": "icon",
+"subject": "one dusty moth wing with a painted eye-spot"
+},
+{
+"id": "trait/wing_dragonfly",
+"file": "assets/ui/trait/wing_dragonfly.webp",
+"size": 160,
+"kind": "icon",
+"subject": "two long glassy finely veined dragonfly wings"
+},
+{
+"id": "trait/arms",
+"file": "assets/ui/trait/arms.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a twiggy branch arm ending in a small twig hand"
+},
+{
+"id": "trait/tendrils",
+"file": "assets/ui/trait/tendrils.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a curling green vine tendril spiralling"
+},
+{
+"id": "trait/rootlegs",
+"file": "assets/ui/trait/rootlegs.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a thick gnarled taproot leg ending in root-tip toes"
+},
+{
+"id": "trait/beh_playful",
+"file": "assets/ui/trait/beh_playful.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a small round leafy face with a wide impish grin and one eye winking"
+},
+{
+"id": "trait/beh_contemplative",
+"file": "assets/ui/trait/beh_contemplative.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a small round leafy face with closed eyes, calm, a tiny moth resting on it"
+},
+{
+"id": "trait/beh_mischievous",
+"file": "assets/ui/trait/beh_mischievous.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a small round leafy face peeking from behind a leaf with narrowed sly eyes"
+},
+{
+"id": "trait/cov_scale",
+"file": "assets/ui/trait/cov_scale.webp",
+"size": 160,
+"kind": "icon",
+"subject": "overlapping pinecone-like scales"
+},
+{
+"id": "trait/cov_feather",
+"file": "assets/ui/trait/cov_feather.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a few layered ruffled feathers"
+},
+{
+"id": "trait/cov_fur",
+"file": "assets/ui/trait/cov_fur.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a tuft of soft shaggy fur"
+},
+{
+"id": "trait/cov_bark",
+"file": "assets/ui/trait/cov_bark.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a piece of bark-grained skin with fissures and a knot"
+},
+{
+"id": "trait/cov_smooth",
+"file": "assets/ui/trait/cov_smooth.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a smooth pebble-like polished surface with one highlight"
+},
+{
+"id": "mut/ghost_petal",
+"file": "assets/ui/mut/ghost_petal.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a translucent see-through petal like frosted glass"
+},
+{
+"id": "mut/extra_bloom",
+"file": "assets/ui/mut/extra_bloom.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a stem carrying two flowers instead of one"
+},
+{
+"id": "mut/iris_shift",
+"file": "assets/ui/mut/iris_shift.webp",
+"size": 160,
+"kind": "icon",
+"subject": "an iris flower whose petals shift between colours like oil on water"
+},
+{
+"id": "mut/split_root",
+"file": "assets/ui/mut/split_root.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a single root splitting cleanly into two"
+},
+{
+"id": "mut/static_bloom",
+"file": "assets/ui/mut/static_bloom.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a flower crackling with tiny threads of blue static"
+},
+{
+"id": "mut/mismatched_pair",
+"file": "assets/ui/mut/mismatched_pair.webp",
+"size": 160,
+"kind": "icon",
+"subject": "two different wings, one feathered one glassy, side by side"
+},
+{
+"id": "mut/sixfold",
+"file": "assets/ui/mut/sixfold.webp",
+"size": 160,
+"kind": "icon",
+"subject": "three pairs of delicate wings stacked one above another"
+},
+{
+"id": "mut/gilded_vein",
+"file": "assets/ui/mut/gilded_vein.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a leaf with veins of shining gold leaf"
+},
+{
+"id": "mut/var_cocoa_dipped",
+"file": "assets/ui/mut/var_cocoa_dipped.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a leaf half dipped in glossy chocolate"
+},
+{
+"id": "mut/var_candy_striped",
+"file": "assets/ui/mut/var_candy_striped.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a twisted stem striped like a peppermint stick"
+},
+{
+"id": "mut/var_cocoa_pod",
+"file": "assets/ui/mut/var_cocoa_pod.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a ribbed cocoa pod split open"
+},
+{
+"id": "mut/var_ghostlight",
+"file": "assets/ui/mut/var_ghostlight.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a pale flame-like wisp of ghost light"
+},
+{
+"id": "mut/var_many_eyed",
+"file": "assets/ui/mut/var_many_eyed.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a seed head covered in many small blinking eyes"
+},
+{
+"id": "mut/var_batwing",
+"file": "assets/ui/mut/var_batwing.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a small bat wing tucked against a leaf"
+},
+{
+"id": "mut/var_lantern_glow",
+"file": "assets/ui/mut/var_lantern_glow.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a paper-lantern-shaped flower glowing from inside"
+},
+{
+"id": "mut/var_masked",
+"file": "assets/ui/mut/var_masked.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a leaf mask with two eye holes"
+},
+{
+"id": "mut/var_keepsake",
+"file": "assets/ui/mut/var_keepsake.webp",
+"size": 160,
+"kind": "icon",
+"subject": "a pressed flower in a tiny locket"
+},
+{
+"id": "stage/babie",
+"file": "assets/ui/stage/babie.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a tiny seedling with two round seed leaves"
+},
+{
+"id": "stage/smitterpleet",
+"file": "assets/ui/stage/smitterpleet.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a young sprout with four leaves and a bud"
+},
+{
+"id": "stage/bleeglyl",
+"file": "assets/ui/stage/bleeglyl.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a grown plant in full leaf with an opening flower"
+},
+{
+"id": "stage/eggling",
+"file": "assets/ui/stage/eggling.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a speckled egg nestled in a little bed of moss"
+},
+{
+"id": "stage/chrysalis",
+"file": "assets/ui/stage/chrysalis.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a pale silk chrysalis hanging from a twig, faintly glowing"
+},
+{
+"id": "giftb/sparkle_pulse",
+"file": "assets/ui/giftb/sparkle_pulse.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small burst of sparkles radiating from a seed"
+},
+{
+"id": "giftb/little_shield",
+"file": "assets/ui/giftb/little_shield.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a curled leaf closing like a shield around a tiny bud"
+},
+{
+"id": "giftb/warm_nuzzle",
+"file": "assets/ui/giftb/warm_nuzzle.webp",
+"size": 192,
+"kind": "icon",
+"subject": "two small leaves leaning against each other"
+},
+{
+"id": "giftb/seed_sneeze",
+"file": "assets/ui/giftb/seed_sneeze.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a seed head bursting in a puff of seeds"
+},
+{
+"id": "giftb/night_light",
+"file": "assets/ui/giftb/night_light.webp",
+"size": 192,
+"kind": "icon",
+"subject": "two small glowing eyes in the dark"
+},
+{
+"id": "giftt/murmur",
+"file": "assets/ui/giftt/murmur.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a seashell with faint sound-curls coming out"
+},
+{
+"id": "giftt/hidden_path",
+"file": "assets/ui/giftt/hidden_path.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a narrow path of stones winding into a hedge"
+},
+{
+"id": "giftt/changeling",
+"file": "assets/ui/giftt/changeling.webp",
+"size": 192,
+"kind": "icon",
+"subject": "two small masks swapping places in a swirl"
+},
+{
+"id": "giftt/echo",
+"file": "assets/ui/giftt/echo.webp",
+"size": 192,
+"kind": "icon",
+"subject": "concentric ripples spreading on dark water"
+},
+{
+"id": "giftt/hollow_song",
+"file": "assets/ui/giftt/hollow_song.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a hollow reed flute with a note curling out"
+},
+{
+"id": "giftt/bloom_lure",
+"file": "assets/ui/giftt/bloom_lure.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a flower with a trail of glowing pollen drifting toward it"
+},
+{
+"id": "quirk/stubborn",
+"file": "assets/ui/quirk/stubborn.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small stone planted firmly with roots gripping"
+},
+{
+"id": "quirk/grumpy",
+"file": "assets/ui/quirk/grumpy.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a thundercloud no bigger than a fist with a scowl"
+},
+{
+"id": "quirk/clingy",
+"file": "assets/ui/quirk/clingy.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a vine wrapped tightly around a twig"
+},
+{
+"id": "quirk/shy",
+"file": "assets/ui/quirk/shy.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a leaf curled up hiding a bud"
+},
+{
+"id": "quirk/dramatic",
+"file": "assets/ui/quirk/dramatic.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a wilting flower swooning theatrically"
+},
+{
+"id": "quirk/vindictive",
+"file": "assets/ui/quirk/vindictive.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a thorny bramble with one sharp thorn raised"
+},
+{
+"id": "quirk/cheerful",
+"file": "assets/ui/quirk/cheerful.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a sunflower turned upward with a bright face"
+},
+{
+"id": "quirk/helpful",
+"file": "assets/ui/quirk/helpful.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small leaf cupping a water drop to offer it"
+},
+{
+"id": "quirk/talented",
+"file": "assets/ui/quirk/talented.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a tiny paintbrush made from a grass stem"
+},
+{
+"id": "quirk/generous",
+"file": "assets/ui/quirk/generous.webp",
+"size": 192,
+"kind": "icon",
+"subject": "an open seed pod spilling seeds"
+},
+{
+"id": "quirk/wise",
+"file": "assets/ui/quirk/wise.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small owl-like knot in old bark with calm eyes"
+},
+{
+"id": "shop/hunneee",
+"file": "assets/ui/shop/hunneee.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a honey-pot shop sign hanging from a little chain"
+},
+{
+"id": "shop/gold",
+"file": "assets/ui/shop/gold.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a gold-coin shop sign hanging from a little chain"
+},
+{
+"id": "shop/mystrieousness",
+"file": "assets/ui/shop/mystrieousness.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a shop sign of a violet curl of smoke with an eye, on a chain"
+},
+{
+"id": "shop/purple_puff",
+"file": "assets/ui/shop/purple_puff.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a shop sign of a purple puffball on a chain"
+},
+{
+"id": "shop/shadowpuff",
+"file": "assets/ui/shop/shadowpuff.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a shop sign of a dark smoke puff with pale eyes on a chain"
+},
+{
+"id": "shop/chocolate",
+"file": "assets/ui/shop/chocolate.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a shop sign of a broken chocolate square on a chain"
+},
+{
+"id": "shop/wardrobe",
+"file": "assets/ui/shop/wardrobe.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a tiny wooden wardrobe with its doors open and a mask hanging inside"
+},
+{
+"id": "item/hunneee_0",
+"file": "assets/ui/item/hunneee_0.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a small sack of dark rich soil tied with twine"
+},
+{
+"id": "item/hunneee_1",
+"file": "assets/ui/item/hunneee_1.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a small soft collar of faded velvet with a single tiny bell"
+},
+{
+"id": "item/hunneee_2",
+"file": "assets/ui/item/hunneee_2.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a little stoppered bottle of pale green liquid with a sprig of lavender"
+},
+{
+"id": "item/gold_0",
+"file": "assets/ui/item/gold_0.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a tangle of long roots reaching deep down"
+},
+{
+"id": "item/gold_1",
+"file": "assets/ui/item/gold_1.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a small stone trough brimming with still water"
+},
+{
+"id": "item/gold_2",
+"file": "assets/ui/item/gold_2.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a little glass cloche over a seedling"
+},
+{
+"id": "item/mystrieousness_0",
+"file": "assets/ui/item/mystrieousness_0.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a single torn page with faint handwriting, edges burnt"
+},
+{
+"id": "item/mystrieousness_1",
+"file": "assets/ui/item/mystrieousness_1.webp",
+"size": 256,
+"kind": "icon",
+"subject": "an egg wrapped in dark cloth tied with string, only the top showing"
+},
+{
+"id": "item/mystrieousness_2",
+"file": "assets/ui/item/mystrieousness_2.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a small bottle of swirling cloudy violet liquid"
+},
+{
+"id": "item/mystrieousness_3",
+"file": "assets/ui/item/mystrieousness_3.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a magnifying lens with a firefly inside"
+},
+{
+"id": "item/mystrieousness_4",
+"file": "assets/ui/item/mystrieousness_4.webp",
+"size": 256,
+"kind": "icon",
+"subject": "an old iron key with a leaf tied to it"
+},
+{
+"id": "item/purple_puff_0",
+"file": "assets/ui/item/purple_puff_0.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a single gold-veined leaf in a glass vial"
+},
+{
+"id": "item/purple_puff_1",
+"file": "assets/ui/item/purple_puff_1.webp",
+"size": 256,
+"kind": "icon",
+"subject": "an egg wrapped in festive ribbons and paper lanterns"
+},
+{
+"id": "item/purple_puff_2",
+"file": "assets/ui/item/purple_puff_2.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a sheet of dusky violet writing paper"
+},
+{
+"id": "item/purple_puff_3",
+"file": "assets/ui/item/purple_puff_3.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a sheet of ember-orange writing paper with singed edges"
+},
+{
+"id": "item/purple_puff_4",
+"file": "assets/ui/item/purple_puff_4.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a sheet of moss-green writing paper"
+},
+{
+"id": "item/purple_puff_5",
+"file": "assets/ui/item/purple_puff_5.webp",
+"size": 256,
+"kind": "icon",
+"subject": "four tiny postage stamps of leaves and seeds"
+},
+{
+"id": "item/purple_puff_6",
+"file": "assets/ui/item/purple_puff_6.webp",
+"size": 256,
+"kind": "icon",
+"subject": "four tiny postage stamps of moons and moths"
+},
+{
+"id": "item/shadowpuff_0",
+"file": "assets/ui/item/shadowpuff_0.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a small dark cloth thrown over a lantern"
+},
+{
+"id": "item/shadowpuff_1",
+"file": "assets/ui/item/shadowpuff_1.webp",
+"size": 256,
+"kind": "icon",
+"subject": "an hourglass filled with dark night sky and stars"
+},
+{
+"id": "item/chocolate_0",
+"file": "assets/ui/item/chocolate_0.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a chocolate-dipped berry on a stick"
+},
+{
+"id": "item/chocolate_1",
+"file": "assets/ui/item/chocolate_1.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a small wrapped chocolate bonbon"
+},
+{
+"id": "item/chocolate_2",
+"file": "assets/ui/item/chocolate_2.webp",
+"size": 256,
+"kind": "icon",
+"subject": "a chocolate-brown eclipsed sun"
+},
+{
+"id": "costume/lace",
+"file": "assets/ui/costume/lace.webp",
+"size": 384,
+"kind": "cutout",
+"subject": "a small black lace eye-mask with frayed edges and a thin silk ribbon, front view, flat to the viewer, as a cut-out to lay over a portrait"
+},
+{
+"id": "costume/gilt",
+"file": "assets/ui/costume/gilt.webp",
+"size": 384,
+"kind": "cutout",
+"subject": "a gilded papier-mache half-mask for one eye and cheek, cracked gold leaf, a single painted tear, front view, flat to the viewer, as a cut-out to lay over a portrait"
+},
+{
+"id": "costume/moon",
+"file": "assets/ui/costume/moon.webp",
+"size": 384,
+"kind": "cutout",
+"subject": "a pale round moon-face mask with a sleepy painted smile, tied with a faded ribbon, front view, flat to the viewer, as a cut-out to lay over a portrait"
+},
+{
+"id": "costume/beak",
+"file": "assets/ui/costume/beak.webp",
+"size": 384,
+"kind": "cutout",
+"subject": "a small long-beaked masquerade mask of old leather with brass rivets and two round glass eyes, front view, flat to the viewer, as a cut-out to lay over a portrait"
+},
+{
+"id": "costume/crown",
+"file": "assets/ui/costume/crown.webp",
+"size": 384,
+"kind": "cutout",
+"subject": "a tiny crown woven of bramble thorns, studded with small pearls and one drop of dew, front view, flat to the viewer, as a cut-out to lay over a portrait"
+},
+{
+"id": "costume/moth",
+"file": "assets/ui/costume/moth.webp",
+"size": 384,
+"kind": "cutout",
+"subject": "a delicate headdress of two dusty moth wings with eye-spots, on a thin band, front view, flat to the viewer, as a cut-out to lay over a portrait"
+},
+{
+"id": "costume/hat",
+"file": "assets/ui/costume/hat.webp",
+"size": 384,
+"kind": "cutout",
+"subject": "a tiny battered velvet top hat with a long trailing ribbon and a dried flower in the band, front view, flat to the viewer, as a cut-out to lay over a portrait"
+},
+{
+"id": "costume/veil",
+"file": "assets/ui/costume/veil.webp",
+"size": 384,
+"kind": "cutout",
+"subject": "a short veil of cobweb lace hanging from a little band of dried rosebuds, front view, flat to the viewer, as a cut-out to lay over a portrait"
+},
+{
+"id": "costume/ruff",
+"file": "assets/ui/costume/ruff.webp",
+"size": 384,
+"kind": "cutout",
+"subject": "a small pleated Elizabethan ruff collar of yellowed lace, seen whole as a ring, front view, flat to the viewer, as a cut-out to lay over a portrait"
+},
+{
+"id": "costume/collar",
+"file": "assets/ui/costume/collar.webp",
+"size": 384,
+"kind": "cutout",
+"subject": "a small soft collar of faded velvet with a single tiny bell, seen whole as a ring, front view, flat to the viewer, as a cut-out to lay over a portrait"
+},
+{
+"id": "costume/jewel",
+"file": "assets/ui/costume/jewel.webp",
+"size": 384,
+"kind": "cutout",
+"subject": "a single dark red jewel hanging from a fine knotted thread, worn as a pendant, front view, flat to the viewer, as a cut-out to lay over a portrait"
+},
+{
+"id": "event/chocolate_eclipse",
+"file": "assets/ui/event/chocolate_eclipse.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a chocolate-brown eclipsed sun with a thin gold ring"
+},
+{
+"id": "event/masquerade",
+"file": "assets/ui/event/masquerade.webp",
+"size": 192,
+"kind": "icon",
+"subject": "an ornate masquerade mask with feathers"
+},
+{
+"id": "event/anniversary",
+"file": "assets/ui/event/anniversary.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a single lit candle in a small brass holder, rose petals at its foot"
+},
+{
+"id": "event/scary_fun_night",
+"file": "assets/ui/event/scary_fun_night.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small friendly ghost holding a lantern"
+},
+{
+"id": "journal/eggs",
+"file": "assets/ui/journal/eggs.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a speckled egg"
+},
+{
+"id": "journal/recipes",
+"file": "assets/ui/journal/recipes.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small mixing bowl with a spoon"
+},
+{
+"id": "journal/trivia",
+"file": "assets/ui/journal/trivia.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small star"
+},
+{
+"id": "journal/lore",
+"file": "assets/ui/journal/lore.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a rolled scroll tied with thread"
+},
+{
+"id": "journal/notes",
+"file": "assets/ui/journal/notes.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a feather quill and inkwell"
+},
+{
+"id": "journal/chart",
+"file": "assets/ui/journal/chart.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small folded chart on parchment"
+},
+{
+"id": "set/music",
+"file": "assets/ui/set/music.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a little open music box"
+},
+{
+"id": "set/musicbox",
+"file": "assets/ui/set/musicbox.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a tiny music box cylinder with pins"
+},
+{
+"id": "set/rock",
+"file": "assets/ui/set/rock.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small electric guitar made of twisted wood and vines"
+},
+{
+"id": "set/film",
+"file": "assets/ui/set/film.webp",
+"size": 192,
+"kind": "icon",
+"subject": "an old film reel with a strip of film unwinding"
+},
+{
+"id": "set/gardensounds",
+"file": "assets/ui/set/gardensounds.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a large seashell"
+},
+{
+"id": "set/effects",
+"file": "assets/ui/set/effects.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a cluster of sparkles"
+},
+{
+"id": "set/feeltest",
+"file": "assets/ui/set/feeltest.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a hand print pressed into moss"
+},
+{
+"id": "set/fingerdown",
+"file": "assets/ui/set/fingerdown.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a fingertip pressing down onto a leaf"
+},
+{
+"id": "set/fingerup",
+"file": "assets/ui/set/fingerup.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a fingertip lifting from a leaf, a dewdrop springing up"
+},
+{
+"id": "set/both",
+"file": "assets/ui/set/both.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a fingertip tapping a leaf twice, two small ripples"
+},
+{
+"id": "set/rainsnow",
+"file": "assets/ui/set/rainsnow.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small rain cloud with a snowflake"
+},
+{
+"id": "set/handwriting",
+"file": "assets/ui/set/handwriting.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a feather quill and a small inkwell"
+},
+{
+"id": "set/calm",
+"file": "assets/ui/set/calm.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a still pond with one ripple"
+},
+{
+"id": "set/gentle",
+"file": "assets/ui/set/gentle.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small pocket watch with a leaf resting on it"
+},
+{
+"id": "set/swipehints",
+"file": "assets/ui/set/swipehints.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a curled fern frond with two small arrows of leaves to either side"
+},
+{
+"id": "set/labels",
+"file": "assets/ui/set/labels.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a tiny paper tag tied to a twig"
+},
+{
+"id": "amount/vine",
+"file": "assets/ui/amount/vine.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a bare thin curving vine stem, horizontal, with no leaves"
+},
+{
+"id": "amount/leaf",
+"file": "assets/ui/amount/leaf.webp",
+"size": 192,
+"kind": "icon",
+"subject": "one small fresh leaf, alone, stem at left"
+},
+{
+"id": "amount/shell",
+"file": "assets/ui/amount/shell.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a small spiral seashell, opening facing right"
+},
+{
+"id": "amount/wave",
+"file": "assets/ui/amount/wave.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a single curved sound-wave arc, like a ripple drawn in ink"
+},
+{
+"id": "amount/bud",
+"file": "assets/ui/amount/bud.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a closed flower bud on a short stem"
+},
+{
+"id": "amount/half",
+"file": "assets/ui/amount/half.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a half-open flower on a short stem"
+},
+{
+"id": "amount/bloom",
+"file": "assets/ui/amount/bloom.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a fully open flower on a short stem"
+},
+{
+"id": "amount/vessel",
+"file": "assets/ui/amount/vessel.webp",
+"size": 192,
+"kind": "icon",
+"subject": "an empty small glass jar with a cork, seen straight on"
+},
+{
+"id": "amount/vessel_full",
+"file": "assets/ui/amount/vessel_full.webp",
+"size": 192,
+"kind": "icon",
+"subject": "the same small glass jar with a cork, seen straight on, filled to the brim with glowing amber liquid"
+},
+{
+"id": "sky/clear",
+"file": "assets/ui/sky/clear.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a clear sun in an open sky"
+},
+{
+"id": "sky/hazy",
+"file": "assets/ui/sky/hazy.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a sun softened behind haze"
+},
+{
+"id": "sky/overcast",
+"file": "assets/ui/sky/overcast.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a heavy grey cloud"
+},
+{
+"id": "sky/drizzle",
+"file": "assets/ui/sky/drizzle.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a cloud with fine slanting drizzle"
+},
+{
+"id": "sky/fog",
+"file": "assets/ui/sky/fog.webp",
+"size": 192,
+"kind": "icon",
+"subject": "layers of drifting fog"
+},
+{
+"id": "sky/storm",
+"file": "assets/ui/sky/storm.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a dark storm cloud with a fork of lightning"
+},
+{
+"id": "sky/spring",
+"file": "assets/ui/sky/spring.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a blossoming branch"
+},
+{
+"id": "sky/summer",
+"file": "assets/ui/sky/summer.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a full sun over ripe wheat"
+},
+{
+"id": "sky/autumn",
+"file": "assets/ui/sky/autumn.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a falling red maple leaf"
+},
+{
+"id": "sky/winter",
+"file": "assets/ui/sky/winter.webp",
+"size": 192,
+"kind": "icon",
+"subject": "a bare twig with snow on it"
+},
+{
+"id": "misc/bull",
+"file": "assets/ui/misc/bull.webp",
+"size": 512,
+"kind": "misc",
+"subject": "a fat fuzzy bumblebee seen in profile facing left, a long proboscis, small bright eyes, heavy furry body, glassy wings"
+},
+{
+"id": "misc/bull_pasty",
+"file": "assets/ui/misc/bull_pasty.webp",
+"size": 512,
+"kind": "misc",
+"subject": "the same fat bumblebee facing left but pale and pasty, chalky white fur, a faint sickly sheen"
+},
+{
+"id": "misc/snail",
+"file": "assets/ui/misc/snail.webp",
+"size": 384,
+"kind": "misc",
+"subject": "a small snail with a spiral shell, seen in profile crawling right"
+},
+{
+"id": "misc/apple_whole",
+"file": "assets/ui/misc/apple_whole.webp",
+"size": 384,
+"kind": "misc",
+"subject": "a single ripe red apple, whole and unbitten, a short stem with one leaf"
+},
+{
+"id": "misc/apple_core",
+"file": "assets/ui/misc/apple_core.webp",
+"size": 384,
+"kind": "misc",
+"subject": "a single apple core eaten down to the middle, browned bite edges, dark seeds showing"
+},
+{
+"id": "misc/door",
+"file": "assets/ui/misc/door.webp",
+"size": 256,
+"kind": "misc",
+"subject": "a tiny arched wooden door set into the ground, iron hinges"
+},
+{
+"id": "misc/moon",
+"file": "assets/ui/misc/moon.webp",
+"size": 128,
+"kind": "misc",
+"subject": "a small pale crescent moon"
+},
+{
+"id": "misc/pgprev",
+"file": "assets/ui/misc/pgprev.webp",
+"size": 128,
+"kind": "misc",
+"subject": "a small curled fern frond pointing left"
+},
+{
+"id": "misc/pgnext",
+"file": "assets/ui/misc/pgnext.webp",
+"size": 128,
+"kind": "misc",
+"subject": "a small curled fern frond pointing right"
+},
+{
+"id": "misc/paper",
+"file": "assets/ui/misc/paper.webp",
+"size": 1024,
+"kind": "paper",
+"subject": "an empty sheet of antique stained, foxed watercolour paper, warm cream, filling the whole square, seamlessly tileable at its edges, nothing painted on it"
+}
+]
