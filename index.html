@@ -304,6 +304,11 @@ html.painted #sheet .btn{padding:11px 12px !important;min-height:44px;font-size:
 #veil{perspective:1300px;background:rgba(16,11,8,calc(.30 * var(--vd,1))) !important;transition:background .3s ease}
 #veil.out{background:rgba(16,11,8,0) !important}
 #sheet{transform-origin:50% 0;touch-action:pan-y;will-change:transform;backface-visibility:hidden}
+#sheet .grab{position:absolute;top:5px;left:50%;width:64px;height:22px;margin-left:-32px;z-index:3;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#sheet .grab::after{content:"";position:absolute;left:8px;right:8px;top:8px;height:6px;border-radius:6px;background:radial-gradient(ellipse at 50% 40%,rgba(120,86,48,.7),rgba(92,62,32,.45));box-shadow:0 1px 1px rgba(255,240,205,.35);filter:blur(.6px)}
+#sheet .navhint{position:absolute;left:50%;bottom:16px;width:120px;margin-left:-60px;color:rgba(92,62,32,.7);pointer-events:none;animation:nvh 3s ease-in-out forwards}
+#sheet .navhint svg{width:100%;display:block}
+@keyframes nvh{0%{opacity:0;transform:translateX(-26px)}20%{opacity:1}50%{transform:translateX(26px)}80%{opacity:1;transform:translateX(-10px)}100%{opacity:0;transform:translateX(0)}}
 #sheet.k-card{transform-origin:50% 40%}
 #sheet.k-wood{transform-origin:0 50%}
 html,body{overscroll-behavior:none}
@@ -1161,6 +1166,7 @@ let sheetOpenedAt=0;
 function openSheet(html,kind){
   sheetOpenedAt=performance.now();
   const v=$("#veil"), sh=$("#sheet");
+  if(sheetIsOpen&&v.classList.contains("on")&&!navRestoring) navSnap();
   clearTimeout(sheetTimer);
   const k=kind||nextKind||"paper"; nextKind=null; sheetKind=k;
   const was=sheetIsOpen&&v.classList.contains("on");
@@ -1173,10 +1179,74 @@ function openSheet(html,kind){
     sfx(SHEET_SND[k]||"slide");
   } else if(sh.animate) sh.animate([{transform:"translate3d(0,6px,0)",opacity:.7},{transform:"none",opacity:1}],{duration:200,easing:EASE_OUT});
   v.scrollTop=0;
+  navRecord(html,k,was);
   decorate(sh); decorateOpts(sh);
+  navDecorate(sh);
   paginate(sh);
   requestAnimationFrame(()=>{ shapeCard(sh); placeWear(sh); });
 }
+/* ══ NAVIGATION STACK (v1.17): swipe right = back one step, left = forward, down = out ══ */
+let navStack=[], navPos=-1, navRestoring=false, navNeedRender=false;
+function navKey(html){ const m=html.match(/<h2[^>]*>([\s\S]*?)<\/h2>/); return (m?m[1].replace(/<[^>]*>/g,""):html.slice(0,80)).slice(0,60); }
+function navRecord(html,kind,was){
+  if(kind==="fixed"||navRestoring) return;
+  if(!was){ navStack=[]; navPos=-1; }
+  const e={key:navKey(html),snap:null,cls:""};
+  if(navPos>=0&&navStack[navPos]&&navStack[navPos].key===e.key){ navStack[navPos]=e; return; }      /* the same screen redrawn */
+  navStack=navStack.slice(0,navPos+1); navStack.push(e); navPos=navStack.length-1;
+  if(navStack.length>14){ navStack.shift(); navPos--; }
+}
+function navSnap(){
+  const sh=$("#sheet"), e=navStack[navPos]; if(!e||sh.classList.contains("k-fixed")) return;
+  const c=sh.cloneNode(true); c.querySelectorAll(".grab,.navhint").forEach(x=>x.remove());
+  e.snap=c.innerHTML; e.cls=sh.className.replace(/\b(moving|enter|leave)\b/g,"").replace(/\s+/g," ").trim();
+}
+function navStrip(sh){
+  sh.querySelectorAll("button").forEach(b=>{
+    if((b.textContent||"").trim()!=="Back"||b.closest(".pgnav")) return;
+    if(/render\(\)/.test(b.getAttribute("onclick")||"")) navNeedRender=true;
+    const pr=b.previousElementSibling;
+    if(pr&&pr.tagName==="DIV"&&!pr.children.length&&!pr.textContent.trim()&&/height/.test(pr.getAttribute("style")||"")) pr.remove();
+    b.remove();
+  });
+}
+function navDecorate(sh){
+  if(sheetKind==="fixed") return;
+  navStrip(sh);
+  if(S.navHide) return;
+  const g=document.createElement("div"); g.className="grab"; g.setAttribute("aria-label","Back"); g.onclick=()=>{ if(!navStep(-1)) closeSheet("right"); };
+  sh.appendChild(g);
+  if(!S.navHinted&&!document.body.classList.contains("opening")){
+    S.navHinted=true; save();
+    const h=document.createElement("div"); h.className="navhint";
+    h.innerHTML='<svg viewBox="0 0 120 40"><path d="M30 20h60M42 8 28 20l14 12M78 8l14 12-14 12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    sh.appendChild(h); setTimeout(()=>h.remove(),3000);
+  }
+}
+function navGo(i,dir){
+  const e=navStack[i]; if(!e||!e.snap) return false;
+  const sh=$("#sheet"); navSnap(); navPos=i;
+  sheetAnims(sh); sh.innerHTML=e.snap; sh.className=e.cls||"k-paper";
+  sheetKind=((e.cls||"").match(/k-(\w+)/)||[0,"paper"])[1];
+  sh.style.transform=""; sh.style.opacity=""; sheetPose={x:0,y:0,rot:0}; veilDim(0); sh.classList.remove("moving");
+  sheetOpenedAt=performance.now()-400; pgToken++;
+  const pgs=[...sh.querySelectorAll(":scope > .pg")]; pgN=pgs.length; pgIdx=Math.max(0,pgs.findIndex(p=>!p.classList.contains("off")));
+  navDecorate(sh);
+  if(sh.animate) sh.animate([{transform:`translate3d(${dir*-70}px,0,0)`,opacity:.3},{transform:"none",opacity:1}],{duration:220,easing:EASE_OUT});
+  sfx("flip"); tapBuzz(); return true;
+}
+function navStep(d){      /* d=-1 back, +1 forward; true if something moved */
+  if(!sheetIsOpen||sheetKind==="fixed") return false;
+  if(pgN>1){ const np=pgIdx+d; if(np>=0&&np<pgN){ turnPage(d); return true; } }
+  const i=navPos+d; if(i>=0&&i<navStack.length) return navGo(i,d);
+  return false;
+}
+document.addEventListener("keydown",e=>{
+  if(!sheetIsOpen||sheetKind==="fixed"||/^(INPUT|TEXTAREA|SELECT)$/.test((e.target||{}).tagName||"")) return;
+  if(e.key==="ArrowLeft"){ if(!navStep(-1)) closeSheet("right"); e.preventDefault(); }
+  else if(e.key==="ArrowRight"){ navStep(1); e.preventDefault(); }
+  else if(e.key==="ArrowDown"||e.key==="Escape"){ closeSheet("down"); e.preventDefault(); }
+});
 /* a screen too tall for the phone becomes pages you turn, instead of scrolling */
 let pgIdx=0, pgN=0, pgToken=0;
 function paginate(sh){
@@ -1228,7 +1298,8 @@ function turnPage(d){
 function finishClose(){
   const v=$("#veil"), sh=$("#sheet");
   sheetAnims(sh); v.classList.remove("on","out"); sh.className=""; sh.style.transform=""; sh.style.opacity="";
-  sheetPose={x:0,y:0,rot:0}; veilDim(0); maybeFounder();
+  sheetPose={x:0,y:0,rot:0}; veilDim(0); navStack=[]; navPos=-1; maybeFounder();
+  if(navNeedRender){ navNeedRender=false; try{ render(); }catch(err){} }
 }
 /* a throw: the sheet keeps the speed it was released with, falls a little, spins a little, and is gone */
 function throwSheet(st){
@@ -1299,8 +1370,11 @@ function closeSheet(dir,opt){
     for(const s2 of samples) if(now-s2[2]<=90){ a=s2; break; }
     const b=samples[samples.length-1], dt=Math.max(8,b[2]-a[2]);
     const vx=(b[0]-a[0])/dt, vy=(b[1]-a[1])/dt, was=axis; axis=null; ok=false;
-    if(was==="x"&&pgN>1&&(Math.abs(dx)>50||Math.abs(vx)>.4)){ const p0={...sheetPose}; poseSheet({x:0,y:0,rot:0}); sh.classList.remove("moving"); sh.style.transform=""; turnPage(dx<0?1:-1); }
-    else if(performance.now()-sheetOpenedAt>800&&was==="x"&&(Math.abs(dx)>innerWidth*.3||(Math.abs(vx)>.5&&Math.abs(dx)>44&&Math.sign(vx)===Math.sign(dx)))) closeSheet(dx<0?"left":"right",{vx:vx,vy:vy});
+    const xGo=was==="x"&&(Math.abs(dx)>innerWidth*.22||(Math.abs(vx)>.45&&Math.abs(dx)>44&&Math.sign(vx)===Math.sign(dx)));
+    if(xGo&&pgN>1&&((dx<0&&pgIdx<pgN-1)||(dx>0&&pgIdx>0))){ poseSheet({x:0,y:0,rot:0}); sh.classList.remove("moving"); sh.style.transform=""; veilDim(0); turnPage(dx<0?1:-1); }
+    else if(xGo&&performance.now()-sheetOpenedAt>500&&dx<0&&navPos<navStack.length-1&&navStep(1)){ }
+    else if(xGo&&performance.now()-sheetOpenedAt>500&&dx>0&&navPos>0&&navStep(-1)){ }
+    else if(xGo&&performance.now()-sheetOpenedAt>800&&dx>0&&navPos<=0) closeSheet("right",{vx:vx,vy:vy});
     else if(performance.now()-sheetOpenedAt>800&&was==="y"&&(dy>innerHeight*.2||(vy>.5&&dy>44))) closeSheet("down",{vx:vx,vy:vy});
     else {                                                     /* not far enough: spring home */
       const p0={...sheetPose}, t0=performance.now(), tau=70;
@@ -2644,7 +2718,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.16.0";
+const VERSION="1.17.0";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -3358,6 +3432,8 @@ function uiSound(){
     <button class="btn" data-seed="swf" onclick="S.wxfxOff=!S.wxfxOff;save();fxSet();uiSound()">Rain and snow · ${S.wxfxOff?"off":"on"}</button>
     <div style="height:7px"></div>
     <button class="btn" data-seed="scm" onclick="S.calm=!document.documentElement.classList.contains('calm');save();applyCalm();uiSound()">Calm motion · ${document.documentElement.classList.contains("calm")?"on":"off"}</button>
+    <div style="height:7px"></div>
+    <button class="btn" data-seed="nvh" onclick="S.navHide=!S.navHide;save();uiSound()">Swipe hints · ${S.navHide?"off":"on"}</button>
     <div style="height:7px"></div>
     <button class="btn" data-seed="sgw" onclick="S.gentleOff=!S.gentleOff;save();uiSound()">Gentle while away · ${S.gentleOff?"off":"on"}</button>
     <div style="height:7px"></div>
