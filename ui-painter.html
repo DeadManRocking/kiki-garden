@@ -30,7 +30,7 @@ button.go{background:var(--acc);color:#fff;border-color:var(--acc)}button:disabl
  <div class="row" style="margin-top:10px"><button class="go" id="all">Paint the next batch</button><button id="stop" disabled>Stop</button><button id="zip">Save all (one .zip)</button></div>
  <div id="err" style="display:none;background:#f3d6d6;border:1px solid #8a2f3d;border-radius:10px;padding:8px 10px;margin:8px 0;font-weight:700"></div>
  <div class="bar"><i id="pb"></i></div><div id="pc" class="st"></div><div id="log"></div><div class="st" id="calls"></div>
- <div class="st" style="margin-top:6px">Safe mode: it paints a small batch, then stops, and stops at once on any problem, so nothing is wasted. Pictures already painted are kept and never repainted. Order: the copper watering can first (it sets the style for all the rest), then the others. Tap Paint on any one to roll it again. Rolling the watering can again changes the style, so repaint the rest afterwards. Check your OpenAI usage after the first ten.</div>
+ <div class="st" style="margin-top:6px">Safe mode: it paints a small batch. One picture that is refused is skipped; it stops at once on a key or credit problem, or after 3 failures in a row. One request per picture, no retries. Pictures already painted are kept and never repainted. Order: the copper watering can first (it sets the style for all the rest), then the others. Tap Paint on any one to roll it again. Rolling the watering can again changes the style, so repaint the rest afterwards. Check your OpenAI usage after the first ten.</div>
 </div>
 <div class="grid" id="grid"></div>
 <script>
@@ -39,7 +39,7 @@ const PREFIX="Antique ink-and-watercolour painting, like a page from a Victorian
 const LOCK="Paint a NEW subject in exactly the same medium, palette, brushwork, lighting and feathered transparent edge as the reference image. Do not repeat the reference subject.\n\n";
 const PAPER="Antique ink-and-watercolour paper texture. ";
 const $=s=>document.querySelector(s), nap=ms=>new Promise(r=>setTimeout(r,ms));
-let CALLS=0, ITEMS=[], db=null, URLS={}, stop=false, busy=false;
+let FAILS=0, CALLS=0, ITEMS=[], db=null, URLS={}, stop=false, busy=false;
 const log=t=>{ const l=$("#log"); l.textContent=(t+"\n"+l.textContent).slice(0,4000); };
 function open(){ return new Promise(ok=>{ const r=indexedDB.open("kiki-ui-painter",1); r.onupgradeneeded=()=>r.result.createObjectStore("img"); r.onsuccess=()=>{ db=r.result; ok(); }; r.onerror=()=>ok(); }); }
 const get=k=>new Promise(ok=>{ try{ const q=db.transaction("img").objectStore("img").get(k); q.onsuccess=()=>ok(q.result); q.onerror=()=>ok(null); }catch(e){ ok(null); } });
@@ -82,8 +82,9 @@ async function run(list,force){
     if(stop||made>=cap) break;
     if(!force&&await get(it.id)) continue;
     const st=document.querySelector(`[data-st="${it.id}"]`); st.textContent="painting…";
-    try{ const bl=await paint(it); await put(it.id,bl); show(it,bl); st.textContent="painted"; log("painted "+it.id); made++; }
-    catch(e){ st.textContent="not yet"; log("STOPPED: "+e.message); const er=$("#err"); er.style.display="block"; er.textContent="Stopped: "+e.message+" (Nothing else was sent. Tell Claude this line.)"; break; }
+    try{ const bl=await paint(it); await put(it.id,bl); show(it,bl); st.textContent="painted"; log("painted "+it.id); made++; FAILS=0; }
+    catch(e){ st.textContent="not yet"; FAILS++; log(it.id+": "+e.message); const er=$("#err"); er.style.display="block"; er.textContent=it.id+" failed: "+e.message+" (Send Claude a screenshot of this box.)";
+      if(/said (401|403|429)|quota|billing|credit|Paste your|watering can first/i.test(e.message)||FAILS>=3){ er.textContent="STOPPED. "+er.textContent; break; } }
     await refresh(); await nap(1200);
   }
   busy=false; $("#all").disabled=false; $("#stop").disabled=true; await refresh();
