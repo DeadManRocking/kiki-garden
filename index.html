@@ -104,11 +104,14 @@ h1,h2,h3,.serif{font-family:'Fraunces',Georgia,serif;font-weight:700;margin:0}
 .opts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
 .opts.bal{flex-direction:column;flex-wrap:nowrap;align-items:center}
 .opts .orow{display:flex;gap:8px;justify-content:center;width:100%}
-.opts .orow .opt{min-width:0;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.15;padding:8px 6px}
+.opts .orow .opt{min-width:0;text-align:center;line-height:1.15;padding:8px 6px}
 #sheet .opt{min-height:48px !important}
 #sheet.tight .opt{min-height:44px !important}
 #sheet .btn{min-height:48px}
 #sheet h2,#sheet .lbl{text-align:center}
+#sheet .btn .ci{display:inline-grid;place-items:center;width:28px;height:28px;vertical-align:middle;border-radius:50%;object-fit:cover;margin:0 3px}
+#sheet .btn .ci svg{width:22px;height:22px}
+.cjdot{position:absolute;right:6px;bottom:6px;width:44px;height:44px;border:0;background:none;opacity:.25;font-size:18px;color:inherit;padding:0}
 #sheet h2{margin-top:2px}
 #sheet .shitem .btn{min-height:48px !important}
 .row{justify-content:center;flex-wrap:wrap}
@@ -2747,7 +2750,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.18.0";
+const VERSION="1.18.1";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -4611,7 +4614,7 @@ function uiGene(id){
 
 /* ══ EXCHANGE ══════════════════════════════════════════════ */
 let xGood="polllen", xN=1;
-function coinHtml(k){ const a=ART["cur:"+k]; return a?`<img alt="" src="${a}">`:`<span class="ink"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.3">${ICONS[k]}</svg></span>`; }
+function coinHtml(k){ const a=ART["cur:"+k]; return a?`<img class="ci" alt="" src="${a}">`:`<span class="ink ci"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.3">${ICONS[k]}</svg></span>`; }
 function uiExchange(){
   purseOpen=false; const pp=$("#purse"); if(pp) pp.classList.remove("open"); const pb=$("#purseBtn"); if(pb) pb.classList.remove("open");
   openSheet(`<div class="xch">
@@ -4619,7 +4622,7 @@ function uiExchange(){
     <div class="xrow"><button class="xs" onclick="xStep(-1)" aria-label="Less">&#8722;</button><div class="xstack" id="xstack"></div><button class="xs" onclick="xStep(1)" aria-label="More">+</button></div>
     <div class="xcost"><span id="xcoin"></span><span class="mono" id="xcostn"></span><b>&#8594;</b>${coinHtml("gold")}<span class="mono" id="xgotn"></span></div>
     <div class="msg" id="xmsg"></div>
-    <button class="btn" data-seed="xdo" onclick="xDo()" aria-label="Exchange">${coinHtml("gold")}</button>
+    <button class="btn" data-seed="xdo" id="xdo" onclick="xDo()" aria-label="Exchange"></button>
   </div>`);
   xGood=GOODS.indexOf(xGood)>=0?xGood:"polllen"; xUpdate();
 }
@@ -4635,6 +4638,7 @@ function xUpdate(){
   const xc=$("#xcoin"); if(xc) xc.innerHTML=coinHtml(xGood);
   const a=$("#xcostn"); if(a) a.textContent="×"+(xN*GOLD_RATE[xGood]);
   const b=$("#xgotn"); if(b) b.textContent="×"+xN;
+  const d=$("#xdo"); if(d) d.innerHTML=coinHtml(xGood)+" &#8594; "+coinHtml("gold");
 }
 function xDo(){
   const m=$("#xmsg"), err=exchange(xGood,xN);
@@ -4922,7 +4926,7 @@ function uiBull(){
     <div class="msg" id="bmsg"></div>
     <div style="height:12px"></div>
     <button class="btn" data-seed="pol" onclick="startPollination()">Pollinate</button>`;
-  const roundsBtn=bullReady()?`<div style="height:10px"></div><button class="btn" data-seed="rnd" onclick="bullGoOut()">${coinHtml("hunneee")} · 3h</button>`:"";
+  const roundsBtn=bullReady()?`<div style="height:10px"></div><button class="btn" data-seed="rnd" onclick="bullGoOut()">${coinHtml("hunneee")} Rounds · 3 h</button>`:"";
   openSheet(`<h2>${S.pastyUnlocked?"Bull the Pasty Bee":"Bull the Bee"}</h2>
     ${art?`<img class="breathe" alt="" src="${art}" style="display:block;width:72%;margin:0 auto 8px;filter:drop-shadow(0 8px 12px rgba(40,22,8,.4))"/>`:""}
     <div class="note" style="margin-bottom:4px">Hovering near the Fylth, chewing at nothing.</div>
@@ -5308,7 +5312,7 @@ function myStickers(){
   return out;
 }
 let chatView="chat";
-function uiMessages(){
+function uiMessages(){ navNeedRender=true;
   const th=CHAT_PAPERS[S.chatPaper]||CHAT_PAPERS.plain;
   const own=Object.keys(CHAT_PAPERS).filter(k=>!CHAT_PAPERS[k].own||int((S.owned||{})[CHAT_PAPERS[k].own])>0);
   const rows=[];
@@ -5347,8 +5351,7 @@ function uiMessages(){
       <button class="btn" data-seed="cjs" onclick="chatAsCj()">Send</button>
     </div>
     <div style="height:12px"></div>
-    <div class="row"><button class="btn" data-seed="mb" onclick="closeSheet();render()">Back</button>
-      <button class="btn" data-seed="cjt" style="max-width:56px" onclick="const b=$('#cjbox');b.style.display=b.style.display==='none'?'block':'none'">·</button></div>`);
+    <button class="cjdot" aria-label="·" onclick="const b=$('#cjbox');b.style.display=b.style.display==='none'?'block':'none'">·</button>`);
   S.pmSeen=(S.pm||[]).length; S.chatSeen=Date.now(); save(); ntfyPoll();
   const cb=$("#chatbox"); if(cb) cb.scrollTop=cb.scrollHeight;
 }
