@@ -18,7 +18,7 @@ button.go{background:var(--acc);color:#fff;border-color:var(--acc)}button:disabl
 .th.L{aspect-ratio:3/2}.th.S{aspect-ratio:1/1}.th img{width:100%;height:100%;object-fit:cover}
 .t{font-size:12.5px;margin:6px 0 4px;min-height:34px}.st{font-size:11px;color:var(--soft);min-height:15px}
 .it button{padding:6px 8px;font-size:12px;margin-top:4px;width:100%}
-</style>
+.th.tall{aspect-ratio:2/3}</style>
 <body>
 <h1>UI Painter</h1><div class="sub">Paints every picture the garden shows instead of words, once, in one matching style, then saves them as one zip.</div>
 <div class="box">
@@ -47,7 +47,7 @@ const put=(k,v)=>new Promise(ok=>{ try{ const tx=db.transaction("img","readwrite
 function show(it,blob){ if(URLS[it.id]) URL.revokeObjectURL(URLS[it.id]); URLS[it.id]=URL.createObjectURL(blob); document.querySelector(`[data-th="${it.id}"]`).innerHTML=`<img src="${URLS[it.id]}">`; }
 function draw(){
   const gs=[...new Set(ITEMS.map(i=>i.id.split("/")[0]))]; $("#grp").innerHTML='<option value="">all groups</option>'+gs.map(g=>`<option>${g}</option>`).join("");
-  $("#grid").innerHTML=ITEMS.map(it=>`<div class="it"><div class="th" data-th="${it.id}">${it.id.split("/")[1]}</div><div class="t">${it.id}</div><div class="st" data-st="${it.id}"></div><button data-p="${it.id}">Paint</button></div>`).join("");
+  $("#grid").innerHTML=ITEMS.map(it=>`<div class="it"><div class="th ${it.api?"tall":""}" data-th="${it.id}">${it.id.split("/")[1]}</div><div class="t">${it.id}</div><div class="st" data-st="${it.id}"></div><button data-p="${it.id}">Paint</button></div>`).join("");
   document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{ const it=ITEMS.find(x=>x.id===b.dataset.p); if(it.id===ANCHOR&&!confirm("This changes the style of everything. Roll the watering can again?")) return; run([it],true); });
 }
 async function refresh(){ let n=0; for(const it of ITEMS){ const bl=await get(it.id); if(bl){ show(it,bl); n++; document.querySelector(`[data-st="${it.id}"]`).textContent="painted"; } }
@@ -57,15 +57,15 @@ async function paint(it){
   const key=$("#key").value.trim(); if(!key) throw new Error("Paste your OpenAI key first.");
   localStorage.setItem("uip_key",key);
   const model=$("#model").value.trim()||"gpt-image-2.5-sunburst", quality=$("#q").value;
-  const paper=it.kind==="paper", ref=(!paper&&it.id!==ANCHOR)?await get(ANCHOR):null;
-  if(!paper&&it.id!==ANCHOR&&!ref) throw new Error("Paint the watering can first: it sets the style.");
-  const prompt=paper?PAPER+it.subject:(ref?LOCK:"")+PREFIX+it.subject;
+  const paper=it.kind==="paper"||it.kind==="plate", ref=(it.kind!=="paper"&&it.id!==ANCHOR)?await get(ANCHOR):null;
+  if(it.kind!=="paper"&&it.id!==ANCHOR&&!ref) throw new Error("Paint the watering can first: it sets the style.");
+  const prompt=it.kind==="plate"?(ref?LOCK:"")+it.subject:paper?PAPER+it.subject:(ref?LOCK:"")+PREFIX+it.subject;
   const bg=paper?"opaque":"transparent";
   let r,j={}; CALLS++; $("#calls").textContent="Requests sent this visit: "+CALLS;
   try{
-    if(ref){ const fd=new FormData(); fd.append("model",model); fd.append("prompt",prompt); fd.append("size","1024x1024"); fd.append("quality",quality); fd.append("background",bg); fd.append("output_format","png"); fd.append("image",ref,"style.png");
+    if(ref){ const fd=new FormData(); fd.append("model",model); fd.append("prompt",prompt); fd.append("size",it.api||"1024x1024"); fd.append("quality",quality); fd.append("background",bg); fd.append("output_format","png"); fd.append("image",ref,"style.png");
       r=await fetch("https://api.openai.com/v1/images/edits",{method:"POST",headers:{Authorization:"Bearer "+key},body:fd}); }
-    else r=await fetch("https://api.openai.com/v1/images/generations",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+key},body:JSON.stringify({model,prompt,size:"1024x1024",quality,background:bg,output_format:"png",n:1})});
+    else r=await fetch("https://api.openai.com/v1/images/generations",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+key},body:JSON.stringify({model,prompt,size:it.api||"1024x1024",quality,background:bg,output_format:"png",n:1})});
     j=await r.json().catch(()=>({}));
   }catch(e){ throw new Error("Could not reach OpenAI ("+(e.message||e)+"). Nothing was painted or charged by this page.") }
   const b=j.data&&j.data[0]&&j.data[0].b64_json; if(r.ok&&b) return b64blob(b);
@@ -89,7 +89,7 @@ async function run(list,force){
   }
   busy=false; $("#all").disabled=false; $("#stop").disabled=true; await refresh();
 }
-async function toWebp(blob,px){ const im=await createImageBitmap(blob); const c=document.createElement("canvas"); c.width=c.height=px; const x=c.getContext("2d"); x.imageSmoothingQuality="high"; x.drawImage(im,0,0,px,px);
+async function toWebp(blob,px){ const im=await createImageBitmap(blob); const c=document.createElement("canvas"); const W=Array.isArray(px)?px[0]:px, H=Array.isArray(px)?px[1]:px; c.width=W; c.height=H; const x=c.getContext("2d"); x.imageSmoothingQuality="high"; x.drawImage(im,0,0,W,H);
   return new Promise(ok=>c.toBlob(b=>ok(b),"image/webp",.88)); }
 function save(blob,name){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000); }
 function crcTable(){ const t=[]; for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0; } return t; }
