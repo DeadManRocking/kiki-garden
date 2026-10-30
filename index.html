@@ -1485,17 +1485,17 @@ function fadeA(a){ if(!a) return; const iv=setInterval(()=>{ try{ a.volume=Math.
 function openGate(){
   au(); sfx("tap"); const o=$("#open"); o.classList.add("skippable");
   try{ const st=new Audio("music/studio.mp3"); st.volume=.55; st.play().catch(()=>{}); window.__studioA=st; }catch(e){}     /* optional: a quiet drone under the studio cards */
-  try{ const ti=new Audio("music/title.mp3"); ti.preload="auto"; window.__titleA=ti; }catch(e){}                                  /* optional: the big title hit */
+  try{ const ti=new Audio("music/title.mp3?v=2"); ti.preload="auto"; window.__titleA=ti; }catch(e){}                                  /* optional: the big title hit */
   oShow("oc1");
   oNext(()=>{ oShow("oc2"); oNext(()=>{ oShow("oc4"); oNext(()=>{ oShow("oc5"); oNext(()=>{ oShow("oc3"); oNext(titlePop,STUDIO_MS); },STUDIO_MS); },STUDIO_MS); },STUDIO_MS); },STUDIO_MS);
 }
 function titlePop(){
   oShow("");                                             /* let the last card go fully dark first */
   fadeA(window.__studioA);
-  /* the title sound is a swell that peaks about 1.75 s in, so it starts here, in the dark, and peaks as the title pops */
+  /* the title sound builds for about 1.9 s and hits there, so it starts here, in the dark, and the lettering lands on the hit */
   const ta=window.__titleA; window.__titleStarted=false;
   if(ta&&ta.readyState>=3){ try{ ta.currentTime=0; ta.volume=1; const pr=ta.play(); window.__titleStarted=true; if(pr&&pr.catch) pr.catch(()=>{ window.__titleStarted=false; }); }catch(e){} }
-  oNext(titlePopNow,1750);
+  oNext(titlePopNow,1900);
 }
 function titlePopNow(){
   const o=$("#open"); o.classList.add("clear");
@@ -1514,7 +1514,7 @@ function storyStart(){
 function openSkip(){
   clearTimeout(openTimer);
   const on=document.querySelector("#open .oc.on");
-  holdMusic=false; musicStart(); ambStart();
+  holdMusic=false; musicStart(); ambStart(); fadeA(window.__titleA);
   if(on&&(on.classList.contains("story")||on.id==="oded")) { openDone(); return; }
   if(!S.seenStudio){ S.seenStudio=true; save(); }
   if(S.seenIntro&&!openReplay) openDone(); else storyStart();
@@ -2855,7 +2855,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.20.0";
+const VERSION="1.20.1";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
