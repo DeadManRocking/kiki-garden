@@ -1920,5 +1920,143 @@
 "api": "1024x1536",
 "kind": "plate",
 "subject": "JOURNAL PLATE III, an antique anatomical plate of ONE grown Plantimal, painted on stained, foxed cream paper that fills the whole page, with a thin ruled hand-inked border and wide calm margins. NO TEXT, NO LETTERS, NO NUMBERS and NO LEADER LINES anywhere (labels are added later). Centre: a slender, uncanny, gentle plant-and-animal creature standing three-quarter view, tall, about six heads high, bark-and-lichen skin patterned with dark blue-grey spots and fine veins, large dark glassy eyes, pointed leaf-ears, a crown of living leaves and a curl of tendril on its head, two thin branch-twig arms ending in small twig hands, long taproot legs ending in a spreading tangle of root-tip feet. Its torso is opened in a clean vertical cutaway showing a small heart-like bulb of green and red, two blue-grey lung-leaves, a brown rounded liver-seed, a coil of pale green gut, and a network of fine green root-veins running down into the legs. Around it, six small round inset vignettes in the same hand, each on its own patch of bare paper with generous space between: the head with leaf-crown seen close, a single leaf with its veins and tiny hairs, a cross-section of plant-fibre muscle with green and rose fibres, the root-foot with fine fungal threads, a square of the spotted skin pattern, and the head in profile with the brain drawn as a cabbage-like fold of green-and-violet tissue. Muted, desaturated antique pigments, faint pencil underdrawing, Victorian naturalist's engraving feel with wet watercolour washes, dark fairy-tale in the manner of Arthur Rackham and Odilon Redon. Empty paper left beside every inset so labels can be written there later."
+},
+{
+"id": "pano/p1",
+"file": "assets/ui/pano/p1.webp",
+"size": [
+1024,
+1536
+],
+"api": "1024x1536",
+"kind": "pano",
+"scene": "Antique ink-and-watercolour landscape painted on paper, the whole sheet one continuous scene, in the manner of Arthur Rackham and John Bauer: faded desaturated pigments (sepia, umber, moss, slate, tarnished gold), loose wet washes, pigment blooms, faint pencil underdrawing, dark fairy-tale mood. NO text, NO figures, NO creatures, NO frame, NO border. A sheltered garden valley seen at ground level, horizon at 38% from the top of the image on every panel, light from the upper left, the lower 45% calm and mostly empty ground where small creatures will stand. ",
+"subject": "Panel 1 of 6, the far left: the woodland edge, old twisted trunks and ferns at the left side, the trees thinning toward the right."
+},
+{
+"id": "pano/p2",
+"file": "assets/ui/pano/p2.webp",
+"size": [
+1024,
+1536
+],
+"api": "1024x1536",
+"kind": "pano",
+"scene": "Antique ink-and-watercolour landscape painted on paper, the whole sheet one continuous scene, in the manner of Arthur Rackham and John Bauer: faded desaturated pigments (sepia, umber, moss, slate, tarnished gold), loose wet washes, pigment blooms, faint pencil underdrawing, dark fairy-tale mood. NO text, NO figures, NO creatures, NO frame, NO border. A sheltered garden valley seen at ground level, horizon at 38% from the top of the image on every panel, light from the upper left, the lower 45% calm and mostly empty ground where small creatures will stand. ",
+"subject": "Panel 2 of 6, HOME: a mossy clearing with a few old standing stones, soft light, the most welcoming panel."
+},
+{
+"id": "pano/p3",
+"file": "assets/ui/pano/p3.webp",
+"size": [
+1024,
+1536
+],
+"api": "1024x1536",
+"kind": "pano",
+"scene": "Antique ink-and-watercolour landscape painted on paper, the whole sheet one continuous scene, in the manner of Arthur Rackham and John Bauer: faded desaturated pigments (sepia, umber, moss, slate, tarnished gold), loose wet washes, pigment blooms, faint pencil underdrawing, dark fairy-tale mood. NO text, NO figures, NO creatures, NO frame, NO border. A sheltered garden valley seen at ground level, horizon at 38% from the top of the image on every panel, light from the upper left, the lower 45% calm and mostly empty ground where small creatures will stand. ",
+"subject": "Panel 3 of 6: a still dark pond with reeds and lily pads, mist on the water."
+},
+{
+"id": "pano/p4",
+"file": "assets/ui/pano/p4.webp",
+"size": [
+1024,
+1536
+],
+"api": "1024x1536",
+"kind": "pano",
+"scene": "Antique ink-and-watercolour landscape painted on paper, the whole sheet one continuous scene, in the manner of Arthur Rackham and John Bauer: faded desaturated pigments (sepia, umber, moss, slate, tarnished gold), loose wet washes, pigment blooms, faint pencil underdrawing, dark fairy-tale mood. NO text, NO figures, NO creatures, NO frame, NO border. A sheltered garden valley seen at ground level, horizon at 38% from the top of the image on every panel, light from the upper left, the lower 45% calm and mostly empty ground where small creatures will stand. ",
+"subject": "Panel 4 of 6: an open meadow slope of tall grass and wildflowers, a pale sky above."
+},
+{
+"id": "pano/p5",
+"file": "assets/ui/pano/p5.webp",
+"size": [
+1024,
+1536
+],
+"api": "1024x1536",
+"kind": "pano",
+"scene": "Antique ink-and-watercolour landscape painted on paper, the whole sheet one continuous scene, in the manner of Arthur Rackham and John Bauer: faded desaturated pigments (sepia, umber, moss, slate, tarnished gold), loose wet washes, pigment blooms, faint pencil underdrawing, dark fairy-tale mood. NO text, NO figures, NO creatures, NO frame, NO border. A sheltered garden valley seen at ground level, horizon at 38% from the top of the image on every panel, light from the upper left, the lower 45% calm and mostly empty ground where small creatures will stand. ",
+"subject": "Panel 5 of 6: a broken old stone wall and a neglected orchard of gnarled trees."
+},
+{
+"id": "pano/p6",
+"file": "assets/ui/pano/p6.webp",
+"size": [
+1024,
+1536
+],
+"api": "1024x1536",
+"kind": "pano",
+"scene": "Antique ink-and-watercolour landscape painted on paper, the whole sheet one continuous scene, in the manner of Arthur Rackham and John Bauer: faded desaturated pigments (sepia, umber, moss, slate, tarnished gold), loose wet washes, pigment blooms, faint pencil underdrawing, dark fairy-tale mood. NO text, NO figures, NO creatures, NO frame, NO border. A sheltered garden valley seen at ground level, horizon at 38% from the top of the image on every panel, light from the upper left, the lower 45% calm and mostly empty ground where small creatures will stand. ",
+"subject": "Panel 6 of 6, the far right: a bramble thicket fading into thick fog."
+},
+{
+"id": "pano/n1",
+"file": "assets/ui/pano/n1.webp",
+"size": [
+1024,
+1536
+],
+"api": "1024x1536",
+"kind": "pano_night",
+"subject": "Day panel 1"
+},
+{
+"id": "pano/n2",
+"file": "assets/ui/pano/n2.webp",
+"size": [
+1024,
+1536
+],
+"api": "1024x1536",
+"kind": "pano_night",
+"subject": "Day panel 2"
+},
+{
+"id": "pano/n3",
+"file": "assets/ui/pano/n3.webp",
+"size": [
+1024,
+1536
+],
+"api": "1024x1536",
+"kind": "pano_night",
+"subject": "Day panel 3"
+},
+{
+"id": "pano/n4",
+"file": "assets/ui/pano/n4.webp",
+"size": [
+1024,
+1536
+],
+"api": "1024x1536",
+"kind": "pano_night",
+"subject": "Day panel 4"
+},
+{
+"id": "pano/n5",
+"file": "assets/ui/pano/n5.webp",
+"size": [
+1024,
+1536
+],
+"api": "1024x1536",
+"kind": "pano_night",
+"subject": "Day panel 5"
+},
+{
+"id": "pano/n6",
+"file": "assets/ui/pano/n6.webp",
+"size": [
+1024,
+1536
+],
+"api": "1024x1536",
+"kind": "pano_night",
+"subject": "Day panel 6"
 }
 ]
