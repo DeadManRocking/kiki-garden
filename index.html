@@ -1636,11 +1636,28 @@ function layoutFlock(){
 /* ══ THE PANORAMA (v1.19): six panels, home is the second; swipe sideways on the garden to pan ══ */
 const PANELS=6, HOME=1, PANEL_CAP=6, FILL_ORDER=[1,2,0,3,4,5];
 const PANO={step:380,of:{},seen:null,x:HOME*380,k:HOME,drag:null,noClick:0};
+const PW={p:null,n:null,loading:{}};      /* the painted panorama (day p, night n), when assets/ui/pano/*.webp exist */
+function panoLoad(kind){
+  if(PW[kind]||PW.loading[kind]) return; PW.loading[kind]=1;
+  Promise.all([1,2,3,4,5,6].map(i=>new Promise(ok=>{ const im=new Image(); im.onload=()=>ok(im); im.onerror=()=>ok(null); im.src="assets/ui/pano/"+kind+i+".webp?v="+VERSION; }))).then(ims=>{
+    if(ims.some(x=>!x)||!ims[0].naturalWidth){ PW.loading[kind]=2; return; }
+    try{
+      const H=innerHeight, tw=Math.round(H*2/3), stepPx=tw*.75, W=Math.round(stepPx*5+tw), dpr=Math.min(1.5,window.devicePixelRatio||1);
+      const c=document.createElement("canvas"); c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); const x=c.getContext("2d");
+      ims.forEach((im,i)=>{ const t=document.createElement("canvas"); t.width=Math.round(tw*dpr); t.height=c.height; const tx=t.getContext("2d");
+        tx.drawImage(im,0,0,t.width,t.height);
+        if(i>0){ const g=tx.createLinearGradient(0,0,t.width*.25,0); g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(0,0,0,1)"); tx.globalCompositeOperation="destination-in"; tx.fillStyle=g; tx.fillRect(0,0,t.width,t.height); }
+        x.drawImage(t,Math.round(i*stepPx*dpr),0); });
+      c.toBlob(b=>{ if(!b){ PW.loading[kind]=2; return; } PW[kind]={url:URL.createObjectURL(b),w:W}; PW.loading[kind]=0; applyPaper(); applyShadow(); layoutFlock(); PANO.x=PANO.k*PANO.step; panoApply(false); },"image/jpeg",.9);
+    }catch(e){ PW.loading[kind]=2; }
+  });
+}
+function paintReal(el,R){ el.dataset.src="real"; el.style.backgroundImage=`url("${R.url}")`; el.style.backgroundSize=R.w+"px 100%"; el.style.backgroundRepeat="no-repeat"; el.style.backgroundPosition="0 0"; }
 function panoMetrics(){
-  const f=document.getElementById("field");
-  PANO.step=Math.max(200,Math.round(f?f.clientWidth:Math.min(innerWidth,480)-20));
+  const f=document.getElementById("field"), R=PW.p;
+  PANO.step=R?Math.max(200,Math.round((R.w-innerWidth)/(PANELS-1))):Math.max(200,Math.round(f?f.clientWidth:Math.min(innerWidth,480)-20));
   const bg=document.getElementById("bgcam"), w=document.getElementById("world");
-  if(bg) bg.style.width=((PANELS-1)*PANO.step+innerWidth)+"px";
+  if(bg) bg.style.width=(R?R.w:((PANELS-1)*PANO.step+innerWidth))+"px";
   if(w) w.style.width=((PANELS-1)*PANO.step+PANO.step)+"px";
 }
 function panoAssign(items){
@@ -2838,7 +2855,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.19.0";
+const VERSION="1.20.0";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2852,9 +2869,10 @@ function applyPaper(){
   const evArt=ev&&(ART["ui:ev:"+ev]||ART["ev:"+ev]);
   document.documentElement.dataset.ev=evArt?"1":"";
   const L=[["bg1",evArt?null:"ui:bg"],["bg2","ui:bg2"],["bg3","ui:bg3"]];
-  panoMetrics();
+  panoLoad("p"); panoMetrics();
   for(const [id,k] of L){ const el=document.getElementById(id); if(!el) continue;
     const src=id==="bg1"&&evArt?evArt:ART[k];
+    if(id==="bg1"&&!evArt&&PW.p){ paintReal(el,PW.p); el.classList.add("on"); continue; }
     paintBg(el,src); el.classList.toggle("on",!!src&&!(evArt&&id!=="bg1")); }
 }
 let repaintArmed=0;
@@ -3989,7 +4007,8 @@ function applyShadow(){
   document.documentElement.dataset.shadow=on?"1":"";
   document.documentElement.dataset.night=int((S.owned||{}).nightMode)>0?"1":"";
   const b1=document.getElementById("bg1");
-  if(on&&ART["ui:shadow"]&&b1) paintBg(b1,ART["ui:shadow"]);
+  if(on) panoLoad("n");
+  if(on&&PW.n&&b1) paintReal(b1,PW.n); else if(on&&ART["ui:shadow"]&&b1) paintBg(b1,ART["ui:shadow"]);
   if(on&&!ART["ui:shadow"]) auto("ui:shadow",async()=>{ await ArtDB.put("ui:shadow",await shrink(await genImage(BG_PROMPT+SHADOW_PROMPT,"2:3"),1024)); applyPaper(); applyShadow(); });
 }
 function toggleShadow(){
@@ -6154,7 +6173,7 @@ load();
   hideLoad();
   if(!S.pinHash) pinGate(); else boot();
 })();
-window.addEventListener("resize",()=>requestAnimationFrame(()=>{ shapeAll(); applyPaper(); layoutFlock(); PANO.x=PANO.k*PANO.step; panoApply(false); }));
+window.addEventListener("resize",()=>requestAnimationFrame(()=>{ PW.p=PW.n=null; PW.loading={}; shapeAll(); applyPaper(); layoutFlock(); PANO.x=PANO.k*PANO.step; panoApply(false); }));
 document.fonts && document.fonts.ready.then(()=>requestAnimationFrame(shapeAll));
 </script>
 </body>
