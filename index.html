@@ -1485,7 +1485,7 @@ function fadeA(a){ if(!a) return; const iv=setInterval(()=>{ try{ a.volume=Math.
 function openGate(){
   au(); sfx("tap"); const o=$("#open"); o.classList.add("skippable");
   try{ const st=new Audio("music/studio.mp3"); st.volume=.55; st.play().catch(()=>{}); window.__studioA=st; }catch(e){}     /* optional: a quiet drone under the studio cards */
-  try{ const ti=new Audio("music/title.mp3?v=2"); ti.preload="auto"; window.__titleA=ti; }catch(e){}                                  /* optional: the big title hit */
+  try{ const ti=new Audio("music/title.mp3?v=3"); ti.preload="auto"; window.__titleA=ti; }catch(e){}                                  /* optional: the big title hit */
   oShow("oc1");
   oNext(()=>{ oShow("oc2"); oNext(()=>{ oShow("oc4"); oNext(()=>{ oShow("oc5"); oNext(()=>{ oShow("oc3"); oNext(titlePop,STUDIO_MS); },STUDIO_MS); },STUDIO_MS); },STUDIO_MS); },STUDIO_MS);
 }
@@ -1495,6 +1495,7 @@ function titlePop(){
   /* the title sound builds for about 1.9 s and hits there, so it starts here, in the dark, and the lettering lands on the hit */
   const ta=window.__titleA; window.__titleStarted=false;
   if(ta&&ta.readyState>=3){ try{ ta.currentTime=0; ta.volume=1; const pr=ta.play(); window.__titleStarted=true; if(pr&&pr.catch) pr.catch(()=>{ window.__titleStarted=false; }); }catch(e){} }
+  if(window.__titleStarted){ try{ const pre=new Audio("music/opening.mp3"); pre.preload="auto"; pre.volume=0; pre.load(); window.__preOpen=pre; }catch(e){} }   /* the song is fetched during the long hold so it starts at once */
   oNext(titlePopNow,1900);
 }
 function titlePopNow(){
@@ -1502,7 +1503,7 @@ function titlePopNow(){
   if(!S.seenStudio){ S.seenStudio=true; save(); }
   oShow("oc6"); buzz([60,40,120]);
   if(!window.__titleStarted) loud("boom",3);          /* no title file: the built-in hit lands with the pop */
-  oNext(()=>{ holdMusic=false; musicStart(); ambStart();
+  oNext(()=>{ holdMusic=false; au(); musicStart(); ambStart();
     const c=$("#oc6"); c.classList.add("fadeaway");
     oNext(()=>{ c.classList.remove("fadeaway"); storyStart(); },2400); },
     window.__titleStarted?(TITLE_SOUND_MS+SILENCE_MS-1900):6600);   /* the whole 16 s sound plays, then a few seconds of silence, THEN the story music leads into the story text */
@@ -2857,7 +2858,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.20.3";
+const VERSION="1.20.4";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -3509,8 +3510,12 @@ function playIdx(){
   if(!MP.list.length||!MP.el) return;
   MP.cur=MP.list[MP.i%MP.list.length];
   MP.el.src=MP.cur; MP.el.loop=MP.list.length===1;
-  const pr=MP.el.play(); if(pr&&pr.catch) pr.catch(()=>{});
+  const pr=MP.el.play(); if(pr&&pr.catch) pr.catch(()=>{ armMusicRetry(); });
 }
+let musicRetryArmed=false;          /* if the phone refuses to start the song on its own, the next touch starts it */
+function armMusicRetry(){ if(musicRetryArmed) return; musicRetryArmed=true;
+  const go=()=>{ musicRetryArmed=false; document.removeEventListener("pointerdown",go,true); try{ au(); if(MP.el&&MP.el.paused&&!holdMusic){ const p=MP.el.play(); if(p&&p.catch) p.catch(()=>{}); } ambStart(); }catch(e){} };
+  document.addEventListener("pointerdown",go,true); }
 function musicStart(){
   if(S.musicOn===false||holdMusic||document.hidden) return;
   if(AU.musicTimer) return;
