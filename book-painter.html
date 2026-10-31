@@ -25,7 +25,7 @@ button.go{background:var(--acc);color:#fff;border-color:var(--acc)}button:disabl
  <div class="row"><div><label>Model</label><input id="model" value="gpt-image-2.5-sunburst"></div>
   <div><label>Quality</label><select id="q"><option value="medium" selected>medium (cheaper)</option><option value="high">high (about 4x the cost)</option></select></div>
   <div><label>Keep the style matching</label><select id="ref"><option value="1" selected>yes: copy plate 1's style</option><option value="0">no: each on its own</option></select></div></div>
- <div class="row" style="margin-top:10px"><button class="go" id="all">Paint everything still missing</button><button id="stop" disabled>Stop</button><button id="zip">Save all (one .zip)</button></div>
+ <div class="row" style="margin-top:10px"><button class="go" id="all">Paint everything still missing</button><button id="stop" disabled>Stop</button><button id="zip">Save all (zips small enough to send)</button></div>
  <div class="bar"><i id="pb"></i></div><div id="pc" class="st"></div><div id="log"></div>
  <div class="st" style="margin-top:6px">Cost: your game measured about 1 cent a picture at medium for small pictures; these are larger, so expect a few cents each. Check your OpenAI usage after the first three. Paint order: cover, endpapers, plate 1 first (it sets the style), then the rest.</div>
 </div>
@@ -90,9 +90,7 @@ async function run(list,force){
 /* a small zip writer (stored, no compression): the pictures are already compressed */
 function crcTable(){ const t=[]; for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0; } return t; }
 const CRC=crcTable(); const crc32=u=>{ let c=0xFFFFFFFF; for(let i=0;i<u.length;i++) c=CRC[(c^u[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; };
-async function zipAll(){
-  const files=[]; for(const it of ITEMS){ const bl=await get(it.id); if(bl) files.push([it.slug+".png",new Uint8Array(await bl.arrayBuffer())]); }
-  if(!files.length) return log("Nothing painted yet.");
+function makeZip(files){
   const enc=new TextEncoder(), parts=[], cen=[]; let off=0;
   const u16=n=>new Uint8Array([n&255,(n>>8)&255]), u32=n=>new Uint8Array([n&255,(n>>8)&255,(n>>16)&255,(n>>24)&255]);
   for(const [name,data] of files){ const nm=enc.encode(name), c=crc32(data);
@@ -102,7 +100,17 @@ async function zipAll(){
     off+=lh.reduce((a,p)=>a+p.length,0)+data.length; }
   const cs=off; for(const c of cen) c.forEach(p=>{ parts.push(p); off+=p.length; });
   [u32(0x06054b50),u16(0),u16(0),u16(files.length),u16(files.length),u32(off-cs),u32(cs),u16(0)].forEach(p=>parts.push(p));
-  save(new Blob(parts,{type:"application/zip"}),"plantimals-book-plates.zip"); log("zip saved with "+files.length+" pictures");
+  return new Blob(parts,{type:"application/zip"});
+}
+async function toJpg(bl){ const bmp=await createImageBitmap(bl); const c=document.createElement("canvas"); c.width=bmp.width; c.height=bmp.height; const x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,c.width,c.height); x.drawImage(bmp,0,0); return new Promise(r=>c.toBlob(r,"image/jpeg",.93)); }
+async function zipAll(){
+  const files=[]; for(const it of ITEMS){ const bl=await get(it.id); if(!bl) continue; let j=bl; try{ j=await toJpg(bl)||bl; }catch(e){}
+    files.push([it.slug+(j.type==="image/jpeg"?".jpg":".png"),new Uint8Array(await j.arrayBuffer())]); }
+  if(!files.length) return log("Nothing painted yet.");
+  const LIM=(window.BP_PART_MB||24)*1048576, groups=[]; let cur=[],sz=0;
+  for(const f of files){ if(cur.length&&sz+f[1].length>LIM){ groups.push(cur); cur=[]; sz=0; } cur.push(f); sz+=f[1].length; } if(cur.length) groups.push(cur);
+  groups.forEach((g,i)=>setTimeout(()=>save(makeZip(g),groups.length>1?"plantimals-book-plates-"+(i+1)+"of"+groups.length+".zip":"plantimals-book-plates.zip"),i*1600));
+  log(files.length+" pictures saved as "+groups.length+" zip file(s), each small enough to upload to a chat. If your phone asks to allow several downloads, allow it.");
 }
 (async()=>{ await open(); draw();
   let k=localStorage.getItem("bp_key")||""; if(!k){ try{ k=(JSON.parse(localStorage.getItem("kiki_garden_v1")||"{}").openaiKey)||""; }catch(e){} } $("#key").value=k;
