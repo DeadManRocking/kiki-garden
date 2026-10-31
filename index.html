@@ -970,7 +970,7 @@ const C={
   DOM:{ color:["Crimson","Solar","Verdant","Azure","Twilight"],
         appendage:["Limb","Wing","Tendril"],
         behavior:["Mischievous","Playful","Contemplative"] },
-  MUTATIONS:["Ghost-Petal","Extra Bloom","Iris-Shift","Split-Root","Static Bloom","Mismatched Pair","Sixfold"],
+  MUTATIONS:["Ghost-Petal","Extra Bloom","Iris-Shift","Split-Root","Static Bloom","Mismatched Pair","Sixfold","Lone Arm"],
   BASE_MUTATION:0.10
 };
 
@@ -2128,6 +2128,7 @@ function addEggling(res){
   setTimeout(paintEggs,50);
   if(res.variant===undefined) res.variant=variantFor(activeEvent(),false);
   if(S.nextLegendary){ res.mutation="Gilded Vein"; S.nextLegendary=false; }      /* Rare bloodline */
+  res.pheno=limbMutation(res.pheno,res.mutation);
   S.egglingses.push({ id:uid(), geno:res.geno, pheno:res.pheno,
     mutation:res.mutation, generation:res.generation, at:Date.now(), allergy:res.allergy, variant:res.variant||null, parent1:res.parent1, parent2:res.parent2, pname1:res.pname1, pname2:res.pname2 });
   save();
@@ -2149,8 +2150,8 @@ const GENE={
   wings:["Bat","Bird","Bee","Moth","Dragonfly","None"],
   arms:["Pair","Twin","None"]
 };
-/* looks: color 15 x markings 15 x covering 5 x behavior 3 x root-legs 4 x upper limbs 75 (arms 0/2/4, tendrils 0-6, wings 7 ways, never all three) */
-const GENE_SPACE=15*15*5*3*4*75;
+/* looks: color 15 x markings 15 x covering 5 x behavior 3 x root-legs 4 x upper limbs 131 (arms 0/2/4, tendrils 0-6, wings 7 ways; at most TEN upper limbs in all, the tendrils give way first) */
+const GENE_SPACE=15*15*5*3*4*131;
 const WING_DESC={Bat:"leathery bat-like wings, thin membranes stretched between long finger-bones like a small dragon's",Bird:"feathered bird wings",
   Bee:"small, glassy, faintly golden bee wings",Moth:"soft, dusty moth or butterfly wings with painted eye-spots",Dragonfly:"long, glassy, finely veined dragonfly wings"};
 function pairName(a,b,list){
@@ -2175,6 +2176,18 @@ function fillGeno(g,key){
   if(!g.wing) g.wing=oldKind==="Wing"&&oldN>0?["Moth","None"]:["None","None"];
   return g;
 }
+const UPPER_MAX=10;
+/* a mutation can change the shown limbs; wings only ever come in pairs (0,2,4,6), and the tendrils are trimmed to fit the ten */
+function limbMutation(ph,mut){
+  ph=Object.assign({},ph); if(!mut) return ph;
+  if(mut==="Sixfold"&&ph.wingCount>0) ph.wingCount=6;
+  else if(mut==="Mismatched Pair"&&ph.wingCount>0) ph.wingCount=4;
+  else if(mut==="Lone Arm") ph.arms=1;
+  const g=ph.tendrilsGene!==undefined?ph.tendrilsGene:ph.tendrils, room=Math.max(0,UPPER_MAX-int(ph.arms)-int(ph.wingCount));
+  ph.tendrils=Math.min(g,room); ph.crowded=g>ph.tendrils; ph.count=int(ph.arms)+ph.tendrils+int(ph.wingCount);
+  return ph;
+}
+function phenoOf(x,geno){ const g=fillGeno(geno||x.geno,x.id); return limbMutation(resolveDominance(g),x.mutation); }
 function resolveDominance(g){
   g=fillGeno(g);
   const legs=Math.max(0,Math.min(3,int(g.legs[0])+int(g.legs[1])));
@@ -2182,12 +2195,13 @@ function resolveDominance(g){
   let tendrils=Math.max(0,Math.min(6,int(g.tendril[0])+int(g.tendril[1])));
   const wing=domPick(g.wing[0],g.wing[1],GENE.wings);
   const wingCount=wing==="None"?0:(g.wing[0]==="Dragonfly"&&g.wing[1]==="Dragonfly"?4:2);
-  let crowded=false;
-  if(arms&&tendrils&&wingCount){ crowded=true; tendrils=0; }       /* never all three: the tendrils stay hidden */
+  let crowded=false; const tendrilsGene=tendrils;
+  const room=Math.max(0,UPPER_MAX-arms-wingCount);
+  if(tendrils>room){ crowded=true; tendrils=room; }       /* the Rule of Elbows: ten upper limbs at most, the tendrils give way first (wings are never trimmed, so they stay in pairs) */
   return {
     color:pairName(g.color[0],g.color[1],GENE.colors),
     marking:pairName(g.marking[0],g.marking[1],GENE.marks),
-    legs:legs, arms:arms, tendrils:tendrils, wing:wing, wingCount:wingCount, crowded:crowded,
+    legs:legs, arms:arms, tendrils:tendrils, tendrilsGene:tendrilsGene, wing:wing, wingCount:wingCount, crowded:crowded,
     appendage:wingCount?"Wing":arms?"Limb":tendrils?"Tendril":"Limb",
     count:arms+tendrils+wingCount,
     behavior:domPick(g.behavior[0],g.behavior[1],GENE.behs),
@@ -2239,7 +2253,7 @@ function makePlantimal(name,d){
 function colorsOf(x){ return String((x.pheno||x).color).split("-"); }
 function phenoLine(ph){
   const L=int(ph.legs), A=int(ph.arms), T=int(ph.tendrils), W=int(ph.wingCount);
-  const up=[A?A+" arms":"",T?T+" tendril"+(T===1?"":"s"):"",W?W+" "+ph.wing+" wings":""].filter(Boolean).join(", ")||"no upper limbs";
+  const up=[A?A+(A===1?" arm":" arms"):"",T?T+" tendril"+(T===1?"":"s"):"",W?W+" "+ph.wing+" wings":""].filter(Boolean).join(", ")||"no upper limbs";
   return [String(ph.color).replace("-"," & "),String(ph.marking||"").replace("-"," & "),
     (L===0?"no root-legs":L+" root-leg"+(L===1?"":"s"))+"; "+up,ph.behavior,ph.surface].filter(Boolean).join(" · ");
 }
@@ -2289,6 +2303,7 @@ const MUT_DESC={"Ghost-Petal":"Its whole body is ghostly and semi-transparent li
   "Split-Root":"Below the chest it forks into twin root-halves like a mandrake, one limb duplicated.",
   "Mismatched Pair":"Its wings do not match: one pair is of a different kind from the other.",
   "Sixfold":"It has three pairs of wings instead of one.",
+  "Lone Arm":"It has a single branch-twig arm, on one side only; on the other side the bark is smooth where an arm should be, and it does not seem to mind.",
   "Gilded Vein":"Fine veins of real gold run through its skin and petals, catching the light like old leaf.",
   "Static Bloom":"Tiny crackling electric sparks and static arcs dance between its petals, lighting it from within."};
 const EYES=["enormous glossy black eyes with a single pinprick of light","pale milky eyes like moonstones",
@@ -2858,7 +2873,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.20.4";
+const VERSION="1.21.0";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -2890,7 +2905,7 @@ function appSentence(ph,n,p){
   const legs=L===0?"it has no legs: its body rises straight out of one tangled mass of roots in the soil"
     :`it stands on exactly ${NUMW[L]} thick taproot leg${L>1?"s":""}, each ending in a foot of branching roots with tiny pale root-tips for toes (count: ${L})`;
   const up=[];
-  if(A) up.push(`exactly ${NUMW[A]} branch-twig arms ending in small twiggy hands (count: ${A})`);
+  if(A) up.push(A===1?`exactly one branch-twig arm, on one side only, ending in a small twiggy hand, with smooth bark on the other side where a second arm would be (count: 1)`:`exactly ${NUMW[A]} branch-twig arms ending in small twiggy hands (count: ${A})`);
   if(T) up.push(`exactly ${NUMW[T]} curling vine tendril${T>1?"s":""} sprouting from its torso and head (count: ${T})`);
   if(W){
     const g=p?fillGeno(p.geno,p.id):null, hidden=g?(g.wing[0]===ph.wing?g.wing[1]:g.wing[0]):"None";
@@ -2933,7 +2948,7 @@ function hatch(eid){
   const e=S.egglingses.find(x=>x.id===eid);
   if(!e||e.status==="hatching") return;
   e.status="hatching"; save();
-  const p={id:uid(),name:"Unnamed",geno:fillGeno(e.geno,e.id),pheno:resolveDominance(fillGeno(e.geno,e.id)),
+  const p={id:uid(),name:"Unnamed",geno:fillGeno(e.geno,e.id),pheno:limbMutation(resolveDominance(fillGeno(e.geno,e.id)),e.mutation),
     mutation:e.mutation,generation:int(e.generation),parent1:e.parent1,parent2:e.parent2,pname1:e.pname1,pname2:e.pname2,stage:0,used:[],mood:C.MOOD.start,quirks:[],
     hatched:Date.now(),lastCare:null,decayApplied:0,stage2At:null,allergy:e.allergy,variant:e.variant||null};
   const tick=waitSheet("Hatching…",eggPic(e,140));
@@ -3816,11 +3831,11 @@ async function testCf(){
 /* ══ MIGRATION ═════════════════════════════════════════════ */
 async function migrateArt(){
   for(const p of S.plantimals){
-    p.geno=fillGeno(p.geno,p.id); p.pheno=resolveDominance(p.geno);
+    p.geno=fillGeno(p.geno,p.id); p.pheno=limbMutation(resolveDominance(p.geno),p.mutation);
     if(p.art){ await ArtDB.put("p:"+p.id,p.art); delete p.art; }
   }
   for(const e of S.egglingses){
-    e.geno=fillGeno(e.geno,e.id); e.pheno=resolveDominance(e.geno);
+    e.geno=fillGeno(e.geno,e.id); e.pheno=limbMutation(resolveDominance(e.geno),e.mutation);
     if(!e.at) e.at=Date.now();
     if(e.status==="hatching") e.status="pending";
   }
@@ -4153,7 +4168,7 @@ function doCreate(){
   if(draft.arms==null) draft.arms="0"; if(draft.tendrils==null) draft.tendrils="0"; if(draft.wing==null) draft.wing="None";
   if(["color","marking","legs","behavior","surface"].some(k=>draft[k]==null)){
     m.textContent="Choose one of each."; return; }
-  if(int(draft.arms)>0&&int(draft.tendrils)>0&&draft.wing!=="None"){ m.textContent="Arms, tendrils or wings: two of them at most, never all three."; return; }
+  if(int(draft.arms)+int(draft.tendrils)+(draft.wing!=="None"?2:0)>UPPER_MAX){ m.textContent="Ten at most, all together: arms, tendrils and wings."; return; }
   const nm=$("#pname").value.trim();
   if(!nm){ m.textContent="It needs a name."; return; }
   if(occupied()>=capacity()){ m.textContent="The garden is full."; return; }
@@ -5739,7 +5754,7 @@ const ORDER={behavior:GENE.behs,surface:GENE.surfs,wing:GENE.wings};
 function showOf(k,ph){
   if(k==="legs") return String(ph.legs);
   if(k==="arms") return ph.arms?ph.arms+" arms":"none";
-  if(k==="tendril") return ph.crowded?"hidden (crowded out)":(ph.tendrils?String(ph.tendrils):"none");
+  if(k==="tendril") return ph.crowded?(ph.tendrils?ph.tendrils+" (crowded)":"hidden (crowded out)"):(ph.tendrils?String(ph.tendrils):"none");
   if(k==="wing") return ph.wingCount?ph.wing+" × "+ph.wingCount:"none";
   return String(ph[k]||"").replace("-"," & ");
 }
@@ -6097,7 +6112,7 @@ function boot(){
   applyHand(); setTimeout(()=>{ try{ fxSet(); }catch(e){} },500); snailStart();
   const hq=$("#helpq"); if(hq) hq.innerHTML=iconSpan("hq",'<text x="12" y="17.5" font-size="17" font-family="serif" text-anchor="middle" fill="currentColor" stroke="none">?</text>',"qmark");
   setTimeout(bloomCheck,3000);
-  if(S.genoV!==2){ for(const x of [...S.plantimals,...S.egglingses]){ x.geno=fillGeno(x.geno,x.id); x.pheno=resolveDominance(x.geno); } S.genoV=2; save(); }
+  if(S.genoV!==2){ for(const x of [...S.plantimals,...S.egglingses]){ x.geno=fillGeno(x.geno,x.id); x.pheno=limbMutation(resolveDominance(x.geno),x.mutation); } S.genoV=2; save(); }
   emergePupae();
   if(S.openingV!==1){ S.openingV=1; S.seenIntro=false; }
   if(S.seenIntro&&S.seenStudio===undefined) S.seenStudio=true;
