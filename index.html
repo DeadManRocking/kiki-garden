@@ -1504,8 +1504,10 @@ function titlePopNow(){
   if(!window.__titleStarted) loud("boom",3);          /* no title file: the built-in hit lands with the pop */
   oNext(()=>{ holdMusic=false; musicStart(); ambStart();
     const c=$("#oc6"); c.classList.add("fadeaway");
-    oNext(()=>{ c.classList.remove("fadeaway"); storyStart(); },2400); },6600);
+    oNext(()=>{ c.classList.remove("fadeaway"); storyStart(); },2400); },
+    window.__titleStarted?(TITLE_SOUND_MS+SILENCE_MS-1900):6600);   /* the whole 16 s sound plays, then a few seconds of silence, THEN the story music leads into the story text */
 }
+const TITLE_SOUND_MS=16000, SILENCE_MS=3000;
 function storyStart(){
   const o=$("#open"); o.classList.add("skippable","clear");
   const end=()=>{ oShow("oded"); oNext(openDone,3600); };
@@ -2855,7 +2857,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.20.1";
+const VERSION="1.20.3";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
