@@ -1502,7 +1502,7 @@ function titlePopNow(){
   if(!S.seenStudio){ S.seenStudio=true; save(); }
   oShow("oc6"); buzz([60,40,120]);
   if(!window.__titleStarted) loud("boom",3);          /* no title file: the built-in hit lands with the pop */
-  oNext(()=>{ holdMusic=false; musicStart(); ambStart(); fadeA(window.__titleA);   /* the title sound gives way as the opening song begins */
+  oNext(()=>{ holdMusic=false; musicStart(); ambStart();
     const c=$("#oc6"); c.classList.add("fadeaway");
     oNext(()=>{ c.classList.remove("fadeaway"); storyStart(); },2400); },6600);
 }
@@ -2855,7 +2855,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.20.2";
+const VERSION="1.20.1";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
