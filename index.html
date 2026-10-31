@@ -842,9 +842,10 @@ html.painted #sheet.k-wood .btn.sign::before{content:"" !important;display:block
 
 #wxrain{display:none !important}
 #wxfx{position:fixed;inset:0;z-index:70;pointer-events:none}
-#snail{position:absolute;left:0;bottom:122px;width:44px;height:44px;z-index:3;pointer-events:none;opacity:.92}
-#snail img{width:44px;height:44px;display:block;animation:snailstretch 3.4s ease-in-out infinite;transform-origin:75% 100%}
-#snail .trail{position:absolute;left:36px;bottom:3px;width:150px;height:2px;border-radius:2px;background:linear-gradient(90deg,rgba(235,240,230,.24),transparent)}
+#snail{position:absolute;left:0;top:0;width:22px;height:22px;z-index:1;pointer-events:none;opacity:.9;transition:transform 1s linear;will-change:transform}
+#snail img{width:22px;height:22px;display:block;animation:snailstretch 3.4s ease-in-out infinite;transform-origin:75% 100%}
+#strail{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:0}
+#strail line{stroke:rgba(235,240,230,1);stroke-linecap:round}
 @keyframes snailstretch{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.08) translateX(-1px)}}
 .pgi img{width:30px;height:30px;object-fit:contain}
 .hq img{width:22px;height:22px;object-fit:contain}.hq svg{width:20px;height:20px;fill:currentColor}
@@ -1775,7 +1776,7 @@ function render(){
   layoutFlock();
   placeWear($("#app"));
   requestAnimationFrame(()=>{ layoutFlock(); placeWear($("#app")); });
-  panoApply(false); panoFollow();
+  panoApply(false); panoFollow(); snailAttach();
   maybeFounder();
 }
 
@@ -2873,7 +2874,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.21.0";
+const VERSION="1.22.0";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -4064,13 +4065,67 @@ function paintSnail(){
   auto("ui:snail",async()=>{ const src=await genImage(MEDIUM+" A single small garden snail seen from the side, crawling toward the left, spiral shell, glistening body, tiny eye-stalks. Isolated alone on a fully transparent background, centered, no ground, no shadow. No text.","1:1",0,{background:"transparent",output_format:"png"});
     await ArtDB.put("ui:snail",await shrinkPng(src,256)); snailStart(); });
 }
-function snailStart(){
+/* ══ THE SNAIL (v1.22): a small snail wanders the whole garden, any panel, any direction, slowly, leaving a faint short-lived trail.
+   For now it stays on the ground strip. Once the painted panorama is shipped, its real surfaces (paving stones, trunks, stems, leaves)
+   are traced into assets/snail/paths.json and the walker follows those instead of the free strip. */
+const SN={x:0,y:0,th:Math.PI,pauseUntil:0,pts:[],last:0,saved:0,ready:false};
+function snailBand(){ const f=document.getElementById("field"); const H=f?f.clientHeight:600; return {y0:H*.80,y1:H*.965,H:H}; }
+function snailWorldW(){ return PANO.step*PANELS; }
+function snailScale(y,b){ return .62+.38*Math.max(0,Math.min(1,(y-b.y0)/Math.max(1,b.y1-b.y0))); }       /* smaller further back */
+function snailAttach(){
+  const w=document.getElementById("world"); if(!w||!ART["ui:snail"]) return;
+  let sv=document.getElementById("strail"); if(!sv){ sv=document.createElementNS("http://www.w3.org/2000/svg","svg"); sv.id="strail"; w.insertBefore(sv,w.firstChild); }
   let el=document.getElementById("snail");
-  if(!ART["ui:snail"]){ if(el) el.remove(); return; }
-  if(!el){ el=document.createElement("div"); el.id="snail"; el.innerHTML='<i class="trail"></i><img alt="">'; document.getElementById("bgs").appendChild(el); }
-  el.querySelector("img").src=ART["ui:snail"];
-  const tick=()=>{ const W=innerWidth, per=7*60000, f=((Date.now()+int(S.bornAt))%per)/per; el.style.transform=`translate3d(${(W+60-f*(W+170)).toFixed(1)}px,0,0)`; };
-  tick(); clearInterval(snailStart.t); snailStart.t=setInterval(tick,1000);
+  if(!el){ el=document.createElement("div"); el.id="snail"; el.innerHTML='<img alt="">'; w.insertBefore(el,sv.nextSibling); }
+  const im=el.querySelector("img"); if(im.getAttribute("src")!==ART["ui:snail"]) im.src=ART["ui:snail"];
+  snailDraw(true);
+}
+function snailDraw(instant){
+  const el=document.getElementById("snail"); if(!el) return; const b=snailBand(), sc=snailScale(SN.y,b), right=Math.cos(SN.th)>0, tilt=Math.sin(SN.th)*10*(right?1:-1);
+  if(instant) el.style.transition="none";
+  el.style.transform=`translate3d(${(SN.x-11).toFixed(1)}px,${(SN.y-18).toFixed(1)}px,0) scale(${(right?-sc:sc).toFixed(3)},${sc.toFixed(3)}) rotate(${(-tilt).toFixed(1)}deg)`;
+  if(instant){ el.offsetWidth; el.style.transition=""; }
+  const sv=document.getElementById("strail"); if(!sv) return; const now=Date.now(), LIFE=22000; let h="";
+  for(let i=1;i<SN.pts.length;i++){ const a=SN.pts[i-1], c=SN.pts[i], age=(now-c.t)/LIFE; if(age>=1) continue;
+    h+=`<line x1="${a.x.toFixed(1)}" y1="${(a.y+1).toFixed(1)}" x2="${c.x.toFixed(1)}" y2="${(c.y+1).toFixed(1)}" stroke-width="${(1.3*snailScale(c.y,b)).toFixed(2)}" stroke-opacity="${(.11*(1-age)).toFixed(3)}"/>`; }
+  sv.innerHTML=h;
+}
+function snailInit(){
+  const b=snailBand(), W=snailWorldW(), sv=S.snail;
+  if(sv&&Date.now()-sv.t<10*60000&&sv.x<W){ SN.x=sv.x; SN.y=sv.y; SN.th=sv.th; }       /* away a long while: it is somewhere else now */
+  else{ SN.x=Math.random()*W; SN.y=b.y0+Math.random()*(b.y1-b.y0); SN.th=Math.random()*Math.PI*2; }
+  SN.pts=[]; SN.last=Date.now(); SN.ready=true;
+}
+function snailStep(){
+  if(!ART["ui:snail"]){ const el=document.getElementById("snail"); if(el) el.remove(); return; }
+  if(!SN.ready) snailInit();
+  if(!document.getElementById("snail")) snailAttach();
+  const now=Date.now(), dt=Math.min(5,(now-SN.last)/1000); SN.last=now;
+  if(document.documentElement.classList.contains("calm")||document.hidden){ snailDraw(); return; }
+  const b=snailBand(), W=snailWorldW();
+  if(now>=SN.pauseUntil){
+    if(Math.random()<.012*dt) SN.pauseUntil=now+(15+Math.random()*35)*1000;                       /* it stops, and is still */
+    else{
+      let turn=(Math.random()-.5)*.55;                                                              /* a slow, wandering turn */
+      if(Math.random()<.01) turn+=(Math.random()-.5)*2.2;                                           /* now and then it changes its mind */
+      const pad=26, side=Math.cos(SN.th)>=0?1:-1;                                                   /* turn away from the edges of the strip and of the world */
+      if(SN.y<b.y0+pad&&Math.sin(SN.th)<0) turn+=side*.6;
+      if(SN.y>b.y1-pad&&Math.sin(SN.th)>0) turn-=side*.6;
+      if(SN.x<30&&Math.cos(SN.th)<0) turn+=(Math.sin(SN.th)>=0?-1:1)*.7;
+      if(SN.x>W-30&&Math.cos(SN.th)>0) turn+=(Math.sin(SN.th)>=0?1:-1)*.7;
+      SN.th+=turn*dt;
+      const v=1.15*snailScale(SN.y,b)*dt;                                                          /* a bit over a pixel a second: slower than before (about 1.4) */
+      SN.x=Math.max(8,Math.min(W-8,SN.x+Math.cos(SN.th)*v)); SN.y=Math.max(b.y0,Math.min(b.y1,SN.y+Math.sin(SN.th)*v*.6));
+      SN.pts.push({x:SN.x,y:SN.y,t:now}); while(SN.pts.length&&now-SN.pts[0].t>22000) SN.pts.shift();
+    }
+  }
+  if(now-SN.saved>30000){ SN.saved=now; S.snail={x:SN.x,y:SN.y,th:SN.th,t:now}; save(); }
+  snailDraw();
+}
+function snailStart(){
+  if(!ART["ui:snail"]){ const el=document.getElementById("snail"); if(el) el.remove(); return; }
+  if(!SN.ready) snailInit();
+  snailAttach(); clearInterval(snailStart.t); snailStart.t=setInterval(snailStep,1000);
 }
 function paintApples(){
   ["ui:apple","ui:core"].forEach((k,i)=>{ if(!ART[k]) auto(k,async()=>{
