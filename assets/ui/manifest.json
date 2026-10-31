@@ -1911,17 +1911,6 @@
 "subject": "an empty sheet of antique stained, foxed watercolour paper, warm cream, filling the whole square, seamlessly tileable at its edges, nothing painted on it"
 },
 {
-"id": "journal/plate_anatomy",
-"file": "assets/ui/journal/plate_anatomy.webp",
-"size": [
-768,
-1152
-],
-"api": "1024x1536",
-"kind": "plate",
-"subject": "JOURNAL PLATE III, an antique anatomical plate of ONE grown Plantimal, painted on stained, foxed cream paper that fills the whole page, with a thin ruled hand-inked border and wide calm margins. NO TEXT, NO LETTERS, NO NUMBERS and NO LEADER LINES anywhere (labels are added later). Centre: a slender, uncanny, gentle plant-and-animal creature standing three-quarter view, tall, about six heads high, bark-and-lichen skin patterned with dark blue-grey spots and fine veins, large dark glassy eyes, pointed leaf-ears, a crown of living leaves and a curl of tendril on its head, two thin branch-twig arms ending in small twig hands, long taproot legs ending in a spreading tangle of root-tip feet. Its torso is opened in a clean vertical cutaway showing a small heart-like bulb of green and red, two blue-grey lung-leaves, a brown rounded liver-seed, a coil of pale green gut, and a network of fine green root-veins running down into the legs. Around it, six small round inset vignettes in the same hand, each on its own patch of bare paper with generous space between: the head with leaf-crown seen close, a single leaf with its veins and tiny hairs, a cross-section of plant-fibre muscle with green and rose fibres, the root-foot with fine fungal threads, a square of the spotted skin pattern, and the head in profile with the brain drawn as a cabbage-like fold of green-and-violet tissue. Muted, desaturated antique pigments, faint pencil underdrawing, Victorian naturalist's engraving feel with wet watercolour washes, dark fairy-tale in the manner of Arthur Rackham and Odilon Redon. Empty paper left beside every inset so labels can be written there later."
-},
-{
 "id": "pano/p1",
 "file": "assets/ui/pano/p1.webp",
 "size": [
