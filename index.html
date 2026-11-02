@@ -2683,8 +2683,10 @@ async function paintPlantimal(p){
 }
 function auto(key,fn){ const j=enqueue(key,fn); if(j) j.catch(()=>{ S.genCool=Date.now()+10*60000; save(); }); return j; }
 let iconBusy=false;
+/* v1.22.1: the shipped UI pictures (UI Painter, assets/ui) replace the on-device painting of coin emblems, button pictures and shop objects, so the phone no longer pays to paint them */
+const UI_PAINT_OFF=true;
 function paintIcons(){
-  if(iconBusy) return;
+  if(UI_PAINT_OFF||iconBusy) return;
   const todo=CURRENCIES.map(c=>c[0]).filter(k=>!ART["cur:"+k]);
   if(!todo.length) return;
   iconBusy=true;
@@ -2874,7 +2876,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.22.0";
+const VERSION="1.22.1";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
@@ -4993,7 +4995,7 @@ let biBusy=false;
 const BI_FIRST=["Convert","Butterfly","Shops","More","Less","Journal","Collection","Messages","Kept","Settings","Hidrayshn","Coppertanrr","Fylth","Genetics","Rename","Back","Done","Ask","Confirm"];
 const BI_FAIL={};
 function paintButtonIcons(){
-  if(biBusy||!oaiKey()) return;
+  if(UI_PAINT_OFF||biBusy||!oaiKey()) return;
   for(const k of BI_FIRST){ const sv=BI[k]||(k==="Ask"?BI_SPRIG:null); if(sv) iconSpan("x",sv,k); }
   biBusy=true;
   (async()=>{
@@ -5919,7 +5921,7 @@ function uiShops(){
 function shopObjKey(k,i){ return "shop:"+k+":"+i; }
 let shopBusy=false;
 function paintAllShopObjects(){
-  if(shopBusy||!oaiKey()) return;
+  if(UI_PAINT_OFF||shopBusy||!oaiKey()) return;
   const todo=[]; for(const k of Object.keys(SHOPS)) SHOPS[k].items.forEach((it,i)=>{ if(!ART[shopObjKey(k,i)]) todo.push([k,i]); });
   if(!todo.length) return;
   shopBusy=true;
