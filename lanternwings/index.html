@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#07060a">
+<title>Lanternwings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap">
+<style>
+:root{--ink:#efe6d2;--muted:#b9a98a;--paper:#e6dcc2;--paperink:#2b2116;--wood:#2a1d14;--wood2:#3a281b;--lamp:#f0c25e;--veil:rgba(7,6,10,.94);
+  color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--veil:rgba(12,10,14,.94)}}
+:root[data-theme="light"]{--veil:rgba(12,10,14,.94)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0;background:#07060a;color:var(--ink);overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+body{font:400 17px/1.5 "IM Fell English",Georgia,"Times New Roman",serif}
+#scene{position:fixed;inset:0;touch-action:manipulation}
+#title{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:0;right:0;text-align:center;pointer-events:none;transition:opacity 3s}
+#title.fade{opacity:0}
+#title h1{font-weight:400;font-size:2rem;margin:0;letter-spacing:.04em}
+#title p{margin:.3em 0 0;font-style:italic;font-size:.9rem;line-height:1.35;color:var(--muted)}
+#hint{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 70px);text-align:center;font-style:italic;color:var(--muted);pointer-events:none;padding:0 16px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:4px;padding:26px 10px calc(env(safe-area-inset-bottom,0px) + 6px);z-index:5;background:linear-gradient(rgba(3,2,4,0),rgba(3,2,4,.82) 55%)}
+nav button{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:72px;min-height:54px;padding:4px 10px;background:none;border:0;color:#e6d8bb;font:italic .95rem/1.1 "IM Fell English",Georgia,serif;letter-spacing:.05em;opacity:.82;text-shadow:0 1px 2px #000}
+nav button svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 2px #000)}
+nav button:active{opacity:1;color:#f6cd7e}
+nav button.dot::after{content:"";position:absolute;top:2px;right:24px;width:7px;height:7px;border-radius:50%;background:var(--lamp);box-shadow:0 0 8px var(--lamp)}
+.sheet button,.panel button{font:italic 1.02rem/1 "IM Fell English",Georgia,serif;letter-spacing:.04em;color:#efe3c8;padding:12px 20px;min-height:46px;border-radius:3px;cursor:pointer;
+  background:linear-gradient(180deg,#3d2c1c,#1d140c);border:1px solid #6e5435;text-shadow:0 1px 0 rgba(0,0,0,.6);
+  box-shadow:inset 0 1px 0 rgba(255,214,150,.2),inset 0 -1px 0 rgba(0,0,0,.5),0 3px 10px rgba(0,0,0,.55)}
+.sheet button.primary,.panel button.primary{color:#22170b;background:linear-gradient(180deg,#e0bd74,#9c7331);border-color:#f2d9a2;text-shadow:0 1px 0 rgba(255,240,205,.45);
+  box-shadow:inset 0 1px 0 rgba(255,246,220,.65),inset 0 -1px 0 rgba(80,50,15,.5),0 3px 12px rgba(0,0,0,.55),0 0 22px rgba(240,194,94,.2)}
+.sheet button:active,.panel button:active{transform:translateY(1px);filter:brightness(.9)}
+button:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 18px);transform:translateX(-50%);background:rgba(20,15,10,.9);border:1px solid #5a4b37;padding:8px 14px;border-radius:3px;opacity:0;transition:opacity .4s;pointer-events:none;z-index:20;max-width:90vw;text-align:center}
+#toast.on{opacity:1}
+.sheet,.panel{position:fixed;inset:0;display:none;z-index:10;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(env(safe-area-inset-top,0px) + 16px) 14px calc(env(safe-area-inset-bottom,0px) + 90px)}
+.sheet.open,.panel.open{display:block}
+.sheet{background:var(--veil)}
+.sheet canvas{display:block;width:100%;max-width:640px;height:auto;margin:20px auto 0;touch-action:none}
+.sheet h2{font-weight:400;font-size:1.8rem;text-align:center;margin:.4em 0 .15em;letter-spacing:.03em}
+.sheet h2::after,#cab h2::after,#atl h2::after{content:"";display:block;width:140px;height:1px;margin:.45em auto 0;background:linear-gradient(90deg,transparent,#8a6f45,transparent)}
+.sheet p{text-align:center;color:var(--muted);font-style:italic;margin:0 auto;max-width:34em}
+.name{display:block;width:100%;max-width:320px;margin:0 auto 6px;min-height:48px;padding:12px 14px;font:italic 1.12rem/1.2 "IM Fell English",Georgia,serif;color:#2b2116;text-align:center;
+  background:#ebe1c7 linear-gradient(rgba(120,95,55,.07) 1px,transparent 1px) 0 .5em/100% 1.55em;border:1px solid #9b8560;border-radius:1px;outline:1px solid rgba(155,133,96,.55);outline-offset:-6px;
+  box-shadow:0 4px 12px rgba(0,0,0,.55),inset 0 0 18px rgba(120,90,45,.15);-webkit-user-select:text;user-select:text}
+.name::placeholder{color:#8f7d5c;opacity:1}
+.name:focus{outline-color:#b8892f;box-shadow:0 0 0 2px rgba(240,194,94,.45),0 4px 12px rgba(0,0,0,.55)}
+.btns .name{flex-basis:100%}
+.btns{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:16px}
+#cab{background:linear-gradient(#1b130d,#0f0a07)}
+#roost{background:#0c0907 radial-gradient(ellipse at 50% 0%,rgba(80,58,36,.35),transparent 70%)}
+#roost h2{font-weight:400;font-size:1.6rem;text-align:center;margin:.2em 0 .2em}
+#roost h2::after{content:"";display:block;width:140px;height:1px;margin:.45em auto 0;background:linear-gradient(90deg,transparent,#8a6f45,transparent)}
+#roost h3{font-weight:400;font-style:italic;font-size:1.05rem;color:var(--muted);text-align:center;margin:1em 0 .4em}
+.rnote{text-align:center;font-style:italic;color:var(--muted);margin:0 0 .6em}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:640px;margin:0 auto 12px}
+@media (min-width:560px){.grid{grid-template-columns:repeat(3,1fr)}}
+.grid.two{grid-template-columns:1fr 1fr;margin-top:16px}
+.card{background:linear-gradient(180deg,#22180f,#140e09);border:1px solid #3e2e1e;border-radius:3px;padding:6px 6px 8px;box-shadow:0 3px 10px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,214,150,.08);cursor:pointer;touch-action:manipulation}
+.card canvas{display:block;width:100%;height:auto}
+.card canvas.glow{filter:drop-shadow(0 0 8px rgba(255,214,130,.55))}
+.card p{margin:4px 0 0;text-align:center;font-style:italic;font-size:.92rem;line-height:1.25;color:#e9dcc0}
+.card p span{font-size:.78rem;color:var(--muted)}
+.card.chosen{border-color:#e0bd74;box-shadow:0 0 0 1px #e0bd74,0 0 18px rgba(240,194,94,.35)}
+.card .wait{height:0;padding-bottom:62.5%;color:var(--muted);font-style:italic;font-size:.8rem;text-align:center}
+#cab h2,#atl h2{font-weight:400;font-size:1.6rem;text-align:center;margin:.2em 0 .6em}
+.drawer{position:relative;max-width:640px;margin:0 auto 18px;padding:26px 12px 14px;border-radius:3px;
+  background:repeating-linear-gradient(92deg,rgba(0,0,0,.08) 0 2px,rgba(255,220,170,.03) 2px 5px,rgba(0,0,0,.05) 5px 9px),linear-gradient(180deg,#5a3d26,#3b2716 60%,#2b1c10);
+  border:1px solid #6b4a2d;box-shadow:0 6px 18px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,210,150,.25),inset 0 -2px 6px rgba(0,0,0,.5)}
+.plaque{position:absolute;top:6px;left:50%;transform:translateX(-50%);padding:1px 14px;font:italic .8rem/1.4 "IM Fell English",Georgia,serif;letter-spacing:.12em;color:#2a1a08;
+  background:linear-gradient(180deg,#e7c77f,#a77d34);border:1px solid #f3dca5;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,245,215,.7)}
+.tray{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px;background:#cfc3a4;border:2px solid #24170c;box-shadow:inset 0 3px 10px rgba(0,0,0,.55);overflow:hidden}
+.tray::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.16) 38%,rgba(255,255,255,0) 46%,rgba(255,255,255,0) 62%,rgba(255,255,255,.08) 66%,rgba(255,255,255,0) 70%)}
+.slot{position:relative;min-height:90px;touch-action:manipulation}
+.slot canvas{display:block;width:100%;height:auto;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+.slot canvas.glow{filter:drop-shadow(0 0 7px rgba(255,214,130,.6))}
+.slot.empty{background:rgba(120,95,60,.12);border:1px dashed rgba(70,50,30,.3);aspect-ratio:24/17}
+.slip{margin:4px auto 0;padding:3px 4px;max-width:92%;background:#f3ecd8;border:1px solid rgba(90,70,40,.35);box-shadow:0 1px 2px rgba(0,0,0,.25);
+  font:italic .7rem/1.25 "IM Fell English",Georgia,serif;color:#2b2116;text-align:center;transform:rotate(-.6deg)}
+.slip b{font-weight:400;font-size:.8rem}
+.slip i{color:#6b5a42}
+.slot.held{outline:2px dashed var(--lamp);outline-offset:2px}
+.word{position:absolute;right:12px;bottom:2px;font-style:italic;font-size:.75rem;color:rgba(255,230,190,.28);letter-spacing:.35em}
+.scales{text-align:center;color:var(--muted);font-style:italic}
+#atl{background:#1a140e}
+#ac{display:block;width:100%;max-width:640px;height:auto;margin:0 auto;border:1px solid #57412c;box-shadow:0 4px 18px rgba(0,0,0,.6)}
+.close{display:block;margin:12px auto 0}
+#test{position:fixed;left:6px;top:calc(env(safe-area-inset-top,0px) + 6px);z-index:30;background:rgba(0,0,0,.8);border:1px solid #5a4b37;padding:6px;border-radius:3px;font:13px/1.3 system-ui,sans-serif;max-width:220px}
+#test button{font:12px system-ui,sans-serif;min-height:30px;padding:3px 7px;margin:2px;color:#eee;background:#222;border:1px solid #555;border-radius:3px}
+</style>
+</head>
+<body>
+<canvas id="scene" aria-label="The lantern scene. Tap a moth."></canvas>
+<div id="title"><h1>Lanternwings</h1><p>Khiara, mea princeps nocturna,<br>tu mihi lumina es aeterna,<br>dum vigil quiesco sub lucerna.</p></div>
+<p id="hint"></p>
+<nav>
+  <button id="ngarden" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V11a7 7 0 0 1 14 0v10M8.5 21v-9a3.5 3.5 0 0 1 7 0v9M3 21h18M7 7.5c-1.5-1-2.5-1-3.5-.5M17 7.5c1.5-1 2.5-1 3.5-.5"/></svg>Garden</button>
+  <button id="nlamp" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5v2.5M9 6.5h6l-1-2.5h-4zM8.5 6.5h7v11h-7zM7.5 17.5h9M10 20.5h4M12 17.5v3M12 10.2c-1.1 1.4-1.1 3 0 4 1.1-1 1.1-2.6 0-4z"/></svg>Lamp</button>
+  <button id="nroost" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20c6-1.5 14-1.5 20 0M12 8.5v9M12 10.5c-2.5-4-8-4.5-8-.5 0 3 4 4 8 2M12 10.5c2.5-4 8-4.5 8-.5 0 3-4 4-8 2M12 12.5c-2 1.5-4.5 3.5-3.6 5 .9.8 2.6-1 3.6-2.8M12 12.5c2 1.5 4.5 3.5 3.6 5-.9.8-2.6-1-3.6-2.8M11.2 8.2 9.6 5.5M12.8 8.2l1.6-2.7"/></svg>Roost</button>
+  <button id="ncab" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3.5h16v17H4zM4 9.2h16M4 14.8h16M10.5 6.3h3M10.5 12h3M10.5 17.6h3"/></svg>Cabinet</button>
+  <button id="natl" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6l6-2.2 6 2.2 6-2.2v14.2l-6 2.2-6-2.2-6 2.2zM9 3.8v14.2M15 6v14.2"/></svg>Atlas</button>
+</nav>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<section id="view" class="sheet"><canvas id="vc" width="640" height="400"></canvas><h2 id="vt"></h2><p id="vi"></p><div id="vb" class="btns"></div></section>
+<section id="ecl" class="sheet"><canvas id="ec" width="640" height="400"></canvas><h2 id="et"></h2><div class="btns"><button id="eok" type="button" hidden>Let it fly to the lamp</button></div></section>
+<section id="roost" class="panel"><h2>The Roost</h2><p id="rnote" class="rnote"></p><h3 id="sh">Tonight’s strangers</h3><div id="strangers" class="grid"></div><div id="roostgrid" class="grid"></div><button class="close" type="button" data-close>Back to the lamp</button></section>
+<section id="pair" class="sheet"><h2>These two?</h2><div id="pairs" class="grid two"></div><p>Bring them to the lamp.</p><div class="btns"><button id="pyes" class="primary" type="button">Bring them to the lamp</button><button id="pno" type="button">Not these</button></div></section>
+<section id="cab" class="panel"><h2>The Cabinet</h2><div id="drawers"></div><button class="close" type="button" data-close>Back to the lamp</button></section>
+<section id="atl" class="panel"><h2>The Atlas</h2><canvas id="ac" width="640" height="640"></canvas><button class="close" type="button" data-close>Back to the lamp</button></section>
+
+<div id="test" hidden>
+  <div id="tclock"></div>
+  <button id="tnight" type="button">Night</button><button id="tday" type="button">Day</button><br>
+  <button id="t1" type="button">×1</button><button id="t60" type="button">×60</button><button id="t600" type="button">×600</button><br>
+  <button id="th" type="button">+1 h</button><button id="td" type="button">+12 h</button><button id="thatch" type="button">Hatch all</button><br>
+  <button id="tvis" type="button">Visitors now</button><button id="treset" type="button">Reset</button>
+</div>
+
+<script src="wingengine.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
