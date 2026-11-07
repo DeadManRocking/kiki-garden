@@ -246,6 +246,20 @@ html.painted body,body{padding:0 !important;max-width:none !important;min-height
 #world .fig{pointer-events:auto}
 #field{touch-action:pan-y}
 #bgcam.glide,#world.glide{transition:transform .5s cubic-bezier(.2,.8,.25,1)}
+#lantern{position:absolute;z-index:2;padding:0;border:0;background:none;pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;transform-origin:50% 0;animation:lsway 7s ease-in-out infinite}
+#lantern svg{overflow:visible}
+#lantern .lbriar{stroke:rgba(52,40,30,.75);stroke-width:2.2;stroke-linecap:round}
+#lantern .lthorn{stroke:rgba(52,40,30,.6);stroke-width:1.2;stroke-linecap:round}
+#lantern .liron{stroke:rgba(36,32,30,.85);stroke-width:1.6;stroke-linejoin:round}
+#lantern .lcap{fill:rgba(40,34,30,.55)}
+#lantern .lglass{fill:rgba(120,132,118,.22);stroke:none}
+#lantern .lflame{opacity:0}
+#lantern.lit .lglass{fill:rgba(255,196,110,.38)}
+#lantern.lit .lflame{opacity:1;animation:lflick 2.6s ease-in-out infinite}
+#lantern.lit::before{content:"";position:absolute;left:50%;top:58%;width:340%;height:240%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(255,190,105,.28),rgba(255,170,80,.10) 55%,transparent);pointer-events:none;animation:lflick 3.4s ease-in-out infinite}
+@keyframes lflick{0%,100%{opacity:1}22%{opacity:.82}40%{opacity:.95}63%{opacity:.76}80%{opacity:.92}}
+@keyframes lsway{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg)}}
+html.calm #lantern,html.calm #lantern .lflame,html.calm #lantern::before{animation:none}
 #pdots{position:absolute;left:0;right:0;bottom:4px;display:flex;justify-content:center;gap:2px;z-index:4;pointer-events:none}
 #pdots i{pointer-events:auto;width:26px;height:26px;display:grid;place-items:center;cursor:pointer}
 #pdots i::after{content:"";width:6px;height:6px;border-radius:52% 46% 55% 44%;background:rgba(240,226,196,.38);box-shadow:0 0 3px rgba(240,226,196,.25);transition:all .3s}
@@ -1635,7 +1649,7 @@ function layoutFlock(){
       el.style.setProperty("--rot",((r()-.5)*5).toFixed(1)+"deg");
     });
   });
-  panoApply(false);
+  panoApply(false); lanternPlace();
 }
 /* ══ THE PANORAMA (v1.19): six panels, home is the second; swipe sideways on the garden to pan ══ */
 const PANELS=6, HOME=1, PANEL_CAP=6, FILL_ORDER=[1,2,0,3,4,5];
@@ -1680,6 +1694,41 @@ function panoApply(glide){
   if(d.children.length!==PANELS) d.innerHTML=Array.from({length:PANELS},(_,k)=>`<i data-k="${k}" class="${k===HOME?"home":""}" onclick="panoGo(${k})"></i>`).join("");
   [...d.children].forEach((e,k)=>e.classList.toggle("on",k===PANO.k));
 }
+function panoRestore(){      /* coming back from the lantern: the garden opens where she left it */
+  if(PANO.restored) return; PANO.restored=true;
+  try{ const v=sessionStorage.getItem("kg_pano_k"); sessionStorage.removeItem("kg_pano_k");
+    if(v!==null){ const k=Math.max(0,Math.min(PANELS-1,parseInt(v,10)||0)); PANO.k=k; PANO.x=k*PANO.step; } }catch(e){}
+}
+/* ══ THE LANTERN (v1.23): hangs on the sixth panel; lit only at night (21:00-04:59); tapping it opens Lanternwings. Hidden: no word, no hint. ══ */
+function lanternLit(){ const h=new Date().getHours(); return h>=21||h<5; }
+function lanternMarkup(){
+  return `<button id="lantern" class="${lanternLit()?"lit":""}" aria-label="" onclick="lanternGo(event)">
+  <svg viewBox="0 0 60 100" width="100%" height="100%" aria-hidden="true">
+    <defs><radialGradient id="lgl" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffcf7a" stop-opacity=".95"/><stop offset=".55" stop-color="#f2a64a" stop-opacity=".55"/><stop offset="1" stop-color="#c87a2a" stop-opacity="0"/></radialGradient></defs>
+    <path class="lbriar" d="M2 9 C14 4 26 12 38 7 S54 6 59 10" fill="none"/>
+    <path class="lthorn" d="M12 7 l2 -4 M24 9 l-1 -4 M44 7 l2 -4 M51 8 l-2 4" fill="none"/>
+    <path class="liron" d="M30 9 v13" fill="none" stroke-dasharray="2.2 1.6"/>
+    <circle class="liron" cx="30" cy="25" r="3" fill="none"/>
+    <path class="liron lcap" d="M19 37 L30 28 L41 37 Z"/>
+    <rect class="lglass" x="20" y="38" width="20" height="30" rx="3"/>
+    <ellipse class="lflame" cx="30" cy="55" rx="5.5" ry="9" fill="url(#lgl)"/>
+    <path class="liron" d="M20 38 h20 M20 68 h20 M30 38 v30 M20 38 v30 M40 38 v30" fill="none"/>
+    <path class="liron lcap" d="M17 68 h26 l-4 6 h-18 Z"/>
+  </svg></button>`;
+}
+function lanternPlace(){
+  const el=document.getElementById("lantern"), f=document.getElementById("field"); if(!el||!f) return;
+  const W=f.clientWidth, H=f.clientHeight, w=Math.max(30,Math.min(44,W*.1));
+  el.style.width=w+"px"; el.style.height=(w*100/60)+"px";
+  el.style.left=(5*PANO.step+W*.24).toFixed(1)+"px"; el.style.top=(H*.10).toFixed(1)+"px";
+  el.classList.toggle("lit",lanternLit());
+}
+function lanternGo(e){
+  if(e) e.stopPropagation();
+  try{ sessionStorage.setItem("kg_pano_k",String(PANO.k)); }catch(err){}
+  save(); location.href="lanternwings/";
+}
+setInterval(()=>{ const el=document.getElementById("lantern"); if(el) el.classList.toggle("lit",lanternLit()); },60000);
 function panoGo(k,quiet){
   k=Math.max(0,Math.min(PANELS-1,k)); PANO.k=k; PANO.x=k*PANO.step; panoApply(true);
   if(!quiet) sfx("tick");
@@ -1753,7 +1802,7 @@ function render(){
     ${ev?`<span class="pill ev" onclick="uiEventCard()">${esc(ev.name)}</span>`:""}
     ${shadowOwned()?`<span class="pill moon ${S.shadowOn&&midnightNow()&&S.moonHeard!==nightKey()?"stir":""}" onclick="uiMoon()" aria-label="Moon"><svg viewBox="0 0 24 24" width="13" height="13"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></span>`:""}</div></div>
     <div id="field">${bullMarkup()}${eggMarkup("garden"+dayKey(),["garden"])}
-      <div id="world">${live().map(figMarkup).join("")}${S.egglingses.map(eggFig).join("")}</div><div id="pdots"></div>
+      <div id="world">${lanternMarkup()}${live().map(figMarkup).join("")}${S.egglingses.map(eggFig).join("")}</div><div id="pdots"></div>
       ${int((S.owned||{}).hiddenGarden)?`<div id="hdoor" onclick="uiHidden()" aria-label="A small door"><svg viewBox="0 0 24 34"><path d="M3 33V12a9 9 0 0 1 18 0v21z" fill="rgba(30,20,12,.55)" stroke="rgba(240,226,196,.55)"/><path d="M12 33V8.5" stroke="rgba(240,226,196,.35)"/><path d="M12 33l7-3V11" fill="rgba(240,200,120,.18)" stroke="rgba(240,226,196,.45)"/><circle cx="15" cy="21" r="1" fill="rgba(240,226,196,.7)"/></svg></div>`:""}</div>
     <div id="more" class="${moreOpen?"open":""}">
       <button class="nb" onclick="moreGo(uiJournal)">Journal</button>
@@ -1776,7 +1825,7 @@ function render(){
   layoutFlock();
   placeWear($("#app"));
   requestAnimationFrame(()=>{ layoutFlock(); placeWear($("#app")); });
-  panoApply(false); panoFollow(); snailAttach();
+  panoRestore(); panoApply(false); panoFollow(); snailAttach(); lanternPlace();
   maybeFounder();
 }
 
@@ -2876,7 +2925,7 @@ async function shrinkPng(src,w){
   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
   return c.toDataURL("image/png");
 }
-const VERSION="1.22.1";
+const VERSION="1.23.0";
 const BUILD="v"+VERSION;
 function applyPaper(){
   const root=document.documentElement;
